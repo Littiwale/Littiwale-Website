@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Litti Wale | Authentic Indian Comfort Food in Barbil</title>
+    <meta name="description"
+        content="Litti Wale brings the authentic taste of Indian street and comfort food to Barbil. Signature Litti Chokha, thalis, and fast food.">
+    <link rel="stylesheet" href="css/style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo-link">
+                <!-- Fallback text if logo missing, but we expect images/logo.png -->
+                <img src="images/logo.png" alt="Litti Wale Logo" class="nav-logo"
+                    onerror="this.outerHTML='<span class=\'logo-text\'>Litti Wale</span>'">
+            </a>
+
+            <button class="mobile-toggle" aria-label="Toggle Navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#menu-section">Menu</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#reach">Reach Us</a></li>
+                <li>
+                    <a href="#cart-section" class="cart-link">
+                        <i class="fas fa-shopping-cart"></i> Cart <span id="cart-count" class="cart-badge">0</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Announcement Section -->
+    <section id="announcement">
+        <div class="announcement-container">
+            <h2 class="announcement-title">📢 New Announcement</h2>
+            <img src="images/offers/current-offer.png" alt="Special Offer" class="announcement-img">
+        </div>
+    </section>
+
+    <!-- Hero Section -->
+    <header id="home" class="hero">
+        <div class="hero-content container">
+            <h1 class="hero-title">Barbil’s Home of Authentic Litti Chokha</h1>
+            <p class="hero-subtitle">Authentic Indian flavors served fresh every day.</p>
+            <div class="hero-buttons">
+                <a href="#menu-section" class="btn btn-primary">Explore Menu</a>
+                <a href="https://www.zomato.com" target="_blank" class="btn btn-secondary">Order on Zomato</a>
+                <a href="https://wa.me/916370680744" target="_blank" class="btn btn-whatsapp"><i
+                        class="fab fa-whatsapp"></i> WhatsApp Order</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container text-center">
+            <h2 class="section-title">A Local Favorite for Authentic Indian Comfort Food</h2>
+            <div class="divider"></div>
+            <p class="about-text">
+                Litti Wale brings the authentic taste of Indian street and comfort food to Barbil. Known for its
+                signature Litti Chokha and diverse menu, the restaurant offers something for everyone — from traditional
+                Indian meals to fast food favorites like pizzas, pastas, noodles, and thalis.
+            </p>
+        </div>
+    </section>
+
+    <!-- Menu Section -->
+    <section id="menu-section" class="menu-section">
+        <div class="container">
+            <h2 class="section-title text-center">Our Menu</h2>
+            <div class="divider"></div>
+
+            <div class="category-filters" id="category-filters">
+                <!-- Categories populated by JS -->
+                <button class="filter-btn active" data-filter="all">All</button>
+            </div>
+
+            <div class="menu-grid" id="menu-grid">
+                <!-- Menu items populated by JS -->
+                <div class="loading-spinner">Loading deliciousness...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured on Instagram Section -->
+    <section id="instagram-reels" class="instagram-section bg-light">
+        <div class="container">
+            <h2 class="section-title text-center">Featured on Instagram</h2>
+            <div class="divider"></div>
+
+            <div class="reels-grid">
+                <a href="https://www.instagram.com/reel/DM0OaRuTorz/" target="_blank" class="reel-card">
+                    <div class="reel-overlay"><i class="fab fa-instagram"></i> Play Reel</div>
+                    <img src="images/instagram/reel1.png" alt="Instagram Reel 1">
+                </a>
+                <a href="https://www.instagram.com/reel/DVOCmnIk-Yt/" target="_blank" class="reel-card">
+                    <div class="reel-overlay"><i class="fab fa-instagram"></i> Play Reel</div>
+                    <img src="images/instagram/reel2.png" alt="Instagram Reel 2">
+                </a>
+                <a href="https://www.instagram.com/reel/DUsneR7E1Vh/" target="_blank" class="reel-card">
+                    <div class="reel-overlay"><i class="fab fa-instagram"></i> Play Reel</div>
+                    <img src="images/instagram/reel3.png" alt="Instagram Reel 3">
+                </a>
+                <a href="https://www.instagram.com/reel/DU20uoDE9vY/" target="_blank" class="reel-card">
+                    <div class="reel-overlay"><i class="fab fa-instagram"></i> Play Reel</div>
+                    <img src="images/instagram/reel4.png" alt="Instagram Reel 4">
+                </a>
+                <a href="https://www.instagram.com/reel/DUVd2y6k_bG/" target="_blank" class="reel-card">
+                    <div class="reel-overlay"><i class="fab fa-instagram"></i> Play Reel</div>
+                    <img src="images/instagram/reel5.png" alt="Instagram Reel 5">
+                </a>
+                <a href="https://www.instagram.com/reel/DTcsHKbE2C7/" target="_blank" class="reel-card">
+                    <div class="reel-overlay"><i class="fab fa-instagram"></i> Play Reel</div>
+                    <img src="images/instagram/reel6.png" alt="Instagram Reel 6">
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Connect With Us Section -->
+    <section id="connect" class="connect-section">
+        <div class="container text-center">
+            <h2 class="section-title">Connect With Us</h2>
+            <div class="divider"></div>
+            <div class="social-links-large">
+                <a href="https://www.instagram.com/littiwaleofficial/" target="_blank" class="social-card instagram">
+                    <i class="fab fa-instagram"></i>
+                    <span>Instagram</span>
+                </a>
+                <a href="https://www.facebook.com/share/18fQs5NEQU/" target="_blank" class="social-card facebook">
+                    <i class="fab fa-facebook-f"></i>
+                    <span>Facebook</span>
+                </a>
+                <a href="https://wa.me/916370680744" target="_blank" class="social-card whatsapp">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>WhatsApp</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cart Section (Inline / Modal Style) -->
+    <section id="cart-section" class="cart-container-section bg-light py-5">
+        <div class="container">
+            <div class="cart-wrapper">
+                <h2 class="cart-title"><i class="fas fa-shopping-bag"></i> Your Cart</h2>
+                <div id="cart-items-container" class="cart-items">
+                    <div class="empty-cart">Your cart is empty</div>
+                </div>
+
+                <div class="cart-summary" id="cart-summary" style="display: none;">
+                    <div class="cart-total-row">
+                        <span>Total Amount:</span>
+                        <span id="cart-total-amount">₹0</span>
+                    </div>
+
+                    <div class="customer-details form-group mt-3">
+                        <input type="text" id="cust-name" placeholder="Your Name" required class="form-control mb-2">
+                        <input type="tel" id="cust-phone" placeholder="Phone Number" required class="form-control mb-2">
+                        <textarea id="cust-address" placeholder="Delivery Address" required class="form-control mb-2"
+                            rows="2"></textarea>
+                    </div>
+
+                    <button id="checkout-btn" class="btn btn-whatsapp btn-block mt-3">
+                        <i class="fab fa-whatsapp"></i> Send Order via WhatsApp
+                    </button>
+                    <button id="clear-cart-btn" class="btn btn-outline btn-block mt-2">Clear Cart</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reach Us Section -->
+    <section id="reach" class="reach-section">
+        <div class="container">
+            <div class="reach-grid">
+                <div class="reach-info">
+                    <h2 class="section-title">Reach Us</h2>
+                    <div class="divider left"></div>
+
+                    <div class="info-block">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h4>Address</h4>
+                            <p>Spicy 88<br>Barbil<br>Odisha 758035</p>
+                        </div>
+                    </div>
+
+                    <div class="info-block">
+                        <i class="fas fa-phone-alt"></i>
+                        <div>
+                            <h4>Phone</h4>
+                            <p>+91 63706 80744</p>
+                        </div>
+                    </div>
+
+                    <div class="info-block">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <h4>Working Hours</h4>
+                            <p>11:00 AM – 10:30 PM (Delivery Only)</p>
+                        </div>
+                    </div>
+
+                    <div class="reach-actions mt-4">
+                        <a href="tel:+916370680744" class="btn btn-outline"><i class="fas fa-phone"></i> Call Now</a>
+                        <a href="https://wa.me/916370680744" target="_blank" class="btn btn-whatsapp"><i
+                                class="fab fa-whatsapp"></i> WhatsApp Order</a>
+                        <a href="https://maps.google.com/maps?q=22.1152751,85.3871145" target="_blank"
+                            class="btn btn-primary"><i class="fas fa-directions"></i> Get Directions</a>
+                    </div>
+                </div>
+
+                <div class="map-container">
+                    <iframe width="100%" height="350"
+                        style="border:0; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);" loading="lazy"
+                        allowfullscreen src="https://maps.google.com/maps?q=22.1152751,85.3871145&z=17&output=embed">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <div class="footer-brand">
+                <img src="images/logo.png" alt="Litti Wale Logo" class="footer-logo"
+                    onerror="this.outerHTML='<h3 class=\'footer-logo-text\'>Litti Wale</h3>'">
+                <p>Barbil's home of authentic flavors.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#menu-section">Menu</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#reach">Reach Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-legal">
+                <p>&copy; <span id="year"></span> Litti Wale. All rights reserved.</p>
+                <p>100% Delivery Focused</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating Action Buttons -->
+    <div class="fab-container">
+        <a href="https://www.zomato.com" target="_blank" class="fab-btn tooltip-container"
+            style="background: #e23744; color: white;">
+            <i class="fas fa-utensils"></i>
+            <span class="tooltip">Zomato</span>
+        </a>
+        <a href="#cart-section" class="fab-btn tooltip-container" style="background: #333; color: white;">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="fab-badge" id="fab-cart-badge">0</span>
+            <span class="tooltip">Cart</span>
+        </a>
+        <a href="tel:+916370680744" class="fab-btn tooltip-container" style="background: #007bff; color: white;">
+            <i class="fas fa-phone-alt"></i>
+            <span class="tooltip">Call</span>
+        </a>
+        <a href="https://wa.me/916370680744" target="_blank" class="fab-btn tooltip-container"
+            style="background: #25d366; color: white;">
+            <i class="fab fa-whatsapp"></i>
+            <span class="tooltip">WhatsApp</span>
+        </a>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,831 @@
+[
+    {
+        "id": "vada-pav",
+        "name": "Vada Pav",
+        "category": "Star Special",
+        "price": 49,
+        "description": "",
+        "image": "images/menu/vada-pav.jpg"
+    },
+    {
+        "id": "litti-chokha",
+        "name": "Litti Chokha",
+        "category": "Star Special",
+        "price": 69,
+        "description": "",
+        "image": "images/menu/litti-chokha.jpg",
+        "bestseller": true
+    },
+    {
+        "id": "pav-bhaji",
+        "name": "Pav Bhaji",
+        "category": "Star Special",
+        "half": 49,
+        "full": 69,
+        "description": "1 pc pav / 2 pc pav",
+        "image": "images/menu/pav-bhaji.jpg"
+    },
+    {
+        "id": "litti-chicken",
+        "name": "Litti Chicken",
+        "category": "Star Special",
+        "price": 129,
+        "description": "",
+        "image": "images/menu/litti-chicken.jpg"
+    },
+    {
+        "id": "a1-swag-combo",
+        "name": "A1 Swag Combo",
+        "category": "Star Special",
+        "price": 189,
+        "description": "Veg Litti Chokha + Veg Burger + Vada Pav or Veg Sandwich",
+        "image": "images/menu/a1-swag-combo.jpg"
+    },
+    {
+        "id": "a1-swag-combo",
+        "name": "A1 Swag Combo",
+        "category": "Star Special",
+        "price": 209,
+        "description": "Non Veg Litti Chicken + Chicken Sandwich",
+        "image": "images/menu/a1-swag-combo.jpg"
+    },
+    {
+        "id": "a1-punjab-da-swag-makke-di-roti-sarson-da-saag",
+        "name": "A1 Punjab Da Swag Makke Di Roti + Sarson Da Saag",
+        "category": "Star Special",
+        "price": 149,
+        "description": "",
+        "image": "images/menu/a1-punjab-da-swag-makke-di-roti-sarson-da-saag.jpg"
+    },
+    {
+        "id": "veg-hot-n-sour-soup",
+        "name": "Veg Hot n Sour Soup",
+        "category": "Soup",
+        "price": 89,
+        "description": "",
+        "image": "images/menu/veg-hot-n-sour-soup.jpg"
+    },
+    {
+        "id": "veg-manchow-soup",
+        "name": "Veg Manchow Soup",
+        "category": "Soup",
+        "price": 109,
+        "description": "",
+        "image": "images/menu/veg-manchow-soup.jpg"
+    },
+    {
+        "id": "chicken-hot-n-sour-soup",
+        "name": "Chicken Hot n Sour Soup",
+        "category": "Soup",
+        "price": 109,
+        "description": "",
+        "image": "images/menu/chicken-hot-n-sour-soup.jpg"
+    },
+    {
+        "id": "chicken-manchow-soup",
+        "name": "Chicken Manchow Soup",
+        "category": "Soup",
+        "price": 129,
+        "description": "",
+        "image": "images/menu/chicken-manchow-soup.jpg"
+    },
+    {
+        "id": "combo-mega",
+        "name": "Combo Mega",
+        "category": "Mega Combos",
+        "price": 189,
+        "description": "Chilly Chicken Veg Fried Rice Lacha Paratha Chilly Chicken (5 pcs) + Veg Fried Rice + 2 Lacha Paratha",
+        "image": "images/menu/combo-mega.jpg"
+    },
+    {
+        "id": "combo-mega",
+        "name": "Combo Mega",
+        "category": "Mega Combos",
+        "price": 189,
+        "description": "Chilly Paneer Veg Fried Rice Lacha Paratha Chilly Paneer (5 pcs) + Veg Fried Rice + 2 Lacha Paratha",
+        "image": "images/menu/combo-mega.jpg"
+    },
+    {
+        "id": "combo-mega",
+        "name": "Combo Mega",
+        "category": "Mega Combos",
+        "price": 209,
+        "description": "Chilly Chicken Egg Fried Rice Lacha Paratha Chilly Chicken (5 pcs) + Egg Fried Rice + 2 Lacha Paratha",
+        "image": "images/menu/combo-mega.jpg"
+    },
+    {
+        "id": "combo-mega",
+        "name": "Combo Mega",
+        "category": "Mega Combos",
+        "price": 219,
+        "description": "Chilly Chicken Chicken Fried Rice Lacha Paratha Chilly Chicken (5 pcs) + Chicken Fried Rice + 2 Lacha Paratha",
+        "image": "images/menu/combo-mega.jpg"
+    },
+    {
+        "id": "combo-mini",
+        "name": "Combo Mini",
+        "category": "Mini Combos",
+        "price": 139,
+        "description": "Lacha Paratha Paneer Chilly Chilly Paneer (4 pcs) + Lacha Paratha",
+        "image": "images/menu/combo-mini.jpg"
+    },
+    {
+        "id": "combo-mini",
+        "name": "Combo Mini",
+        "category": "Mini Combos",
+        "price": 139,
+        "description": "Veg Noodles Paneer Chilly Chilly Paneer (4 pcs) + Veg Noodles",
+        "image": "images/menu/combo-mini.jpg"
+    },
+    {
+        "id": "combo-mini",
+        "name": "Combo Mini",
+        "category": "Mini Combos",
+        "price": 139,
+        "description": "Veg Fried Rice Chicken Chilly Chilly Chicken (4 pcs) + Veg Fried Rice",
+        "image": "images/menu/combo-mini.jpg"
+    },
+    {
+        "id": "combo-mini",
+        "name": "Combo Mini",
+        "category": "Mini Combos",
+        "price": 139,
+        "description": "Veg Fried Rice Paneer Chilly Chilly Paneer (4 pcs) + Veg Fried Rice",
+        "image": "images/menu/combo-mini.jpg"
+    },
+    {
+        "id": "combo-mini",
+        "name": "Combo Mini",
+        "category": "Mini Combos",
+        "price": 139,
+        "description": "Lacha Paratha Chicken Chilly Chilly Chicken (4 pcs) + Lacha Paratha",
+        "image": "images/menu/combo-mini.jpg"
+    },
+    {
+        "id": "combo-mini",
+        "name": "Combo Mini",
+        "category": "Mini Combos",
+        "price": 139,
+        "description": "Veg Noodles Chicken Chilly Chilly Chicken (4 pcs) + Veg Noodles",
+        "image": "images/menu/combo-mini.jpg"
+    },
+    {
+        "id": "combo-mini",
+        "name": "Combo Mini",
+        "category": "Mini Combos",
+        "price": 149,
+        "description": "Egg Fried Rice Chilly Chicken Chilly Chicken (4 pcs) + Egg Fried Rice",
+        "image": "images/menu/combo-mini.jpg"
+    },
+    {
+        "id": "combo-mini",
+        "name": "Combo Mini",
+        "category": "Mini Combos",
+        "price": 149,
+        "description": "Egg Noodles Chilly Chicken Chilly Chicken (4 pcs) + Egg Noodles",
+        "image": "images/menu/combo-mini.jpg"
+    },
+    {
+        "id": "combo-mini",
+        "name": "Combo Mini",
+        "category": "Mini Combos",
+        "price": 159,
+        "description": "Chicken Noodles Chilly Chicken Chilly Chicken (4 pcs) + Chicken Noodles",
+        "image": "images/menu/combo-mini.jpg"
+    },
+    {
+        "id": "combo-mini",
+        "name": "Combo Mini",
+        "category": "Mini Combos",
+        "price": 159,
+        "description": "Chicken Fried Rice Chilly Chicken Chilly Chicken (4 pcs) + Chicken Fried Rice",
+        "image": "images/menu/combo-mini.jpg"
+    },
+    {
+        "id": "veg-sandwich",
+        "name": "Veg Sandwich",
+        "category": "Sandwiches",
+        "price": 49,
+        "description": "",
+        "image": "images/menu/veg-sandwich.jpg"
+    },
+    {
+        "id": "cheese-veg-grilled-sandwich",
+        "name": "Cheese Veg Grilled Sandwich",
+        "category": "Sandwiches",
+        "price": 59,
+        "description": "",
+        "image": "images/menu/cheese-veg-grilled-sandwich.jpg"
+    },
+    {
+        "id": "veg-sandwich-clubbed-3-layered",
+        "name": "Veg Sandwich Clubbed (3 layered)",
+        "category": "Sandwiches",
+        "price": 79,
+        "description": "",
+        "image": "images/menu/veg-sandwich-clubbed-3-layered.jpg"
+    },
+    {
+        "id": "corn-cheese-sandwich-grilled",
+        "name": "Corn Cheese Sandwich Grilled",
+        "category": "Sandwiches",
+        "price": 79,
+        "description": "",
+        "image": "images/menu/corn-cheese-sandwich-grilled.jpg"
+    },
+    {
+        "id": "cheese-chicken-sandwich",
+        "name": "Cheese Chicken Sandwich",
+        "category": "Sandwiches",
+        "price": 89,
+        "description": "",
+        "image": "images/menu/cheese-chicken-sandwich.jpg"
+    },
+    {
+        "id": "corn-sandwich-clubbed-3-layered",
+        "name": "Corn Sandwich Clubbed (3 layered)",
+        "category": "Sandwiches",
+        "price": 99,
+        "description": "",
+        "image": "images/menu/corn-sandwich-clubbed-3-layered.jpg"
+    },
+    {
+        "id": "paneer-sandwich-clubbed-3-layered",
+        "name": "Paneer Sandwich Clubbed (3 layered)",
+        "category": "Sandwiches",
+        "price": 99,
+        "description": "",
+        "image": "images/menu/paneer-sandwich-clubbed-3-layered.jpg"
+    },
+    {
+        "id": "chicken-clubbed-sandwich-3-layered",
+        "name": "Chicken Clubbed Sandwich (3 layered)",
+        "category": "Sandwiches",
+        "price": 99,
+        "description": "",
+        "image": "images/menu/chicken-clubbed-sandwich-3-layered.jpg"
+    },
+    {
+        "id": "mix-sandwich-clubbed-3-layered",
+        "name": "Mix Sandwich Clubbed (3 layered)",
+        "category": "Sandwiches",
+        "price": 119,
+        "description": "",
+        "image": "images/menu/mix-sandwich-clubbed-3-layered.jpg"
+    },
+    {
+        "id": "veg-noodles--",
+        "name": "Veg Noodles -",
+        "category": "Noodles & Rice",
+        "half": 49,
+        "full": 99,
+        "description": "",
+        "image": "images/menu/veg-noodles--.jpg"
+    },
+    {
+        "id": "egg-noodles--",
+        "name": "Egg Noodles -",
+        "category": "Noodles & Rice",
+        "half": 69,
+        "full": 129,
+        "description": "",
+        "image": "images/menu/egg-noodles--.jpg"
+    },
+    {
+        "id": "chicken-noodles--",
+        "name": "Chicken Noodles -",
+        "category": "Noodles & Rice",
+        "half": 89,
+        "full": 159,
+        "description": "",
+        "image": "images/menu/chicken-noodles--.jpg"
+    },
+    {
+        "id": "mix-veg-noodles--",
+        "name": "Mix  Veg Noodles -",
+        "category": "Noodles & Rice",
+        "half": 109,
+        "full": 209,
+        "description": "",
+        "image": "images/menu/mix-veg-noodles--.jpg"
+    },
+    {
+        "id": "mix-non-veg-noodles--",
+        "name": "Mix Non Veg Noodles -",
+        "category": "Noodles & Rice",
+        "half": 109,
+        "full": 209,
+        "description": "",
+        "image": "images/menu/mix-non-veg-noodles--.jpg"
+    },
+    {
+        "id": "veg-fried-rice--",
+        "name": "Veg Fried Rice -",
+        "category": "Noodles & Rice",
+        "half": 89,
+        "full": 159,
+        "description": "",
+        "image": "images/menu/veg-fried-rice--.jpg"
+    },
+    {
+        "id": "egg-fried-rice--",
+        "name": "Egg Fried Rice -",
+        "category": "Noodles & Rice",
+        "half": 109,
+        "full": 229,
+        "description": "",
+        "image": "images/menu/egg-fried-rice--.jpg"
+    },
+    {
+        "id": "chicken-fried-rice--",
+        "name": "Chicken Fried RIce -",
+        "category": "Noodles & Rice",
+        "half": 129,
+        "full": 239,
+        "description": "",
+        "image": "images/menu/chicken-fried-rice--.jpg"
+    },
+    {
+        "id": "chilly-gobi-5-pc-10-pc",
+        "name": "Chilly Gobi 5 pc / 10 pc",
+        "category": "Starters",
+        "half": 59,
+        "full": 119,
+        "description": "",
+        "image": "images/menu/chilly-gobi-5-pc-10-pc.jpg"
+    },
+    {
+        "id": "veg-manchurian-5-pc-10-pc",
+        "name": "Veg Manchurian 5 pc / 10 pc",
+        "category": "Starters",
+        "half": 69,
+        "full": 119,
+        "description": "",
+        "image": "images/menu/veg-manchurian-5-pc-10-pc.jpg"
+    },
+    {
+        "id": "mushroom-chilly-5-pc-10-pc",
+        "name": "Mushroom Chilly 5 pc / 10 pc",
+        "category": "Starters",
+        "half": 79,
+        "full": 159,
+        "description": "",
+        "image": "images/menu/mushroom-chilly-5-pc-10-pc.jpg"
+    },
+    {
+        "id": "chilly-paneer-5-pc-10-pc",
+        "name": "Chilly Paneer 5 pc / 10 pc",
+        "category": "Starters",
+        "half": 79,
+        "full": 159,
+        "description": "",
+        "image": "images/menu/chilly-paneer-5-pc-10-pc.jpg"
+    },
+    {
+        "id": "chilly-chicken-6-pc-12-pc",
+        "name": "Chilly Chicken 6 pc / 12 pc",
+        "category": "Starters",
+        "half": 99,
+        "full": 199,
+        "description": "",
+        "image": "images/menu/chilly-chicken-6-pc-12-pc.jpg"
+    },
+    {
+        "id": "laccha-paratha-1-pc",
+        "name": "Laccha Paratha 1 pc",
+        "category": "Parathas & Naan",
+        "price": 39,
+        "description": "",
+        "image": "images/menu/laccha-paratha-1-pc.jpg"
+    },
+    {
+        "id": "butter-naan-1-pc",
+        "name": "Butter Naan 1 pc",
+        "category": "Parathas & Naan",
+        "price": 59,
+        "description": "",
+        "image": "images/menu/butter-naan-1-pc.jpg"
+    },
+    {
+        "id": "tawa-roti-1-pc",
+        "name": "Tawa Roti 1 pc",
+        "category": "Parathas & Naan",
+        "price": 9,
+        "description": "",
+        "image": "images/menu/tawa-roti-1-pc.jpg"
+    },
+    {
+        "id": "garam-gobi-gully-paratha-2-pcs",
+        "name": "Garam Gobi Gully Paratha 2 pcs",
+        "category": "Parathas & Naan",
+        "price": 89,
+        "description": "",
+        "image": "images/menu/garam-gobi-gully-paratha-2-pcs.jpg"
+    },
+    {
+        "id": "punjabi-patiala-aloo-paratha-2-pcs",
+        "name": "Punjabi Patiala Aloo Paratha 2 pcs",
+        "category": "Parathas & Naan",
+        "price": 89,
+        "description": "",
+        "image": "images/menu/punjabi-patiala-aloo-paratha-2-pcs.jpg"
+    },
+    {
+        "id": "dil-se-paneer-paratha-2-pcs",
+        "name": "Dil Se Paneer Paratha 2 pcs",
+        "category": "Parathas & Naan",
+        "price": 99,
+        "description": "",
+        "image": "images/menu/dil-se-paneer-paratha-2-pcs.jpg"
+    },
+    {
+        "id": "cheesy-corn-chulbuli-paratha-2-pcs",
+        "name": "Cheesy Corn Chulbuli Paratha 2 pcs",
+        "category": "Parathas & Naan",
+        "price": 109,
+        "description": "",
+        "image": "images/menu/cheesy-corn-chulbuli-paratha-2-pcs.jpg"
+    },
+    {
+        "id": "littiwale-loaded-paratha-2-pcs",
+        "name": "Littiwale Loaded Paratha 2 pcs",
+        "category": "Parathas & Naan",
+        "price": 129,
+        "description": "",
+        "image": "images/menu/littiwale-loaded-paratha-2-pcs.jpg"
+    },
+    {
+        "id": "makke-di-roti-1-pc",
+        "name": "Makke Di Roti 1 pc",
+        "category": "Parathas & Naan",
+        "price": 39,
+        "description": "",
+        "image": "images/menu/makke-di-roti-1-pc.jpg"
+    },
+    {
+        "id": "veg-pizza",
+        "name": "Veg Pizza",
+        "category": "Pizza",
+        "price": 119,
+        "description": "",
+        "image": "images/menu/veg-pizza.jpg"
+    },
+    {
+        "id": "corn-pizza",
+        "name": "Corn Pizza",
+        "category": "Pizza",
+        "price": 129,
+        "description": "",
+        "image": "images/menu/corn-pizza.jpg"
+    },
+    {
+        "id": "paneer-pizza",
+        "name": "Paneer Pizza",
+        "category": "Pizza",
+        "price": 149,
+        "description": "",
+        "image": "images/menu/paneer-pizza.jpg",
+        "bestseller": true
+    },
+    {
+        "id": "chicken-pizza",
+        "name": "Chicken Pizza",
+        "category": "Pizza",
+        "price": 199,
+        "description": "",
+        "image": "images/menu/chicken-pizza.jpg"
+    },
+    {
+        "id": "red-sauce-pasta--",
+        "name": "Red Sauce Pasta -",
+        "category": "Pasta",
+        "half": 79,
+        "full": 159,
+        "description": "",
+        "image": "images/menu/red-sauce-pasta--.jpg"
+    },
+    {
+        "id": "white-sauce-pasta--",
+        "name": "White Sauce Pasta -",
+        "category": "Pasta",
+        "half": 99,
+        "full": 199,
+        "description": "",
+        "image": "images/menu/white-sauce-pasta--.jpg"
+    },
+    {
+        "id": "veg-maggie--",
+        "name": "Veg Maggie -",
+        "category": "Pasta",
+        "half": 39,
+        "full": 79,
+        "description": "",
+        "image": "images/menu/veg-maggie--.jpg"
+    },
+    {
+        "id": "cheese-maggie--",
+        "name": "Cheese Maggie -",
+        "category": "Pasta",
+        "half": 49,
+        "full": 99,
+        "description": "",
+        "image": "images/menu/cheese-maggie--.jpg"
+    },
+    {
+        "id": "bhatti-di-murgh-half-side-chicken-4-pcs-full-chicken-8-pcs",
+        "name": "Bhatti Di Murgh Half side chicken (4 pcs) / Full Chicken (8 pcs)",
+        "category": "Tandoori/Kebabs",
+        "half": 349,
+        "full": 659,
+        "description": "",
+        "image": "images/menu/bhatti-di-murgh-half-side-chicken-4-pcs-full-chicken-8-pcs.jpg"
+    },
+    {
+        "id": "seekh-kebabs-2-pc-4-pc",
+        "name": "Seekh Kebabs 2 pc / 4 pc",
+        "category": "Tandoori/Kebabs",
+        "half": 169,
+        "full": 309,
+        "description": "",
+        "image": "images/menu/seekh-kebabs-2-pc-4-pc.jpg"
+    },
+    {
+        "id": "paneer-tikka-6-pc-12-pc",
+        "name": "Paneer Tikka 6 pc / 12 pc",
+        "category": "Tandoori/Kebabs",
+        "half": 159,
+        "full": 299,
+        "description": "",
+        "image": "images/menu/paneer-tikka-6-pc-12-pc.jpg"
+    },
+    {
+        "id": "afghani-chicken-half-side-chicken-4-pcs-full-chicken-8-pcs",
+        "name": "Afghani Chicken Half side chicken (4 pcs) / Full Chicken (8 pcs)",
+        "category": "Tandoori/Kebabs",
+        "half": 399,
+        "full": 749,
+        "description": "",
+        "image": "images/menu/afghani-chicken-half-side-chicken-4-pcs-full-chicken-8-pcs.jpg"
+    },
+    {
+        "id": "dal-makhani--",
+        "name": "Dal Makhani -",
+        "category": "Main Course",
+        "half": 99,
+        "full": 189,
+        "description": "",
+        "image": "images/menu/dal-makhani--.jpg"
+    },
+    {
+        "id": "dal-tadka--",
+        "name": "Dal Tadka -",
+        "category": "Main Course",
+        "half": 89,
+        "full": 179,
+        "description": "",
+        "image": "images/menu/dal-tadka--.jpg"
+    },
+    {
+        "id": "mix-veg--",
+        "name": "Mix Veg -",
+        "category": "Main Course",
+        "half": 99,
+        "full": 189,
+        "description": "",
+        "image": "images/menu/mix-veg--.jpg"
+    },
+    {
+        "id": "paneer-butter-masala--",
+        "name": "Paneer Butter Masala -",
+        "category": "Main Course",
+        "half": 129,
+        "full": 219,
+        "description": "",
+        "image": "images/menu/paneer-butter-masala--.jpg"
+    },
+    {
+        "id": "paneer-malai-kofta--",
+        "name": "Paneer Malai Kofta -",
+        "category": "Main Course",
+        "half": 179,
+        "full": 349,
+        "description": "",
+        "image": "images/menu/paneer-malai-kofta--.jpg"
+    },
+    {
+        "id": "panner-masala--",
+        "name": "Panner Masala -",
+        "category": "Main Course",
+        "half": 99,
+        "full": 189,
+        "description": "",
+        "image": "images/menu/panner-masala--.jpg"
+    },
+    {
+        "id": "palak-paneer--",
+        "name": "Palak Paneer -",
+        "category": "Main Course",
+        "half": 89,
+        "full": 129,
+        "description": "",
+        "image": "images/menu/palak-paneer--.jpg"
+    },
+    {
+        "id": "egg-tadka--",
+        "name": "Egg tadka -",
+        "category": "Main Course",
+        "half": 109,
+        "full": 199,
+        "description": "",
+        "image": "images/menu/egg-tadka--.jpg"
+    },
+    {
+        "id": "mushroom-masala--",
+        "name": "Mushroom Masala -",
+        "category": "Main Course",
+        "half": 99,
+        "full": 189,
+        "description": "",
+        "image": "images/menu/mushroom-masala--.jpg"
+    },
+    {
+        "id": "chicken-butter-masala--",
+        "name": "Chicken Butter Masala -",
+        "category": "Main Course",
+        "half": 149,
+        "full": 239,
+        "description": "",
+        "image": "images/menu/chicken-butter-masala--.jpg"
+    },
+    {
+        "id": "chicken-chatpata--",
+        "name": "Chicken Chatpata -",
+        "category": "Main Course",
+        "half": 129,
+        "full": 219,
+        "description": "",
+        "image": "images/menu/chicken-chatpata--.jpg"
+    },
+    {
+        "id": "chicken-masala--",
+        "name": "Chicken Masala -",
+        "category": "Main Course",
+        "half": 99,
+        "full": 189,
+        "description": "",
+        "image": "images/menu/chicken-masala--.jpg"
+    },
+    {
+        "id": "chicken-handi--",
+        "name": "Chicken Handi -",
+        "category": "Main Course",
+        "half": 139,
+        "full": 279,
+        "description": "",
+        "image": "images/menu/chicken-handi--.jpg"
+    },
+    {
+        "id": "chicken-champaran-half-kg-1-kg",
+        "name": "Chicken Champaran half kg/ 1 kg",
+        "category": "Main Course",
+        "half": 289,
+        "full": 549,
+        "description": "",
+        "image": "images/menu/chicken-champaran-half-kg-1-kg.jpg"
+    },
+    {
+        "id": "fish-curry--",
+        "name": "Fish Curry -",
+        "category": "Main Course",
+        "half": 49,
+        "full": 99,
+        "description": "",
+        "image": "images/menu/fish-curry--.jpg"
+    },
+    {
+        "id": "veg-thali-roti5pc-or-ricedal1-type-of-sabzi-1-type-of-bhujiapapad",
+        "name": "Veg Thali Roti(5pc) or (Rice+Dal)+1 type of Sabzi+ 1 type of Bhujia+Papad",
+        "category": "Thali",
+        "price": 79,
+        "description": "",
+        "image": "images/menu/veg-thali-roti5pc-or-ricedal1-type-of-sabzi-1-type-of-bhujiapapad.jpg"
+    },
+    {
+        "id": "egg-thali-roti5pc-or-ricedalegg-curry-2-pcs-1-type-of-bhujiapapad",
+        "name": "Egg Thali Roti(5pc) or (Rice+Dal)+Egg Curry (2 pcs)+ 1 type of Bhujia+Papad",
+        "category": "Thali",
+        "price": 99,
+        "description": "",
+        "image": "images/menu/egg-thali-roti5pc-or-ricedalegg-curry-2-pcs-1-type-of-bhujiapapad.jpg"
+    },
+    {
+        "id": "fish-thali-roti5pc-or-ricedalfish-curry2-pcs-1-type-of-bhujiapapad",
+        "name": "Fish Thali Roti(5pc) or (Rice+Dal)+Fish Curry(2 pcs )+ 1 type of Bhujia+Papad",
+        "category": "Thali",
+        "price": 109,
+        "description": "",
+        "image": "images/menu/fish-thali-roti5pc-or-ricedalfish-curry2-pcs-1-type-of-bhujiapapad.jpg"
+    },
+    {
+        "id": "chicken-thali-roti5pc-or-ricedalchicken-curry-4-pcs-1-type-of-bhujiapapad",
+        "name": "Chicken Thali Roti(5pc) or (Rice+Dal)+Chicken Curry (4 pcs)+ 1 type of Bhujia+Papad",
+        "category": "Thali",
+        "price": 129,
+        "description": "",
+        "image": "images/menu/chicken-thali-roti5pc-or-ricedalchicken-curry-4-pcs-1-type-of-bhujiapapad.jpg"
+    },
+    {
+        "id": "muttonthali-roti5pc-or-ricedalmuttton-curry-4-pcs-1-type-of-bhujiapapad",
+        "name": "MuttonThali Roti(5pc) or (Rice+Dal)+Muttton Curry (4 pcs)+ 1 type of Bhujia+Papad",
+        "category": "Thali",
+        "price": 169,
+        "description": "",
+        "image": "images/menu/muttonthali-roti5pc-or-ricedalmuttton-curry-4-pcs-1-type-of-bhujiapapad.jpg"
+    },
+    {
+        "id": "",
+        "name": "",
+        "category": "Pre Order Specials",
+        "price": 119,
+        "description": "Veg Biryani (Minimum 3 hours notice, 3\u20135 plates per item)",
+        "image": "images/menu/.jpg"
+    },
+    {
+        "id": "",
+        "name": "",
+        "category": "Pre Order Specials",
+        "price": 149,
+        "description": "Muradabadi Chicken Biryani (Minimum 3 hours notice, 3\u20135 plates per item)",
+        "image": "images/menu/.jpg"
+    },
+    {
+        "id": "",
+        "name": "",
+        "category": "Pre Order Specials",
+        "price": 189,
+        "description": "Hyderabadi Chicken Dum Biryani (Minimum 3 hours notice, 3\u20135 plates per item)",
+        "image": "images/menu/.jpg"
+    },
+    {
+        "id": "",
+        "name": "",
+        "category": "Pre Order Specials",
+        "price": 229,
+        "description": "Cream Chicken (Minimum 3 hours notice, 3\u20135 plates per item)",
+        "image": "images/menu/.jpg"
+    },
+    {
+        "id": "",
+        "name": "",
+        "category": "Pizza",
+        "half": 349,
+        "full": 499,
+        "description": "Margherita Handmade Domino's Style Pizza (Minimum 3 hours notice)",
+        "image": "images/menu/.jpg"
+    },
+    {
+        "id": "",
+        "name": "",
+        "category": "Pizza",
+        "half": 399,
+        "full": 549,
+        "description": "Classic Veg Handmade Domino's Style Pizza (Minimum 3 hours notice)",
+        "image": "images/menu/.jpg"
+    },
+    {
+        "id": "",
+        "name": "",
+        "category": "Pizza",
+        "half": 499,
+        "full": 649,
+        "description": "Veg Farmhouse Handmade Domino's Style Pizza (Minimum 3 hours notice)",
+        "image": "images/menu/.jpg"
+    },
+    {
+        "id": "",
+        "name": "",
+        "category": "Pizza",
+        "half": 549,
+        "full": 699,
+        "description": "Chicken Delight Domino's Style Pizza (Minimum 3 hours notice)",
+        "image": "images/menu/.jpg"
+    },
+    {
+        "id": "",
+        "name": "",
+        "category": "Pizza",
+        "half": 549,
+        "full": 699,
+        "description": "Golden Corn Handmade Domino's Style Pizza (Minimum 3 hours notice)",
+        "image": "images/menu/.jpg"
+    },
+    {
+        "id": "",
+        "name": "",
+        "category": "Pizza",
+        "half": 549,
+        "full": 699,
+        "description": "Peppy Paneer Handmade Domino's Style Pizza (Minimum 3 hours notice)",
+        "image": "images/menu/.jpg"
+    }
+]
