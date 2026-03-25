@@ -1122,3 +1122,26 @@ img {
         font-size: 1.2rem;
     }
 }
+
+@media (max-width: 768px) {
+    #announcement {
+        overflow: hidden;
+    }
+
+    #announcement-carousel {
+        display: flex;
+        width: 100%;
+    }
+
+    .announcement-slide {
+        min-width: 100%;
+        flex-shrink: 0;
+    }
+
+    .announcement-img, .announcement-slide img {
+        width: 100%;
+        height: auto !important;
+        display: block;
+        object-fit: cover;
+    }
+}

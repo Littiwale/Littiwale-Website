@@ -751,16 +751,55 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // Delivery Info Modal HTML Injection
+        if (!document.getElementById('delivery-info-modal')) {
+            const deliveryInfoModalHTML = `
+                <div id="delivery-info-modal" class="payment-modal" style="z-index: 99999;">
+                    <div class="payment-modal-content" style="text-align:center;">
+                        <h3 style="font-family: var(--font-heading); margin-bottom:15px; color:#856404;">⚠️ Important Payment Info</h3>
+                        <p style="font-size: 1.1rem; font-weight: bold; margin-bottom:10px;">You have not paid delivery charges.</p>
+                        <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
+                            <button id="payDeliveryNow" class="btn btn-primary btn-block py-3">Pay delivery now</button>
+                            <button id="payAtDelivery" class="btn btn-outline btn-block py-3">Pay at delivery time</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', deliveryInfoModalHTML);
+
+            document.body.addEventListener('click', (e) => {
+                if (e.target && e.target.id === 'payDeliveryNow') {
+                    document.getElementById('delivery-info-modal').classList.remove('show');
+                    paymentModal.classList.add('show');
+                    selectedPaymentMode = 'full';
+                    document.getElementById('final-pay-amount').textContent = currentOrderTotal;
+                    showStep(step3);
+                }
+                
+                if (e.target && e.target.id === 'payAtDelivery') {
+                    document.getElementById('delivery-info-modal').classList.remove('show');
+                    paymentModal.classList.add('show');
+                    selectedPaymentMode = 'items';
+                    let itemsToPay = currentOrderSubtotal;
+                    if (appliedCoupon) {
+                        itemsToPay = Math.max(0, currentOrderSubtotal - discountAmount);
+                    }
+                    document.getElementById('final-pay-amount').textContent = itemsToPay;
+                    showStep(step3);
+                }
+            });
+        }
+
         // Screenshot Modal HTML Injection
         if (!document.getElementById('screenshot-modal')) {
             const screenshotModalHTML = `
                 <div id="screenshot-modal" class="payment-modal">
                     <div class="payment-modal-content" style="text-align:center;">
-                        <h3 style="font-family: var(--font-heading); margin-bottom:15px;">Have you shared payment screenshot?</h3>
+                        <h3 style="font-family: var(--font-heading); margin-bottom:15px;">Have you shared your payment screenshot?</h3>
                         <p style="color:var(--text-secondary); margin-bottom:20px;">Your order will only be processed after receiving the screenshot.</p>
                         <div style="display:flex; gap:10px;">
-                            <button id="btn-scr-yes" class="btn btn-primary btn-block">Yes</button>
-                            <button id="btn-scr-no" class="btn btn-outline btn-block">No</button>
+                            <button id="btn-scr-yes" class="btn btn-primary btn-block">YES</button>
+                            <button id="btn-scr-no" class="btn btn-outline btn-block">NO</button>
                         </div>
                     </div>
                 </div>
@@ -776,14 +815,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveCart();
                 updateCartUI();
                 
-                alert('Order received. Preparing will start after confirmation.');
+                alert('Order received. Please call to confirm.');
             });
             
             document.getElementById('btn-scr-no')?.addEventListener('click', () => {
                 document.getElementById('screenshot-modal').classList.remove('show');
                 
                 localStorage.setItem('paymentSharedPending', 'true');
-                const message = 'Sending the screenshot for order confirmation.';
+                const message = 'Hi, I will share the payment screenshot for order confirmation.';
                 const phoneTarget = '916370680744';
                 const encodedMessage = encodeURIComponent(message);
                 const whatsappUrl = `https://wa.me/${phoneTarget}?text=${encodedMessage}`;
@@ -793,6 +832,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.addEventListener('visibilitychange', () => {
                 if (document.visibilityState === 'visible') {
                     if (localStorage.getItem('paymentSharedPending') === 'true') {
+                        localStorage.removeItem('paymentSharedPending');
                         document.getElementById('screenshot-modal').classList.add('show');
                     }
                 }
@@ -800,6 +840,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             window.addEventListener('focus', () => {
                 if (localStorage.getItem('paymentSharedPending') === 'true') {
+                    localStorage.removeItem('paymentSharedPending');
                     document.getElementById('screenshot-modal').classList.add('show');
                 }
             });
@@ -871,38 +912,37 @@ document.addEventListener('DOMContentLoaded', () => {
             stepNode.style.display = 'block';
         }
 
-        function sendWhatsAppMessage() {
-            const name = document.getElementById('cust-name').value.trim();
-            const phone = document.getElementById('cust-phone').value.trim();
-            const address = document.getElementById('cust-address').value.trim();
+        window.buildWhatsAppMessage = function(orderData) {
+            const { 
+                isCOD, 
+                cart, 
+                subtotalAmount, 
+                deliveryCharge, 
+                deliveryStatus, 
+                isDelivery, 
+                appliedCoupon, 
+                discountAmount, 
+                selectedPaymentMode, 
+                name, 
+                phone, 
+                address 
+            } = orderData;
             
-            let message = '';
-            if (!isCOD) {
-                message += '*⚠️ IMPORTANT: Please attach your payment screenshot before sending this message*\\n\\n';
-            }
-            message += 'Hello Litti Wale 👋\\n\\nI want to order:\\n\\n';
-            
-            let subtotalAmount = 0;
+            let itemsList = '';
             cart.forEach(item => {
-                const priceNum = Number(item.price) || 0;
-                const qtyNum = Number(item.quantity) || 0;
-                const itemTotal = priceNum * qtyNum;
-                message += item.name + ' x' + qtyNum + ' – ₹' + itemTotal + '\\n';
-                subtotalAmount += itemTotal;
+                const itemTotal = Number(item.price) * (Number(item.quantity) || 1);
+                itemsList += `• ${item.name} ×${item.quantity || 1} — ₹${itemTotal}\n`;
             });
-            
+            itemsList = itemsList.trimEnd();
+
             let deliveryText = '';
             let finalTotal = subtotalAmount;
 
-            const orderTypeDelivery = document.getElementById('order-type-delivery');
-            const isDelivery = orderTypeDelivery ? orderTypeDelivery.checked : true;
-
             if (!isDelivery) {
-                deliveryText = 'Pickup Order (Takeaway)';
-                finalTotal = subtotalAmount;
+                deliveryText = 'Pickup (Takeaway)';
             } else if (deliveryStatus === 'AVAILABLE') {
                 const distanceVal = Math.round(deliveryCharge / 30);
-                deliveryText = '₹' + deliveryCharge + ' (' + distanceVal + ' km)';
+                deliveryText = `₹${deliveryCharge} (${distanceVal} km)`;
                 if (isCOD || selectedPaymentMode === 'full') {
                     finalTotal += deliveryCharge;
                 }
@@ -910,62 +950,114 @@ document.addEventListener('DOMContentLoaded', () => {
                 deliveryText = 'Not calculated';
             }
 
-            let paymentStatusLine = '';
-            let isFullTotal = false;
-
             if (appliedCoupon) {
                 finalTotal -= discountAmount;
                 if (finalTotal < 0) finalTotal = 0;
             }
 
+            let paidAmount = 0;
+            let deliveryDue = 0;
+            let deliveryNoteStr = '';
+
             if (isCOD) {
-                paymentStatusLine = 'Payment: Cash on Delivery (COD)\\nTotal Payable: ₹' + finalTotal;
-                isFullTotal = true;
+                paidAmount = 0;
+                deliveryDue = finalTotal;
+                deliveryNoteStr = `💵 Payment Mode: Cash on Delivery\nTotal Payable: ₹${finalTotal}`;
             } else if (selectedPaymentMode === 'items') {
-                let itemsPaid = Math.max(0, subtotalAmount - (appliedCoupon ? discountAmount : 0));
-                let remainingDelivery = deliveryCharge;
-                if (appliedCoupon && discountAmount > subtotalAmount) {
-                     remainingDelivery = Math.max(0, deliveryCharge - (discountAmount - subtotalAmount));
+                const discountVal = appliedCoupon ? discountAmount : 0;
+                paidAmount = Math.max(0, subtotalAmount - discountVal);
+                if (isDelivery && deliveryStatus === 'AVAILABLE') {
+                    deliveryDue = deliveryCharge;
+                    if (appliedCoupon && discountAmount > subtotalAmount) {
+                        deliveryDue = Math.max(0, deliveryCharge - (discountAmount - subtotalAmount));
+                    }
                 }
-                paymentStatusLine = 'Payment: Paid (Items Only, ₹' + itemsPaid + ')\\nDelivery Due: ₹' + remainingDelivery;
             } else {
-                paymentStatusLine = 'Payment: Paid (Full)\\nStatus: No Due';
-                isFullTotal = true;
+                paidAmount = finalTotal;
+                deliveryDue = 0;
             }
 
-            let baseTotalAmount = subtotalAmount;
-            if (isDelivery && deliveryStatus === 'AVAILABLE') {
-                baseTotalAmount += deliveryCharge;
+            if (!isCOD) {
+                if (deliveryDue > 0 && isDelivery && deliveryStatus === 'AVAILABLE') {
+                    deliveryNoteStr = `\n🚚 Delivery charge (₹${deliveryDue}) will be paid at the time of delivery.`;
+                } else if (isDelivery && deliveryStatus !== 'AVAILABLE') {
+                    deliveryNoteStr = '\n🚚 Delivery charge will be informed by the delivery partner at the time of delivery.';
+                } else if (!isDelivery || (deliveryDue === 0 && selectedPaymentMode === 'full')) {
+                    deliveryNoteStr = '';
+                }
             }
 
-            message += '-------------------------\\n';
-            message += 'Subtotal: ₹' + subtotalAmount + '\\n';
-            message += 'Delivery: ' + deliveryText + '\\n';
+            let msg = '';
             
+            if (!isCOD) {
+                msg += `⚠️ IMPORTANT: Please attach your payment screenshot before sending this message.\n\n`;
+            }
+
+            msg += `👋 Hello Littiwale!\n\n`;
+            msg += `🛒 Order Details:\n`;
+            msg += `${itemsList}\n\n`;
+            msg += `-----------------------\n\n`;
+            msg += `💰 Bill Summary:\n`;
+            msg += `Subtotal: ₹${subtotalAmount}\n`;
             if (appliedCoupon) {
-                message += '\\nTotal: ₹' + baseTotalAmount + '\\n';
-                message += '\\nCoupon Applied: ' + appliedCoupon.code + '\\n';
-                message += 'Discount: -₹' + discountAmount + '\\n\\n';
-                if (isFullTotal) {
-                    message += 'Final Total: ₹' + finalTotal + '\\n';
-                } else {
-                    message += 'Final Total (For validation): ₹' + finalTotal + '\\n';
-                }
-            } else {
-                if (isFullTotal) {
-                    message += '\\nTotal: ₹' + finalTotal + '\\n';
-                } else {
-                    message += '\\nTotal (For validation): ₹' + finalTotal + '\\n';
-                }
+                msg += `Discount: -₹${discountAmount}\n`;
             }
+            msg += `Delivery: ${deliveryText}\n`;
+            msg += `Total: ₹${finalTotal}\n\n`;
+            msg += `-----------------------\n\n`;
+            msg += `💳 Payment:\n`;
+            msg += `Paid: ₹${paidAmount}\n`;
+            msg += `Delivery Due: ₹${deliveryDue}`;
+
+            if (deliveryNoteStr) {
+                msg += `\n${deliveryNoteStr}\n`;
+            } else {
+                msg += `\n`;
+            }
+
+            msg += `\n-----------------------\n\n`;
+            msg += `📍 Customer Details:\n`;
+            msg += `Name: ${name}\n`;
+            msg += `Phone: ${phone}\n`;
+            msg += `Address: ${address}\n\n`;
+            msg += `-----------------------`;
+
+            if (!isCOD) {
+                msg += `\n\n📸 Please attach payment screenshot for confirmation.`;
+            }
+
+            return msg;
+        };
+
+        function sendWhatsAppMessage() {
+            const name = document.getElementById('cust-name').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+            const address = document.getElementById('cust-address').value.trim();
             
-            message += '-------------------------\\n\\n';
-            message += paymentStatusLine + '\\n\\n';
-            
-            message += '*Customer Details:*\\n';
-            message += 'Name: ' + name + '\\n';
-            message += 'Phone: ' + phone + '\\n';
-            message += 'Address: ' + address;
+            let subtotalAmount = 0;
+            cart.forEach(item => {
+                const priceNum = Number(item.price) || 0;
+                const qtyNum = Number(item.quantity) || 0;
+                subtotalAmount += (priceNum * qtyNum);
+            });
+
+            const orderTypeDelivery = document.getElementById('order-type-delivery');
+            const isDelivery = orderTypeDelivery ? orderTypeDelivery.checked : true;
+
+            const message = window.buildWhatsAppMessage({
+                isCOD,
+                cart,
+                subtotalAmount,
+                deliveryCharge: typeof deliveryCharge !== 'undefined' ? deliveryCharge : 0,
+                deliveryStatus: typeof deliveryStatus !== 'undefined' ? deliveryStatus : 'UNAVAILABLE',
+                isDelivery,
+                appliedCoupon: typeof appliedCoupon !== 'undefined' ? appliedCoupon : null,
+                discountAmount: typeof discountAmount !== 'undefined' ? discountAmount : 0,
+                selectedPaymentMode,
+                name,
+                phone,
+                address
+            });
             
             const phoneTarget = '916370680744';
             const encodedMessage = encodeURIComponent(message);
@@ -1023,12 +1115,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (currentOrderTotal < 0) currentOrderTotal = 0;
                 }
 
-                if (currentOrderSubtotal < 150) {
-                    showUpsellModal();
-                } else {
-                    proceedToPaymentModal();
-                }
+                showUpsellModal();
             });
+        }
+
+        function showPaymentModalActual() {
+            paymentModal.classList.add('show');
+            showStep(step1);
         }
 
         function proceedToPaymentModal() {
@@ -1052,8 +1145,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (currentOrderTotal < 0) currentOrderTotal = 0;
             }
             
-            paymentModal.classList.add('show');
-            showStep(step1);
+            showPaymentModalActual();
         }
         window.proceedToPaymentModal = proceedToPaymentModal;
 
@@ -1217,13 +1309,21 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('btn-back-step-2')?.addEventListener('click', () => { showStep(step2); });
 
         document.getElementById('btn-pay-items')?.addEventListener('click', () => {
-            selectedPaymentMode = 'items';
-            let itemsToPay = currentOrderSubtotal;
-            if (appliedCoupon) {
-                itemsToPay = Math.max(0, currentOrderSubtotal - discountAmount);
+            const orderTypeDelivery = document.getElementById('order-type-delivery');
+            const isDelivery = orderTypeDelivery ? orderTypeDelivery.checked : true;
+            
+            if (isDelivery) {
+                paymentModal.classList.remove('show');
+                document.getElementById('delivery-info-modal').classList.add('show');
+            } else {
+                selectedPaymentMode = 'items';
+                let itemsToPay = currentOrderSubtotal;
+                if (appliedCoupon) {
+                    itemsToPay = Math.max(0, currentOrderSubtotal - discountAmount);
+                }
+                document.getElementById('final-pay-amount').textContent = itemsToPay;
+                showStep(step3);
             }
-            document.getElementById('final-pay-amount').textContent = itemsToPay;
-            showStep(step3);
         });
 
         document.getElementById('btn-pay-full')?.addEventListener('click', () => {
@@ -1284,8 +1384,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             imageUrls.forEach((url, index) => {
                 const item = document.createElement('div');
-                item.style.minWidth = '100%';
-                item.style.flexShrink = '0';
+                item.className = 'announcement-slide';
+                item.style.width = '100%';
+                item.style.flex = '0 0 100%';
                 item.style.display = 'flex';
                 item.style.justifyContent = 'center';
                 
@@ -1322,8 +1423,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     dotsContainer.appendChild(dot);
                 });
                 
+                // Desktop styling vs Mobile per user instruction
+                const isMobile = window.innerWidth <= 768;
+                if (isMobile) {
+                    carousel.style.width = `${imageUrls.length * 100}%`;
+                } else {
+                    carousel.style.width = '100%';
+                }
+
                 const updateCarousel = () => {
-                    carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
+                    const isMobileNow = window.innerWidth <= 768;
+                    if (isMobileNow) {
+                        // When track is N*100%, 1 slide is 100% / N. 
+                        carousel.style.transform = `translateX(-${currentIndex * (100 / imageUrls.length)}%)`;
+                    } else {
+                        // Desktop uses width 100% 
+                        carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
+                    }
+                    
                     Array.from(dotsContainer.children).forEach((dot, idx) => {
                         dot.style.background = idx === currentIndex ? 'var(--primary-color)' : '#ccc';
                     });

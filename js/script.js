@@ -317,20 +317,25 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        let message = `Hello Litti Wale 👋\n\nI want to order:\n\n`;
-        let total = 0;
-
+        let subtotalAmount = 0;
         cart.forEach(item => {
-            const itemTotal = item.price * item.quantity;
-            message += `${item.name} x${item.quantity} – ₹${itemTotal}\n`;
-            total += itemTotal;
+            subtotalAmount += item.price * item.quantity;
         });
 
-        message += `\nTotal: ₹${total}\n\n`;
-        message += `Customer Name: ${name}\n`;
-        message += `Phone: ${phone}\n`;
-        message += `Address: ${address}\n\n`;
-        message += `Please confirm my order.`;
+        const message = window.buildWhatsAppMessage({
+            isCOD: true,
+            cart,
+            subtotalAmount,
+            deliveryCharge: 0,
+            deliveryStatus: 'UNAVAILABLE',
+            isDelivery: true,
+            appliedCoupon: null,
+            discountAmount: 0,
+            selectedPaymentMode: 'full',
+            name,
+            phone,
+            address
+        });
 
         const encodedMessage = encodeURIComponent(message);
         const whatsappUrl = `https://wa.me/916370680744?text=${encodedMessage}`;
