@@ -45,27 +45,20 @@
 .hero-subtitle { font-size: clamp(1.2rem, 2vw, 1.5rem); margin-bottom: 2.5rem; color: #f0f0f0; font-weight: 400;}
 .hero-cta-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 
-/* Grid & Cards */
+/* Grid & Cards (Imageless Setup) */
 .section-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
 .food-card { background: var(--color-white); border-radius: var(--border-radius-md); overflow: hidden; border: 1px solid var(--color-border); display: flex; flex-direction: column; transition: box-shadow var(--transition-fast), transform var(--transition-fast);}
 .food-card:hover { box-shadow: var(--shadow-md); transform: translateY(-4px);}
-.food-img-wrapper { position: relative; height: 240px; width: 100%; }
-.food-img { width: 100%; height: 100%; object-fit: cover; }
-.food-badges { position: absolute; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 0.4rem; }
+.food-card.no-image .food-info { padding: 1.5rem; display: flex; flex-direction: column; flex: 1; justify-content: space-between; height: 100%;}
+.food-card.no-image h3 { font-size: 1.35rem; margin-bottom: 0.5rem; }
+.food-card.no-image .food-price { font-weight: 700; color: var(--color-text-dark); font-size: 1.25rem; margin-bottom: 1.5rem; color: var(--color-primary); }
 
 /* Swiggy Badges */
-.cart-badge { background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); font-size: 0.75rem; font-weight: 700; padding: 0.3rem 0.6rem; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-.badge-veg { color: var(--color-veg); border: 1px solid var(--color-veg); }
-.badge-nonveg { color: var(--color-nonveg); border: 1px solid var(--color-nonveg); }
-.badge-bestseller { color: var(--color-bestseller); border: 1px solid var(--color-bestseller); }
-.badge-mostordered { color: #f39c12; border: 1px solid #f39c12; }
-.badge-spicy { color: #d32f2f; border: 1px solid #d32f2f; }
-.badge-new { color: #2980b9; border: 1px solid #2980b9; }
+.cart-badge { background: rgba(255,255,255,0.95); font-size: 0.8rem; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: inline-block;}
+.badge-veg { color: var(--color-veg); border: 1px solid var(--color-veg); background: #f2fcf7; }
+.badge-nonveg { color: var(--color-nonveg); border: 1px solid var(--color-nonveg); background: #fdf5f6;}
 
-.food-info { padding: 1.5rem; display: flex; flex-direction: column; flex: 1; }
-.food-info h3 { font-size: 1.25rem; margin-bottom: 0.5rem; }
-.food-price { font-weight: 700; color: var(--color-text-dark); font-size: 1.1rem; margin-bottom: 1.5rem; }
-.add-btn-wrapper { display: flex; justify-content: space-between; align-items: center; margin-top: auto;}
+.add-btn-wrapper { display: flex; justify-content: flex-end; align-items: center; margin-top: auto;}
 
 .btn-add { background-color: #fdfdfd; color: var(--color-veg); border: 1px solid var(--color-border); padding: 0.5rem 2.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); font-weight: 800; text-transform: uppercase; border-radius: 8px;}
 .btn-add:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); color: #0d7856;}

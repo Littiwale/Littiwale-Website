@@ -53,7 +53,7 @@
                 <li><a href="index.html#reach">Reach Us</a></li>
 
                 <li>
-                    <a href="#cart-section" class="cart-link">
+                    <a href="javascript:void(0)" class="cart-link nav-cart-btn">
                         <i class="fas fa-shopping-cart"></i>
                         Cart
                         <span id="cart-count" class="cart-badge">0</span>
@@ -70,16 +70,16 @@
 
     <!-- ANNOUNCEMENT -->
 
-    <section id="announcement">
-
-        <div class="announcement-container">
-
+    <section id="announcement" style="display:none;">
+        <div class="announcement-container" style="max-width: 800px; margin: 0 auto; padding: 0 20px; overflow: hidden; position: relative; touch-action: pan-y;">
             <h2 class="announcement-title">📢 New Announcement</h2>
-
-            <img src="images/offers/current-offer.png" class="announcement-img" alt="Announcement">
-
+            <div id="announcement-carousel" style="display:flex; transition: transform 0.5s ease; width: 100%;">
+                <!-- Images injected here -->
+            </div>
+            <div id="announcement-dots" style="text-align:center; margin-top:15px;">
+                <!-- Dots injected here -->
+            </div>
         </div>
-
     </section>
 
 
@@ -102,7 +102,7 @@
 
                 <a href="menu.html#menu-section" class="btn btn-primary">Explore Menu</a>
 
-                <a href="https://www.zomato.com" target="_blank" class="btn btn-secondary">
+                <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" class="btn btn-secondary">
                     Order on Zomato
                 </a>
 
@@ -178,14 +178,7 @@
             </div>
 
 
-            <div style="text-align:center;margin-top:30px">
-
-                <a href="menu.html" class="btn btn-primary">
-
-                    View Full Menu
-
-                </a>
-
+            <div id="menu-toggle-container" style="text-align:center;margin-top:30px">
             </div>
 
         </div>
@@ -433,14 +426,14 @@
 
     <div class="fab-container">
 
-        <a href="https://www.zomato.com" target="_blank" class="fab-btn" style="background:#e23744;color:white">
+        <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" class="fab-btn" style="background:#e23744;color:white">
 
             <i class="fas fa-utensils"></i>
 
         </a>
 
 
-        <a href="#cart-section" class="fab-btn" style="background:#333;color:white">
+        <a href="javascript:void(0)" class="fab-btn cart-fab" style="background:#333;color:white">
 
             <i class="fas fa-shopping-cart"></i>
 

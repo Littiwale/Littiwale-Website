@@ -35,7 +35,7 @@
                 <li><a href="#about">About</a></li>
                 <li><a href="#reach">Reach Us</a></li>
                 <li>
-                    <a href="#cart-section" class="cart-link">
+                    <a href="javascript:void(0)" class="cart-link nav-cart-btn">
                         <i class="fas fa-shopping-cart"></i> Cart <span id="cart-count" class="cart-badge">0</span>
                     </a>
                 </li>
@@ -44,10 +44,15 @@
     </nav>
 
     <!-- Announcement Section -->
-    <section id="announcement">
-        <div class="announcement-container">
+    <section id="announcement" style="display:none;">
+        <div class="announcement-container" style="max-width: 800px; margin: 0 auto; padding: 0 20px; overflow: hidden; position: relative; touch-action: pan-y;">
             <h2 class="announcement-title">📢 New Announcement</h2>
-            <img src="images/offers/current-offer.png" alt="Special Offer" class="announcement-img">
+            <div id="announcement-carousel" style="display:flex; transition: transform 0.5s ease; width: 100%;">
+                <!-- Images injected here -->
+            </div>
+            <div id="announcement-dots" style="text-align:center; margin-top:15px;">
+                <!-- Dots injected here -->
+            </div>
         </div>
     </section>
 
@@ -58,7 +63,7 @@
             <p class="hero-subtitle">Authentic Indian flavors served fresh every day.</p>
             <div class="hero-buttons">
                 <a href="#menu-section" class="btn btn-primary">Explore Menu</a>
-                <a href="https://www.zomato.com" target="_blank" class="btn btn-secondary">Order on Zomato</a>
+                <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" class="btn btn-secondary">Order on Zomato</a>
                 <a href="https://wa.me/916370680744" target="_blank" class="btn btn-whatsapp"><i
                         class="fab fa-whatsapp"></i> WhatsApp Order</a>
             </div>
@@ -153,37 +158,7 @@
         </div>
     </section>
 
-    <!-- Cart Section (Inline / Modal Style) -->
-    <section id="cart-section" class="cart-container-section bg-light py-5">
-        <div class="container">
-            <div class="cart-wrapper">
-                <h2 class="cart-title"><i class="fas fa-shopping-bag"></i> Your Cart</h2>
-                <div id="cart-items-container" class="cart-items">
-                    <div class="empty-cart">Your cart is empty</div>
-                </div>
-
-                <div class="cart-summary" id="cart-summary" style="display: none;">
-                    <div class="cart-total-row">
-                        <span>Total Amount:</span>
-                        <span id="cart-total-amount">₹0</span>
-                    </div>
-
-                    <div class="customer-details form-group mt-3">
-                        <input type="text" id="cust-name" placeholder="Your Name" required class="form-control mb-2">
-                        <input type="tel" id="cust-phone" placeholder="Phone Number" required class="form-control mb-2">
-                        <textarea id="cust-address" placeholder="Delivery Address" required class="form-control mb-2"
-                            rows="2"></textarea>
-                    </div>
-
-                    <button id="checkout-btn" class="btn btn-whatsapp btn-block mt-3">
-                        <i class="fab fa-whatsapp"></i> Send Order via WhatsApp
-                    </button>
-                    <button id="clear-cart-btn" class="btn btn-outline btn-block mt-2">Clear Cart</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
+    <!-- Cart Drawer handles UI -->
     <!-- Reach Us Section -->
     <section id="reach" class="reach-section">
         <div class="container">
@@ -261,12 +236,12 @@
 
     <!-- Floating Action Buttons -->
     <div class="fab-container">
-        <a href="https://www.zomato.com" target="_blank" class="fab-btn tooltip-container"
+        <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" class="fab-btn tooltip-container"
             style="background: #e23744; color: white;">
             <i class="fas fa-utensils"></i>
             <span class="tooltip">Zomato</span>
         </a>
-        <a href="#cart-section" class="fab-btn tooltip-container" style="background: #333; color: white;">
+        <a href="javascript:void(0)" class="fab-btn tooltip-container cart-fab" style="background: #333; color: white;">
             <i class="fas fa-shopping-cart"></i>
             <span class="fab-badge" id="fab-cart-badge">0</span>
             <span class="tooltip">Cart</span>

@@ -114,39 +114,46 @@ document.addEventListener('DOMContentLoaded', () => {
         menuContent.innerHTML = '';
         categoryNav.innerHTML = '';
         
-        const grouped = {};
+        const vegItems = [];
+        const nonVegItems = [];
         
         menuData.forEach(item => {
+            const isNv = /chicken|egg|mutton|fish/i.test(item.name);
+            
             let passesFilter = false;
             if (currentFilter === 'All') passesFilter = true;
-            else if (item.category.includes('Combo') && currentFilter === 'Combos') passesFilter = true;
+            else if (item.category && item.category.includes('Combo') && currentFilter === 'Combos') passesFilter = true;
             else if (item.badges && item.badges.includes(currentFilter)) passesFilter = true;
-            else if (currentFilter === 'Non-Veg' && item.badges && item.badges.includes('Non-Veg')) passesFilter = true;
+            else if (currentFilter === 'Non-Veg' && isNv) passesFilter = true;
+            else if (currentFilter === 'Veg' && !isNv) passesFilter = true;
             
             if (passesFilter) {
-                if (!grouped[item.category]) grouped[item.category] = [];
-                grouped[item.category].push(item);
+                if (isNv) nonVegItems.push(item);
+                else vegItems.push(item);
             }
         });
 
-        categoryOrder.forEach(category => {
-            if (!grouped[category] || grouped[category].length === 0) return;
+        const sectionsToRender = [
+            { id: "cat-veg", title: "🟢 Veg Items", items: vegItems },
+            { id: "cat-nonveg", title: "🔴 Non-Veg Items", items: nonVegItems }
+        ];
 
-            const categoryId = 'cat-' + category.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+        sectionsToRender.forEach(sec => {
+            if (sec.items.length === 0) return;
 
             const li = document.createElement('li');
-            li.innerHTML = `<a href="#${categoryId}">${category}</a>`;
+            li.innerHTML = `<a href="#${sec.id}">${sec.title}</a>`;
             categoryNav.appendChild(li);
 
             const section = document.createElement('div');
             section.className = 'menu-category-section';
-            section.id = categoryId;
-            section.innerHTML = `<h2 class="category-heading">${category}</h2>`;
+            section.id = sec.id;
+            section.innerHTML = `<h2 class="category-heading">${sec.title}</h2>`;
             
             const grid = document.createElement('div');
             grid.className = 'food-grid';
             
-            grouped[category].forEach(item => {
+            sec.items.forEach(item => {
                 grid.appendChild(createMenuCard(item));
             });
 
@@ -160,32 +167,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // MENU CARD TEMPLATE
     function createMenuCard(item) {
         const card = document.createElement('div');
-        card.className = 'food-card';
+        card.className = 'food-card no-image';
         
-        let badgesHtml = '';
-        if (item.badges && item.badges.length > 0) {
-            badgesHtml = item.badges.map(badge => {
-                let badgeClass = 'badge-default';
-                let prepend = '';
-                if (badge === 'Veg') { badgeClass = 'badge-veg'; prepend = '🥬 '; }
-                if (badge === 'Non-Veg') { badgeClass = 'badge-nonveg'; prepend = '🍗 '; }
-                if (badge === 'Bestseller') { badgeClass = 'badge-bestseller'; prepend = '🔥 '; }
-                if (badge === 'Most Ordered') { badgeClass = 'badge-mostordered'; prepend = '⭐ '; }
-                if (badge === 'Spicy') { badgeClass = 'badge-spicy'; prepend = '🌶 '; }
-                if (badge === 'New') { badgeClass = 'badge-new'; prepend = '🆕 '; }
-                
-                return `<span class="cart-badge ${badgeClass}">${prepend}${badge}</span>`;
-            }).join('');
-        }
-
-        const exactImagePath = generateImagePath(item.name);
+        const isNv = /chicken|egg|mutton|fish/i.test(item.name);
+        const labelHtml = isNv 
+            ? '<span class="cart-badge badge-nonveg">🔴 Non-Veg</span>' 
+            : '<span class="cart-badge badge-veg">🟢 Veg</span>';
 
         card.innerHTML = `
-            <div class="food-img-wrapper">
-                <img src="${exactImagePath}" onerror="this.onerror=null; this.src='images/menu/placeholder.jpg';" alt="${item.name}" class="food-img" loading="lazy">
-                <div class="food-badges">${badgesHtml}</div>
-            </div>
             <div class="food-info">
+                <div class="food-label-wrap" style="margin-bottom: 0.75rem;">
+                    ${labelHtml}
+                </div>
                 <h3>${item.name}</h3>
                 <div class="food-price">₹${item.price}</div>
                 <div class="add-btn-wrapper">

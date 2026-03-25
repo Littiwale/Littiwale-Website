@@ -438,6 +438,11 @@ img {
     gap: 30px;
 }
 
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .menu-card {
     background: white;
     border-radius: var(--border-radius);
@@ -447,6 +452,7 @@ img {
     display: flex;
     flex-direction: column;
     height: 100%;
+    animation: fadeInSlide 0.4s ease forwards;
 }
 
 .menu-card:hover {
@@ -470,6 +476,18 @@ img {
 .menu-card:hover .menu-img {
     transform: scale(1.05);
 }
+
+.food-tag {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    color: white;
+}
+.food-tag.veg { background-color: #28a745; }
+.food-tag.non-veg { background-color: #dc3545; }
 
 .menu-category {
     position: absolute;
@@ -660,6 +678,28 @@ img {
     border-radius: var(--border-radius-lg);
     box-shadow: var(--shadow-md);
     padding: 30px;
+}
+
+/* Cart Drawer Additions */
+.cart-drawer { position: fixed; top: 0; right: 0; width: 100%; height: 100%; z-index: 2000; pointer-events: none; display: flex; justify-content: flex-end; }
+.cart-drawer.open { pointer-events: auto; }
+.cart-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); opacity: 0; transition: opacity 0.3s; cursor: pointer; }
+.cart-drawer.open .cart-overlay { opacity: 1; }
+.cart-panel { position: relative; width: 100%; max-width: 420px; background: #fff; height: 100%; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.cart-drawer.open .cart-panel { transform: translateX(0); }
+.cart-header { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-radius); }
+.cart-body { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; }
+.close-btn { background: none; border: none; font-size: 2rem; cursor: pointer; color: #888; transition: color 0.2s;}
+.close-btn:hover { color: #000; }
+
+@keyframes pulseCart {
+    0% { transform: scale(1); box-shadow: var(--shadow-md); }
+    50% { transform: scale(1.02); box-shadow: var(--shadow-lg); }
+    100% { transform: scale(1); box-shadow: var(--shadow-md); }
+}
+
+.pulse-animation {
+    animation: pulseCart 0.5s ease;
 }
 
 .cart-title {
@@ -985,6 +1025,48 @@ img {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* ==========================================================================
+   Payment Modal
+   ========================================================================== */
+.payment-modal {
+    display: none;
+    position: fixed;
+    z-index: 3000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px);
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.payment-modal.show {
+    display: flex;
+    opacity: 1;
+}
+.payment-modal-content {
+    background-color: #fff;
+    margin: auto;
+    padding: 30px;
+    border-radius: var(--border-radius-lg);
+    width: 90%;
+    max-width: 450px;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+}
+.payment-modal.show .payment-modal-content {
+    transform: translateY(0);
+}
+.payment-step {
+    animation: fadeInSlide 0.3s ease forwards;
 }
 
 /* ==========================================================================
