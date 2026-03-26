@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener("error", (e) => console.error("Global Error:", e.message));
+    
     // --- Mobile Navigation Toggle ---
     const mobileToggle = document.querySelector('.mobile-toggle');
     const navLinks = document.querySelector('.nav-links');
@@ -29,25 +31,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const menuGrid = document.getElementById('menu-grid');
     const categoryFilters = document.getElementById('category-filters');
 
-    // Fetch Menu Data
-    fetch('data/menu.json')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            menuData = data;
-            
-            initMenuDisplay();
-        })
-        .catch(error => {
-            console.error('Error loading menu:', error);
-            if(menuGrid) {
-                menuGrid.innerHTML = '<div class="error" style="grid-column: 1/-1; text-align: center; color: red;">Failed to load menu items.</div>';
-            }
-        });
+    function initMenu() {
+        // Fetch Menu Data
+        fetch('./data/menu.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                menuData = data;
+                console.log("Menu loaded:", menuData);
+                initMenuDisplay();
+            })
+            .catch(error => {
+                console.error('Error loading menu:', error);
+                if(menuGrid) {
+                    menuGrid.innerHTML = '<div class="error" style="grid-column: 1/-1; text-align: center; color: red;">Failed to load menu items.</div>';
+                }
+            });
+    }
 
     let isMenuExpanded = false;
     let initialBestsellers = [];
@@ -144,6 +148,8 @@ document.addEventListener('DOMContentLoaded', () => {
             catHeader.style.gridColumn = '1/-1';
             catHeader.style.marginTop = '20px';
             catHeader.style.marginBottom = '10px';
+            catHeader.id = 'cat-' + category.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+            catHeader.className = 'category-header';
             catHeader.innerHTML = `<h2 style="font-family: var(--font-heading); color: var(--primary-color); border-bottom: 2px solid var(--primary-color); display: inline-block; padding-bottom: 5px;">${category}</h2>`;
             menuGrid.appendChild(catHeader);
 
@@ -189,6 +195,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 menuGrid.appendChild(card);
             });
         });
+        
+        if (isMenuExpanded) {
+            initScrollSpy();
+        }
     }
 
     function setupFilters(items) {
@@ -218,6 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const categories = ['all', ...new Set(items.map(item => item.category))];
         catContainer.innerHTML = '<button class="filter-btn active" data-filter="all">All Categories</button>';
+        
         categories.slice(1).forEach(category => {
             const btn = document.createElement('button');
             btn.className = 'filter-btn';
@@ -226,22 +237,34 @@ document.addEventListener('DOMContentLoaded', () => {
             catContainer.appendChild(btn);
         });
 
-        // Event for Category
-        catContainer.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                catContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
+        window.setActiveCategory = function(filterStr) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll(`[data-filter="${filterStr}"]`).forEach(b => b.classList.add('active'));
+        };
 
-                const filter = e.target.getAttribute('data-filter');
-                if (filter === 'all') {
-                    currentFilteredData = menuData;
+        window.scrollToCategory = function(filterStr) {
+            window.setActiveCategory(filterStr);
+            if (!isMenuExpanded) {
+                const toggleBtn = document.getElementById('toggle-full-menu-btn');
+                if(toggleBtn) toggleBtn.click();
+            }
+            setTimeout(() => {
+                const targetId = filterStr === 'all' ? 'menu-section' : 'cat-' + filterStr.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+                const el = document.getElementById(targetId);
+                if (el) {
+                    const topPos = el.getBoundingClientRect().top + window.scrollY - 120;
+                    window.scrollTo({ top: topPos, behavior: 'smooth' });
                 } else {
-                    currentFilteredData = menuData.filter(item => item.category === filter);
+                    document.getElementById('menu-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
-                
-                if (isMenuExpanded) {
-                    renderMenu(currentFilteredData);
-                }
+            }, 100);
+        };
+
+        // Event for Category
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const filter = e.target.getAttribute('data-filter');
+                window.scrollToCategory(filter);
             });
         });
         
@@ -259,6 +282,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function initScrollSpy() {
+        if (!window.IntersectionObserver) return;
+        const sections = document.querySelectorAll('.category-header');
+        if (!sections.length) return;
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    let originalCatName = '';
+                    document.querySelectorAll('.filter-btn').forEach(el => {
+                        const filterVal = el.getAttribute('data-filter');
+                        if (filterVal !== 'all' && 'cat-' + filterVal.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() === id) {
+                            originalCatName = filterVal;
+                        }
+                    });
+                    if (originalCatName) {
+                        window.setActiveCategory(originalCatName);
+                    }
+                }
+            });
+        }, { rootMargin: '-120px 0px -40% 0px', threshold: 0 }); // trigger when top crosses ~120px below viewport top
+        
+        sections.forEach(sec => observer.observe(sec));
+    }
 
     // --- Cart System ---
     let cart = [];
@@ -445,7 +493,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cartItem.className = 'cart-item';
                 cartItem.innerHTML = `
                     <div class="cart-item-info">
-                        <img src="${item.image}" alt="${item.name}" class="cart-item-img" onerror="this.src='https://via.placeholder.com/60?text=img'">
+                        <img src="${item.image}" alt="${item.name}" class="cart-item-img" onerror="this.remove()">
                         <div>
                             <div class="cart-item-title">${item.name}</div>
                             <div class="cart-item-price">₹${item.price} x ${item.quantity} = ₹${itemTotal}</div>
@@ -1075,9 +1123,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (deliveryStatus === 'AVAILABLE') {
                 const distanceVal = Math.round(deliveryCharge / 30);
                 deliveryText = `₹${deliveryCharge} (${distanceVal} km)`;
-                if (isCOD || selectedPaymentMode === 'full') {
-                    finalTotal += deliveryCharge;
-                }
+                finalTotal += deliveryCharge;
             } else {
                 deliveryText = 'Not calculated';
             }
@@ -1643,9 +1689,167 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    initAnnouncementCarousel();
 
-    // Initialize the cart globally
-    setupCartDrawer();
-    initCart();
+
+    // --- Dynamic Reviews Carousel ---
+    function initReviewsCarousel() {
+        const reviewsSection = document.getElementById('reviews-section');
+        const carousel = document.getElementById('reviews-carousel');
+        const dotsContainer = document.getElementById('reviews-dots');
+        
+        if (!reviewsSection || !carousel || !dotsContainer) return;
+
+        const reviews = [
+            { text: "Best litti chokha in Barbil! Taste bilkul ghar jaisa ❤️", author: "Rahul" },
+            { text: "Barbil me fast food ke liye best place — pizza, burger sab mast 🔥", author: "Priya" },
+            { text: "Quality aur quantity dono top level 👌 Best restaurant in Barbil", author: "Aman" },
+            { text: "Affordable price aur mast taste. Barbil me must try spot!", author: "Neha" },
+            { text: "Packaging clean tha aur food fresh tha 👍 Fast delivery in Barbil", author: "Arjun" },
+            { text: "Bachelors and working employees ke liye daily meals ka best option hai in Barbil. Main roz bank me yahi se order karti hu 😋", author: "Sonali" },
+            { text: "Barbil me ghar jaisa taste + timely delivery. Highly recommended!", author: "Saurabh" },
+            { text: "Family ke liye perfect meal 👨👩👧 Best food in Barbil", author: "Pooja" },
+            { text: "Portion size bhi accha hai aur price bhi reasonable 👍 Best combo meals in Barbil", author: "Vivek" },
+            { text: "Quick service aur consistent taste — Barbil me best fast food restaurant 🔥", author: "Ankit" }
+        ];
+
+        carousel.innerHTML = '';
+        dotsContainer.innerHTML = '';
+
+        reviews.forEach((review, index) => {
+            const item = document.createElement('div');
+            item.className = 'review-slide';
+            item.style.width = '100%';
+            item.style.flex = '0 0 100%';
+            item.style.boxSizing = 'border-box';
+            item.style.padding = '15px';
+            item.style.display = 'flex';
+            item.style.justifyContent = 'center';
+
+            const card = document.createElement('div');
+            card.style.background = '#f8f9fa';
+            card.style.borderRadius = '12px';
+            card.style.padding = '20px';
+            card.style.width = '100%';
+            card.style.maxWidth = '500px';
+            card.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)';
+            card.style.textAlign = 'center';
+            card.style.display = 'flex';
+            card.style.flexDirection = 'column';
+            card.style.justifyContent = 'center';
+
+            card.innerHTML = `
+                <div style="color: #ffc107; font-size: 1.2rem; margin-bottom: 10px;">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <p style="font-size: 1rem; color: #333; font-style: italic; margin-bottom: 15px;">"${review.text}"</p>
+                <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--primary-color);">— ${review.author}</h4>
+            `;
+
+            item.appendChild(card);
+            carousel.appendChild(item);
+        });
+
+        if (reviews.length > 1) {
+            let currentIndex = 0;
+            let autoSlideInterval;
+
+            reviews.forEach((_, index) => {
+                const dot = document.createElement('span');
+                dot.style.display = 'inline-block';
+                dot.style.width = '10px';
+                dot.style.height = '10px';
+                dot.style.borderRadius = '50%';
+                dot.style.background = index === 0 ? 'var(--primary-color)' : '#ccc';
+                dot.style.margin = '0 5px';
+                dot.style.cursor = 'pointer';
+                dot.style.transition = 'background 0.3s ease';
+                dot.addEventListener('click', () => goToSlide(index));
+                dotsContainer.appendChild(dot);
+            });
+            
+            carousel.style.width = '100%';
+
+            carousel.parentElement.style.position = 'relative';
+
+            const updateCarousel = () => {
+                carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
+                Array.from(dotsContainer.children).forEach((dot, idx) => {
+                    dot.style.background = idx === currentIndex ? 'var(--primary-color)' : '#ccc';
+                });
+            };
+            
+            if (!document.getElementById('reviews-prev-btn')) {
+                const prevBtn = document.createElement('button');
+                prevBtn.id = 'reviews-prev-btn';
+                prevBtn.innerHTML = '&#10094;';
+                prevBtn.style.cssText = 'position: absolute; top: 50%; left: 10px; transform: translateY(-50%); background: rgba(0,0,0,0.3); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; z-index: 10; display: flex; align-items: center; justify-content: center; transition: background 0.3s;';
+                prevBtn.onmouseover = () => prevBtn.style.background = 'rgba(0,0,0,0.8)';
+                prevBtn.onmouseout = () => prevBtn.style.background = 'rgba(0,0,0,0.3)';
+                
+                const nextBtn = document.createElement('button');
+                nextBtn.id = 'reviews-next-btn';
+                nextBtn.innerHTML = '&#10095;';
+                nextBtn.style.cssText = 'position: absolute; top: 50%; right: 10px; transform: translateY(-50%); background: rgba(0,0,0,0.3); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; z-index: 10; display: flex; align-items: center; justify-content: center; transition: background 0.3s;';
+                nextBtn.onmouseover = () => nextBtn.style.background = 'rgba(0,0,0,0.8)';
+                nextBtn.onmouseout = () => nextBtn.style.background = 'rgba(0,0,0,0.3)';
+                
+                carousel.parentElement.appendChild(prevBtn);
+                carousel.parentElement.appendChild(nextBtn);
+                
+                prevBtn.addEventListener('click', () => { prevSlide(); resetInterval(); });
+                nextBtn.addEventListener('click', () => { nextSlide(); resetInterval(); });
+            }
+            
+            const nextSlide = () => {
+                currentIndex = (currentIndex + 1) % reviews.length;
+                updateCarousel();
+            };
+            
+            const prevSlide = () => {
+                currentIndex = (currentIndex - 1 + reviews.length) % reviews.length;
+                updateCarousel();
+            };
+            
+            const startInterval = () => autoSlideInterval = setInterval(nextSlide, 4000);
+            const resetInterval = () => { clearInterval(autoSlideInterval); startInterval(); };
+            
+            const goToSlide = (index) => {
+                currentIndex = index;
+                updateCarousel();
+                resetInterval();
+            };
+            
+            startInterval();
+            
+            let touchStartX = 0;
+            let touchEndX = 0;
+            let isDragging = false;
+            
+            carousel.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+                isDragging = true;
+                clearInterval(autoSlideInterval);
+            }, {passive: true});
+            
+            carousel.addEventListener('touchmove', e => {
+                if (!isDragging) return;
+                touchEndX = e.changedTouches[0].screenX;
+            }, {passive: true});
+            
+            carousel.addEventListener('touchend', e => {
+                if (!isDragging) return;
+                isDragging = false;
+                touchEndX = e.changedTouches[0].screenX;
+                const diff = touchStartX - touchEndX;
+                if (diff > 50) nextSlide();
+                else if (diff < -50) prevSlide();
+                startInterval();
+            }, {passive: true});
+        }
+    }
+
+    try { initMenu(); } catch(e) { console.error("Menu failed", e); }
+    try { initAnnouncementCarousel(); } catch(e) { console.error("Slider failed", e); }
+    try { initReviewsCarousel(); } catch(e) { console.error("Reviews failed", e); }
+    try { setupCartDrawer(); initCart(); } catch(e) { console.error("Cart init failed", e); }
 });
