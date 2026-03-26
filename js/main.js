@@ -265,6 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let availableCoupons = [];
     let appliedCoupon = null;
     let discountAmount = 0;
+    let restaurantNote = '';
     
     // --- Delivery Logic ---
     let deliveryCharge = 0;
@@ -325,13 +326,50 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Global add to cart function accessible from inline HTML onclick
-    window.addToCart = function(id, name, price, image) {
-        const existingItem = cart.find(item => item.id === id);
+    window.addToCart = function(id, name, price, image, selectedOption = null) {
+        if (!selectedOption) {
+            const baseId = id.replace('_half', '').replace('_full', '');
+            const menuItem = menuData.find(i => i.id === baseId);
+            
+            if (menuItem && menuItem.options && menuItem.options.length > 0) {
+                const optionsModal = document.getElementById('options-modal');
+                const optionsNameEl = document.getElementById('options-item-name');
+                const container = document.getElementById('options-container');
+                
+                if (optionsModal && container && optionsNameEl) {
+                    optionsNameEl.textContent = name;
+                    container.innerHTML = '';
+                    
+                    menuItem.options.forEach(opt => {
+                        const btn = document.createElement('button');
+                        btn.className = 'btn btn-outline btn-block py-3';
+                        btn.textContent = opt;
+                        btn.style.fontSize = '1.1rem';
+                        btn.onclick = () => {
+                            optionsModal.classList.remove('show');
+                            const added = window.addToCart(id, name, price, image, opt);
+                            // If this was triggered from upsell modal logic, cartDrawer is open but we might need to proceed
+                            // However, upsell flow uses inline onclick, which already returned false
+                            // So we just add it to cart.
+                        };
+                        container.appendChild(btn);
+                    });
+                    
+                    optionsModal.classList.add('show');
+                    return; // Wait for user selection
+                }
+            }
+        }
+
+        let cartId = selectedOption ? `${id}_${selectedOption.replace(/\s+/g, '-')}` : id;
+        let cartName = selectedOption ? `${name} (${selectedOption})` : name;
+
+        const existingItem = cart.find(item => item.id === cartId);
         
         if (existingItem) {
             existingItem.quantity += 1;
         } else {
-            cart.push({ id, name, price, image, quantity: 1 });
+            cart.push({ id: cartId, name: cartName, price, image, quantity: 1, selectedOption });
         }
         
         saveCart();
@@ -342,6 +380,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cartDrawer) {
             cartDrawer.classList.add('open');
         }
+        
+        return true;
     };
 
     window.updateQuantity = function(id, change) {
@@ -520,6 +560,15 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="empty-cart">Your cart is empty</div>
                         </div>
                         
+                        <div id="restaurant-note-section" style="margin-bottom: 15px;">
+                            <div id="restaurant-note-preview" style="display: none; background: #f8f9fa; padding: 10px 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 10px; font-size: 0.9rem; color: var(--text-secondary);">
+                                <strong>📝 Note:</strong> <span id="restaurant-note-text"></span>
+                            </div>
+                            <button id="add-note-btn" class="btn btn-outline btn-block" style="border-style: dashed; padding: 10px;">
+                                <i class="fas fa-edit"></i> <span id="add-note-btn-text">Add Restaurant Note</span>
+                            </button>
+                        </div>
+
                         <div id="coupon-section" style="display: none; margin-bottom: 15px;">
                             <div id="coupon-container">
                                 <div style="display: flex; gap: 10px; margin-bottom: 5px;">
@@ -595,6 +644,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
 
+            <!-- Restaurant Note Modal -->
+            <div id="restaurant-note-modal" class="payment-modal">
+                <div class="payment-modal-content">
+                    <span id="close-note-modal" class="close-btn" style="position: absolute; right: 15px; top: 15px;">&times;</span>
+                    <h3 class="text-center mb-2" style="font-family: var(--font-heading);"><i class="fas fa-sticky-note"></i> Restaurant Note</h3>
+                    <textarea id="restaurant-note-input" class="form-control" rows="3" placeholder="Any special instructions? (Max 120 chars)" maxlength="120"></textarea>
+                    <button id="save-note-btn" class="btn btn-primary btn-block mt-3 py-3">Save Note</button>
+                    <button id="remove-note-btn" class="btn btn-outline btn-block mt-2 py-3" style="display:none; border-color:#dc3545; color:#dc3545;">Remove Note</button>
+                </div>
+            </div>
+
+            <!-- Options Modal -->
+            <div id="options-modal" class="payment-modal">
+                <div class="payment-modal-content">
+                    <span id="close-options-modal" class="close-btn" style="position: absolute; right: 15px; top: 15px;">&times;</span>
+                    <h3 class="text-center mb-2" style="font-family: var(--font-heading);">Select Option</h3>
+                    <p class="text-center" style="color:var(--text-secondary); margin-bottom:15px;" id="options-item-name"></p>
+                    <div id="options-container" style="display:flex; flex-direction:column; gap:10px;">
+                    </div>
+                </div>
+            </div>
+
             <!-- Coupons Modal -->
             <div id="coupons-modal" class="payment-modal">
                 <div class="payment-modal-content" style="max-height: 80vh; overflow-y: auto;">
@@ -611,6 +682,62 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const cartDrawer = document.getElementById('cart-drawer');
         
+        // Modal Handlers (Note & Options)
+        const optionsModal = document.getElementById('options-modal');
+        document.getElementById('close-options-modal')?.addEventListener('click', () => {
+            if (optionsModal) optionsModal.classList.remove('show');
+        });
+
+        const updateNoteUI = () => {
+            const btnText = document.getElementById('add-note-btn-text');
+            const addBtn = document.getElementById('add-note-btn');
+            const previewContainer = document.getElementById('restaurant-note-preview');
+            const previewText = document.getElementById('restaurant-note-text');
+            
+            if (restaurantNote) {
+                if (btnText) btnText.textContent = 'Edit Restaurant Note';
+                if (addBtn) {
+                    addBtn.style.borderStyle = 'solid';
+                    addBtn.style.borderColor = 'var(--primary-color)';
+                }
+                if (previewContainer && previewText) {
+                    previewText.textContent = restaurantNote;
+                    previewContainer.style.display = 'block';
+                }
+            } else {
+                if (btnText) btnText.textContent = 'Add Restaurant Note';
+                if (addBtn) {
+                    addBtn.style.borderStyle = 'dashed';
+                    addBtn.style.borderColor = '';
+                }
+                if (previewContainer) {
+                    previewContainer.style.display = 'none';
+                }
+            }
+        };
+
+        const noteModal = document.getElementById('restaurant-note-modal');
+        document.getElementById('add-note-btn')?.addEventListener('click', () => {
+            document.getElementById('restaurant-note-input').value = restaurantNote || '';
+            document.getElementById('remove-note-btn').style.display = restaurantNote ? 'block' : 'none';
+            if (noteModal) noteModal.classList.add('show');
+        });
+        document.getElementById('close-note-modal')?.addEventListener('click', () => {
+            if (noteModal) noteModal.classList.remove('show');
+        });
+        document.getElementById('save-note-btn')?.addEventListener('click', () => {
+            const val = document.getElementById('restaurant-note-input').value.trim();
+            restaurantNote = val ? val.substring(0, 120) : '';
+            if (typeof updateNoteUI === 'function') updateNoteUI();
+            if (noteModal) noteModal.classList.remove('show');
+        });
+        document.getElementById('remove-note-btn')?.addEventListener('click', () => {
+            restaurantNote = '';
+            document.getElementById('restaurant-note-input').value = '';
+            if (typeof updateNoteUI === 'function') updateNoteUI();
+            if (noteModal) noteModal.classList.remove('show');
+        });
+
         // Coupon Handlers
         document.getElementById('apply-coupon-btn')?.addEventListener('click', () => {
             const codeInput = document.getElementById('coupon-input');
@@ -745,6 +872,8 @@ document.addEventListener('DOMContentLoaded', () => {
             clearBtn.addEventListener('click', () => {
                 if(confirm('Are you sure you want to clear your cart?')) {
                     cart = [];
+                    restaurantNote = '';
+                    if (typeof updateNoteUI === 'function') updateNoteUI();
                     saveCart();
                     updateCartUI();
                 }
@@ -812,6 +941,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Clear cart on success to give fresh UX
                 cart = [];
+                restaurantNote = '';
+                if (typeof updateNoteUI === 'function') updateNoteUI();
                 saveCart();
                 updateCartUI();
                 
@@ -925,7 +1056,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectedPaymentMode, 
                 name, 
                 phone, 
-                address 
+                address,
+                restaurantNote
             } = orderData;
             
             let itemsList = '';
@@ -1026,6 +1158,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 msg += `\n\n📸 Please attach payment screenshot for confirmation.`;
             }
 
+            if (restaurantNote) {
+                msg += `\n\n📝 Note: ${restaurantNote}`;
+            }
+
             return msg;
         };
 
@@ -1056,7 +1192,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectedPaymentMode,
                 name,
                 phone,
-                address
+                address,
+                restaurantNote
             });
             
             const phoneTarget = '916370680744';
@@ -1199,7 +1336,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <h4 style="font-size:1rem; margin-bottom:2px; font-family:var(--font-heading);">${item.name}</h4>
                                 <div style="color:var(--text-secondary); font-size:0.9rem;">₹${priceToUse}</div>
                             </div>
-                            <button class="btn" style="border: 1px solid var(--primary-color); color:var(--primary-color); padding: 6px 15px; font-size:0.9rem;" onclick="addToCart('${idToUse}', '${nameToUse}', ${priceToUse}, '${item.image}'); document.getElementById('upsell-modal').classList.remove('show'); proceedToPaymentModal();">+ Add</button>
+                            <button class="btn" style="border: 1px solid var(--primary-color); color:var(--primary-color); padding: 6px 15px; font-size:0.9rem;" onclick="const added = addToCart('${idToUse}', '${nameToUse}', ${priceToUse}, '${item.image}'); if(added) { document.getElementById('upsell-modal').classList.remove('show'); proceedToPaymentModal(); }">+ Add</button>
                         </div>
                     `;
                     container.innerHTML += html;
@@ -1423,23 +1560,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     dotsContainer.appendChild(dot);
                 });
                 
-                // Desktop styling vs Mobile per user instruction
-                const isMobile = window.innerWidth <= 768;
-                if (isMobile) {
-                    carousel.style.width = `${imageUrls.length * 100}%`;
-                } else {
-                    carousel.style.width = '100%';
-                }
+                carousel.style.width = '100%';
 
                 const updateCarousel = () => {
-                    const isMobileNow = window.innerWidth <= 768;
-                    if (isMobileNow) {
-                        // When track is N*100%, 1 slide is 100% / N. 
-                        carousel.style.transform = `translateX(-${currentIndex * (100 / imageUrls.length)}%)`;
-                    } else {
-                        // Desktop uses width 100% 
-                        carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
-                    }
+                    carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
                     
                     Array.from(dotsContainer.children).forEach((dot, idx) => {
                         dot.style.background = idx === currentIndex ? 'var(--primary-color)' : '#ccc';
@@ -1492,15 +1616,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 let touchStartX = 0;
                 let touchEndX = 0;
+                let isDragging = false;
+                
                 carousel.addEventListener('touchstart', e => {
+                    if (window.innerWidth > 768) return;
                     touchStartX = e.changedTouches[0].screenX;
+                    isDragging = true;
                     clearInterval(autoSlideInterval);
                 }, {passive: true});
                 
-                carousel.addEventListener('touchend', e => {
+                carousel.addEventListener('touchmove', e => {
+                    if (window.innerWidth > 768 || !isDragging) return;
                     touchEndX = e.changedTouches[0].screenX;
-                    if (touchEndX < touchStartX - 50) nextSlide();
-                    if (touchEndX > touchStartX + 50) prevSlide();
+                }, {passive: true});
+                
+                carousel.addEventListener('touchend', e => {
+                    if (window.innerWidth > 768 || !isDragging) return;
+                    isDragging = false;
+                    touchEndX = e.changedTouches[0].screenX;
+                    const diff = touchStartX - touchEndX;
+                    if (diff > 50) nextSlide();
+                    else if (diff < -50) prevSlide();
                     startInterval();
                 }, {passive: true});
             }
