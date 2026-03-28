@@ -25,13 +25,18 @@ content="Littiwale Barbil is the best restaurant in Barbil offering authentic Li
         content="Best food in Barbil - Litti Chokha, Pizza, Biryani & More">
     <meta property="og:type" content="website">
 
+    <!-- ✅ FAVICON -->
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="apple-touch-icon" href="images/logo.png">
+
     <link rel="stylesheet" href="css/style.css">
 
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="IPL/intro.css">
 </head>
 
 
@@ -41,43 +46,30 @@ content="Littiwale Barbil is the best restaurant in Barbil offering authentic Li
     <!-- NAVBAR -->
 
     <nav class="navbar">
-
         <div class="nav-container">
-
-            <a href="index.html" class="logo-link">
-
-                <img src="images/logo.png" class="nav-logo" alt="Litti Wale">
-
-            </a>
-
-
-            <button class="mobile-toggle">
+            <button class="mobile-toggle hamburger">
                 <i class="fas fa-bars"></i>
             </button>
 
+            <a href="index.html" class="logo-link">
+                <img src="images/logo.png" class="nav-logo" alt="Litti Wale">
+            </a>
 
             <ul class="nav-links">
-
                 <li><a href="index.html#home">Home</a></li>
-
-                <li><a href="menu.html">Menu</a></li>
-
+                <li><a href="javascript:void(0)" class="nav-menu-drawer-btn">Menu</a></li>
                 <li><a href="index.html#about">About</a></li>
-
                 <li><a href="index.html#reach">Reach Us</a></li>
-
-                <li>
-                    <a href="javascript:void(0)" class="cart-link nav-cart-btn">
-                        <i class="fas fa-shopping-cart"></i>
-                        Cart
-                        <span id="cart-count" class="cart-badge">0</span>
-                    </a>
-                </li>
-
+                <li><a href="index.html#connect">Social</a></li>
+                <li><a href="javascript:void(0)" class="nav-get-deals-btn">🔥 Get Deals</a></li>
             </ul>
 
+            <a href="javascript:void(0)" class="cart-link nav-cart-btn">
+                <i class="fas fa-shopping-cart"></i>
+                Cart
+                <span id="cart-count" class="cart-badge">0</span>
+            </a>
         </div>
-
     </nav>
 
 
@@ -133,8 +125,6 @@ content="Littiwale Barbil is the best restaurant in Barbil offering authentic Li
 
     </header>
 
-
-
     <!-- ABOUT -->
 
     <section id="about" class="about-section">
@@ -155,6 +145,41 @@ content="Littiwale Barbil is the best restaurant in Barbil offering authentic Li
         </div>
 
     </section>
+
+    <!-- CRAZIEST DEALS OF THE HOUR -->
+    <section id="craziest-deals-section" class="menu-section" style="display:none; padding:40px 0;">
+        <div class="container">
+            <h2 class="section-title text-center" style="color:var(--primary-color);">🔥 Craziest Deals of the Hour</h2>
+            <div class="divider"></div>
+            <div class="menu-grid" id="deals-grid">
+                <!-- Smart deals injected here via JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- OFFERS SECTION -->
+    <section id="offers-section" class="menu-section" style="padding:40px 0; background-color:rgba(255,255,255,0.02);">
+        <div class="container text-center">
+            <h2 class="section-title">🎁 Exclusive Offers</h2>
+            <div class="divider"></div>
+            <div style="display:flex; gap:20px; overflow-x:auto; padding-bottom:15px; margin-top:20px;">
+                <div style="min-width:280px; flex:1; background:var(--bg-light); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:20px; text-align:left; position:relative; overflow:hidden;">
+                    <div style="background:var(--primary-color); color:#0d0d0d; font-weight:900; display:inline-block; padding:5px 15px; border-radius:8px; margin-bottom:15px;">FLAT 40% OFF</div>
+                    <h3 style="font-family:var(--font-heading); color:white; font-size:1.4rem; margin-bottom:10px;">Midnight Cravings</h3>
+                    <p style="color:var(--text-secondary); font-size:0.95rem;">Order between 11 PM to 2 AM and enjoy a flat 40% discount automatically applied!</p>
+                </div>
+                <div style="min-width:280px; flex:1; background:var(--bg-light); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:20px; text-align:left; position:relative; overflow:hidden;">
+                    <div style="background:#28a745; color:white; font-weight:900; display:inline-block; padding:5px 15px; border-radius:8px; margin-bottom:15px;">FREE DRINK</div>
+                    <h3 style="font-family:var(--font-heading); color:white; font-size:1.4rem; margin-bottom:10px;">Combo Special</h3>
+                    <p style="color:var(--text-secondary); font-size:0.95rem;">Add any 2 Pizzas or 2 Thalis to your cart and get a refreshing cold drink absolutely free.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- ABOUT WAS HERE (MOVED ABOVE) -->
 
 
 
@@ -180,6 +205,64 @@ content="Littiwale Barbil is the best restaurant in Barbil offering authentic Li
     </section>
 
     <!-- MENU (HOME BESTSELLERS) -->
+
+    <!-- CATERING & MEAL SERVICES SECTION -->
+    <section id="catering-section" class="menu-section">
+        <div class="container">
+            <h2 class="section-title text-center" style="color:var(--primary-color);">🍽️ Catering & Meal Services</h2>
+            <div class="divider"></div>
+            
+            <div class="menu-grid">
+                <!-- Card 1 -->
+                <div class="menu-card catering-card" onclick="openServicePopup('🎉 Party Orders')">
+                    <div class="menu-img-container">
+                        <img src="images/catering/party-orders.webp" class="menu-img" alt="Party Orders" onerror="this.closest('.menu-img-container').remove()">
+                    </div>
+                    <div class="menu-details text-center">
+                        <h3 class="menu-title" style="margin-bottom:10px;">🎉 Party Orders</h3>
+                        <p class="menu-desc" style="margin-bottom:15px; font-size: 0.9rem;">Bulk orders for family events and get-togethers.</p>
+                        <button class="btn btn-outline" style="width:100%; font-size:0.9rem;">Book Now</button>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="menu-card catering-card" onclick="openServicePopup('🎂 Birthday Orders')">
+                    <div class="menu-img-container">
+                        <img src="images/catering/birthday-orders.webp" class="menu-img" alt="Birthday Orders" onerror="this.closest('.menu-img-container').remove()">
+                    </div>
+                    <div class="menu-details text-center">
+                        <h3 class="menu-title" style="margin-bottom:10px;">🎂 Birthday Orders</h3>
+                        <p class="menu-desc" style="margin-bottom:15px; font-size: 0.9rem;">Special kids combo and snack platters for birthdays.</p>
+                        <button class="btn btn-outline" style="width:100%; font-size:0.9rem;">Book Now</button>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="menu-card catering-card" onclick="openServicePopup('🏢 Office Meals')">
+                    <div class="menu-img-container">
+                        <img src="images/catering/office-meals.webp" class="menu-img" alt="Office Meals" onerror="this.closest('.menu-img-container').remove()">
+                    </div>
+                    <div class="menu-details text-center">
+                        <h3 class="menu-title" style="margin-bottom:10px;">🏢 Office Meals</h3>
+                        <p class="menu-desc" style="margin-bottom:15px; font-size: 0.9rem;">Daily thali or bulk corporate lunches.</p>
+                        <button class="btn btn-outline" style="width:100%; font-size:0.9rem;">Book Now</button>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="menu-card catering-card" onclick="openServicePopup('✨ Custom Menu')">
+                    <div class="menu-img-container">
+                        <img src="images/catering/custom-menu.webp" class="menu-img" alt="Custom Menu" onerror="this.closest('.menu-img-container').remove()">
+                    </div>
+                    <div class="menu-details text-center">
+                        <h3 class="menu-title" style="margin-bottom:10px;">✨ Custom Menu</h3>
+                        <p class="menu-desc" style="margin-bottom:15px; font-size: 0.9rem;">Tailored catering requests exactly to your taste.</p>
+                        <button class="btn btn-outline" style="width:100%; font-size:0.9rem;">Book Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <section id="menu-section" class="menu-section">
 
@@ -221,48 +304,41 @@ content="Littiwale Barbil is the best restaurant in Barbil offering authentic Li
         <div class="container">
 
             <h2 class="section-title text-center">
-                Featured on Instagram
+                📸 What People Are Loving at Littiwale Barbil ❤️
             </h2>
 
             <div class="divider"></div>
-
 
             <div class="reels-grid">
 
                 <a href="https://www.instagram.com/reel/DM0OaRuTorz/" target="_blank" class="reel-card">
-
-                    <img src="images/instagram/reel1.png">
-
+                    <span class="reel-badge popular">Popular</span>
+                    <img src="images/instagram/reel1.png" alt="Littiwale Customer Review">
                 </a>
 
                 <a href="https://www.instagram.com/reel/DVOCmnIk-Yt/" target="_blank" class="reel-card">
-
-                    <img src="images/instagram/reel2.png">
-
+                    <span class="reel-badge loved">Loved</span>
+                    <img src="images/instagram/reel2.png" alt="Littiwale Customer Review">
                 </a>
 
                 <a href="https://www.instagram.com/reel/DUsneR7E1Vh/" target="_blank" class="reel-card">
-
-                    <img src="images/instagram/reel3.png">
-
+                    <span class="reel-badge popular">Popular</span>
+                    <img src="images/instagram/reel3.png" alt="Littiwale Customer Review">
                 </a>
 
                 <a href="https://www.instagram.com/reel/DU20uoDE9vY/" target="_blank" class="reel-card">
-
-                    <img src="images/instagram/reel4.png">
-
+                    <span class="reel-badge popular">Popular</span>
+                    <img src="images/instagram/reel4.png" alt="Littiwale Customer Review">
                 </a>
 
                 <a href="https://www.instagram.com/reel/DUVd2y6k_bG/" target="_blank" class="reel-card">
-
-                    <img src="images/instagram/reel5.png">
-
+                    <span class="reel-badge loved">Loved</span>
+                    <img src="images/instagram/reel5.png" alt="Littiwale Customer Review">
                 </a>
 
                 <a href="https://www.instagram.com/reel/DTcsHKbE2C7/" target="_blank" class="reel-card">
-
-                    <img src="images/instagram/reel6.png">
-
+                    <span class="reel-badge popular">Popular</span>
+                    <img src="images/instagram/reel6.png" alt="Littiwale Customer Review">
                 </a>
 
             </div>
@@ -270,57 +346,6 @@ content="Littiwale Barbil is the best restaurant in Barbil offering authentic Li
         </div>
 
     </section>
-
-
-
-    <!-- CONNECT -->
-
-    <section class="connect-section">
-
-        <div class="container text-center">
-
-            <h2 class="section-title">
-                Connect With Us
-            </h2>
-
-            <div class="divider"></div>
-
-
-            <div class="social-links-large">
-
-                <a href="https://www.instagram.com/littiwaleofficial/" target="_blank" class="social-card instagram">
-
-                    <i class="fab fa-instagram"></i>
-
-                    Instagram
-
-                </a>
-
-
-                <a href="https://www.facebook.com/share/18fQs5NEQU/" target="_blank" class="social-card facebook">
-
-                    <i class="fab fa-facebook-f"></i>
-
-                    Facebook
-
-                </a>
-
-
-                <a href="https://wa.me/916370680744" target="_blank" class="social-card whatsapp">
-
-                    <i class="fab fa-whatsapp"></i>
-
-                    WhatsApp
-
-                </a>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
 
     <!-- REACH US -->
 
@@ -404,7 +429,56 @@ content="Littiwale Barbil is the best restaurant in Barbil offering authentic Li
 
     </section>
 
+    <!-- CONNECT -->
 
+    <section id="connect" class="connect-section">
+
+        <div class="container text-center">
+
+            <h2 class="section-title">
+                Connect With Us
+            </h2>
+
+            <div class="divider"></div>
+
+
+            <div class="social-links-large">
+
+                <a href="https://www.instagram.com/littiwaleofficial/" target="_blank" class="social-card instagram">
+
+                    <i class="fab fa-instagram"></i>
+
+                    Instagram
+
+                </a>
+
+
+                <a href="https://www.facebook.com/share/18fQs5NEQU/" target="_blank" class="social-card facebook">
+
+                    <i class="fab fa-facebook-f"></i>
+
+                    Facebook
+
+                </a>
+
+
+                <a href="https://wa.me/916370680744" target="_blank" class="social-card whatsapp">
+
+                    <i class="fab fa-whatsapp"></i>
+
+                    WhatsApp
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- CONNECT AND REACH MOVED ABOVE -->
 
     <!-- FOOTER -->
 
@@ -486,7 +560,186 @@ content="Littiwale Barbil is the best restaurant in Barbil offering authentic Li
     </div>
 
 
+    <!-- 🔥 GET DEALS DRAWER SYSTEM -->
+    <div id="get-deals-drawer" class="nav-bottom-sheet">
+        <div class="nav-bottom-sheet-overlay deals-drawer-overlay"></div>
+        <div class="nav-bottom-sheet-content">
+            <div class="sheet-header">
+                <h2>🔥 Get Deals</h2>
+                <button class="close-sheet-btn deals-close-btn">&times;</button>
+            </div>
+            <div class="sheet-body">
+                <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; margin-top: 10px; margin-bottom: 5px; text-transform: uppercase;">Section 1: Offers</div>
+                <button class="sheet-card-btn" onclick="scrollToSection('craziest-deals-section')" style="padding: 15px;">
+                    <span class="sheet-card-icon" style="font-size: 1.5rem; margin-right: 15px;">🔥</span>
+                    <div class="sheet-card-info">
+                        <h3>Craziest Deals</h3>
+                        <p>Deals renewing every hour</p>
+                    </div>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <button class="sheet-card-btn" onclick="scrollToSection('offers-section')" style="padding: 15px;">
+                    <span class="sheet-card-icon" style="font-size: 1.5rem; margin-right: 15px;">🎁</span>
+                    <div class="sheet-card-info">
+                        <h3>Exclusive Offers</h3>
+                        <p>Special discounts & freebies</p>
+                    </div>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+
+                <!-- SECTION 3 -->
+                <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; margin-top: 20px; margin-bottom: 5px; text-transform: uppercase;">Section 2: 🍽️ Catering Services</div>
+                
+                <button class="sheet-card-btn" onclick="openServicePopup('🎉 Party Orders')" style="padding: 12px 15px;">
+                    <span class="sheet-card-icon" style="font-size: 1.2rem; margin-right: 15px;">🎉</span>
+                    <div class="sheet-card-info">
+                        <h3 style="font-size: 1rem; margin-bottom:0;">Party Orders</h3>
+                    </div>
+                    <i class="fas fa-chevron-right" style="font-size:0.9rem;"></i>
+                </button>
+
+                <button class="sheet-card-btn" onclick="openServicePopup('🎂 Birthday Orders')" style="padding: 12px 15px;">
+                    <span class="sheet-card-icon" style="font-size: 1.2rem; margin-right: 15px;">🎂</span>
+                    <div class="sheet-card-info">
+                        <h3 style="font-size: 1rem; margin-bottom:0;">Birthday Orders</h3>
+                    </div>
+                    <i class="fas fa-chevron-right" style="font-size:0.9rem;"></i>
+                </button>
+
+                <button class="sheet-card-btn" onclick="openServicePopup('🏢 Office Meals')" style="padding: 12px 15px;">
+                    <span class="sheet-card-icon" style="font-size: 1.2rem; margin-right: 15px;">🏢</span>
+                    <div class="sheet-card-info">
+                        <h3 style="font-size: 1rem; margin-bottom:0;">Office Meals</h3>
+                    </div>
+                    <i class="fas fa-chevron-right" style="font-size:0.9rem;"></i>
+                </button>
+
+                <button class="sheet-card-btn" onclick="openServicePopup('✨ Custom Menu')" style="padding: 12px 15px;">
+                    <span class="sheet-card-icon" style="font-size: 1.2rem; margin-right: 15px;">✨</span>
+                    <div class="sheet-card-info">
+                        <h3 style="font-size: 1rem; margin-bottom:0;">Custom Menu</h3>
+                    </div>
+                    <i class="fas fa-chevron-right" style="font-size:0.9rem;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🍔 MENU DRAWER SYSTEM -->
+    <div id="menu-nav-drawer" class="nav-bottom-sheet">
+        <div class="nav-bottom-sheet-overlay menu-nav-drawer-overlay"></div>
+        <div class="nav-bottom-sheet-content">
+            <div class="sheet-header">
+                <h2>🍔 Menu</h2>
+                <button class="close-sheet-btn menu-nav-close-btn">&times;</button>
+            </div>
+            <div class="sheet-body">
+                <button class="sheet-card-btn" onclick="scrollToSection('craziest-deals-section')">
+                    <span class="sheet-card-icon" style="color:var(--primary-color);">🔥</span>
+                    <div class="sheet-card-info">
+                        <h3>Craziest Deals of the Hour</h3>
+                        <p>Quick grabs!</p>
+                    </div>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <button class="sheet-card-btn" onclick="scrollToSection('menu-section')">
+                    <span class="sheet-card-icon" style="color:#28a745;">🍔</span>
+                    <div class="sheet-card-info">
+                        <h3>Full Menu</h3>
+                        <p>Browse our entire catalog</p>
+                    </div>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UNIVERSAL SERVICE POPUP -->
+    <div id="service-popup" class="payment-modal">
+        <div class="payment-modal-content" style="max-width: 400px; text-align: center;">
+            <button id="close-service-popup" class="close-btn" style="position: absolute; right: 20px; top: 15px;">&times;</button>
+            
+            <div style="font-size: 3rem; margin-bottom: 10px; line-height: 1;" id="service-icon">🎉</div>
+            <h2 id="service-popup-title" style="font-family: var(--font-heading); color: var(--primary-color); margin-bottom: 15px;">Book Your Service</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 30px; line-height: 1.5;">Our team will help you customize your order to match your exact needs.</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <a href="tel:+916370680744" class="btn btn-primary" style="font-size: 1.1rem; padding: 12px;">
+                    <i class="fas fa-phone-alt"></i> Call Now
+                </a>
+                <button class="btn btn-whatsapp" onclick="scrollToSection('connect'); document.getElementById('service-popup').classList.remove('show');" style="font-size: 1.1rem; padding: 12px;">
+                    <i class="fas fa-comments"></i> Connect With Us
+                </button>
+                <a href="https://maps.google.com/maps?q=22.1152751,85.3871145" target="_blank" class="btn btn-outline" style="font-size: 1.1rem; padding: 12px;">
+                    <i class="fas fa-map-marker-alt"></i> Visit Us
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function scrollToSection(id) {
+            document.querySelectorAll('.nav-bottom-sheet').forEach(sheet => sheet.classList.remove('open'));
+            document.body.style.overflow = '';
+            setTimeout(() => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const topPos = el.getBoundingClientRect().top + window.scrollY - 80;
+                    window.scrollTo({ top: topPos, behavior: 'smooth' });
+                }
+            }, 300);
+        }
+
+        function openServicePopup(serviceName) {
+            // Close any open drawers
+            document.querySelectorAll('.nav-bottom-sheet').forEach(sheet => sheet.classList.remove('open'));
+            document.body.style.overflow = '';
+            
+            const popup = document.getElementById('service-popup');
+            const titleEl = document.getElementById('service-popup-title');
+            const iconEl = document.getElementById('service-icon');
+            
+            if (popup && titleEl && iconEl) {
+                // Infer icon from service string directly (e.g. "🎉 Party Orders" -> emoji is first char)
+                const emojiMatch = serviceName.match(/[\p{Emoji}\u200d]+/gu);
+                if (emojiMatch && emojiMatch.length > 0) {
+                    iconEl.innerText = emojiMatch[0];
+                    titleEl.innerText = serviceName.replace(emojiMatch[0], '').trim();
+                } else {
+                    iconEl.innerText = "🍽️";
+                    titleEl.innerText = serviceName;
+                }
+                
+                popup.style.display = 'flex';
+                // Trigger reflow for fade-in logic
+                void popup.offsetWidth;
+                popup.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        document.getElementById('close-service-popup')?.addEventListener('click', () => {
+            const popup = document.getElementById('service-popup');
+            popup.classList.remove('show');
+            setTimeout(() => { popup.style.display = 'none'; }, 300);
+            document.body.style.overflow = '';
+        });
+
+        // Close on outside click
+        document.getElementById('service-popup')?.addEventListener('click', (e) => {
+            if (e.target.id === 'service-popup') {
+                const popup = document.getElementById('service-popup');
+                popup.classList.remove('show');
+                setTimeout(() => { popup.style.display = 'none'; }, 300);
+                document.body.style.overflow = '';
+            }
+        });
+    </script>
+
+    <script src="IPL/MatchDetails/matchData.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/restaurant-timing.js"></script>
+    <script src="IPL/intro.js"></script>
 
 </body>
 

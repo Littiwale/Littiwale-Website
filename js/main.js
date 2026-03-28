@@ -75,8 +75,135 @@ document.addEventListener('DOMContentLoaded', () => {
         setupFilters(menuData);
         setupExpandButton();
         renderMenu(initialBestsellers);
+        
+        generateSmartDeals();
     }
     
+    // =========================================================================
+    // SMART DEALS ENGINE
+    // =========================================================================
+    const DEAL_NAMES = [
+        "Kuch bhi khila de 😭",
+        "Tera jo mann wo khila de 😏",
+        "Aaj diet bhool ja 😈",
+        "Bhook lagi hai boss 🔥",
+        "Pet bhar combo 💀"
+    ];
+
+    function generateSmartDeals() {
+        const dealsSection = document.getElementById('craziest-deals-section');
+        const dealsGrid = document.getElementById('deals-grid');
+        if (!dealsSection || !dealsGrid) return;
+        
+        const now = new Date();
+        const hourStr = now.toDateString() + '_' + now.getHours();
+        const storedDate = localStorage.getItem('littiWaleDealsDateHour');
+        let smartDeals = [];
+
+        if (storedDate === hourStr) {
+            const raw = localStorage.getItem('littiWaleDealsData');
+            if (raw) {
+                try {
+                    smartDeals = JSON.parse(raw);
+                } catch(e) {}
+            }
+        }
+
+        if (!smartDeals || smartDeals.length === 0) {
+            const pool = menuData.filter(item => {
+                const catLower = (item.category || '').toLowerCase();
+                const nameLower = (item.name || '').toLowerCase();
+                if (catLower.includes('thali') || catLower.includes('combo')) return false;
+                if (nameLower.includes('thali') || nameLower.includes('combo')) return false;
+                return true;
+            });
+            
+            if (pool.length < 10) return;
+
+            const numDeals = Math.floor(Math.random() * 3) + 3; // 3 to 5
+            smartDeals = [];
+            
+            const shuffledNames = [...DEAL_NAMES].sort(() => 0.5 - Math.random());
+            
+            for (let i=0; i<numDeals; i++) {
+                const i1 = pool[Math.floor(Math.random() * pool.length)];
+                let i2 = pool[Math.floor(Math.random() * pool.length)];
+                
+                let retries = 0;
+                while (retries < 10 && (i1.id === i2.id || (i1.category === i2.category && i1.category !== 'Pizza' && i1.category !== 'Sandwiches'))) {
+                    i2 = pool[Math.floor(Math.random() * pool.length)];
+                    retries++;
+                }
+
+                const price1 = i1.price || i1.full || i1.half || 100;
+                const price2 = i2.price || i2.full || i2.half || 100;
+                const origTotal = price1 + price2;
+                
+                const marginPercent = Math.floor(Math.random() * 11) + 5;
+                let finalPrice = Math.floor(origTotal * (1 + (marginPercent/100)));
+                
+                finalPrice = Math.floor(finalPrice / 10) * 10 + 9;
+                
+                if (finalPrice <= origTotal) {
+                    finalPrice = Math.floor(origTotal) + 9;
+                }
+                
+                const fakeMargin = Math.floor(Math.random() * 21) + 20;
+                const fakePrice = Math.floor(origTotal * (1 + (fakeMargin/100)));
+
+                smartDeals.push({
+                    id: 'deal_' + Date.now() + '_' + i,
+                    title: shuffledNames[i % shuffledNames.length],
+                    item1: i1,
+                    item2: i2,
+                    price1: price1,
+                    price2: price2,
+                    finalPrice: finalPrice,
+                    fakePrice: fakePrice
+                });
+            }
+            localStorage.setItem('littiWaleDealsDateHour', hourStr);
+            localStorage.setItem('littiWaleDealsData', JSON.stringify(smartDeals));
+        }
+
+        renderSmartDeals(smartDeals, dealsGrid);
+        dealsSection.style.display = 'block';
+    }
+
+    function renderSmartDeals(deals, grid) {
+        grid.innerHTML = '';
+        deals.forEach(deal => {
+            const card = document.createElement('div');
+            card.className = 'menu-card';
+            card.style.background = 'linear-gradient(145deg, #1f1f1f, #141414)';
+            card.style.border = '1px solid var(--primary-color)';
+            
+            const noteText = `Includes: ${deal.item1.name} + ${deal.item2.name}`.replace(/'/g, "\\'");
+            const safeAddCall = `window.addDealToCart('${deal.id}', '${deal.title.replace(/'/g, "\\'")}', ${deal.finalPrice}, ${deal.fakePrice}, '${noteText}', '${deal.item1.image}');`;
+
+            card.innerHTML = `
+                <div class="menu-details">
+                    <div style="font-size: 0.85rem; color: #f4b400; font-weight: bold; margin-bottom:5px;">HOURLY DEAL</div>
+                    <div class="menu-title-row" style="margin-bottom: 5px;">
+                        <h3 class="menu-title" style="color: #ffffff; font-size: 1.2rem;">${deal.title}</h3>
+                    </div>
+                    <p class="menu-desc" style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 10px;">
+                        Includes: <strong>${deal.item1.name}</strong> + <strong>${deal.item2.name}</strong>
+                    </p>
+                    <div class="menu-title-row" style="margin-top:auto;">
+                        <div>
+                            <span style="text-decoration: line-through; color: #888; margin-right: 5px; font-size: 0.9rem;">₹${deal.fakePrice}</span>
+                            <span class="menu-price" style="font-size: 1.3rem;">₹${deal.finalPrice}</span>
+                        </div>
+                    </div>
+                    <button class="add-to-cart-btn mt-2" style="background-color: var(--primary-color); color: #0d0d0d; border-radius: 8px; font-weight: bold; border:none;" onclick="${safeAddCall}">Grab this Deal</button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+    // =========================================================================
+
     function setupExpandButton() {
         let toggleContainer = document.getElementById('menu-toggle-container');
         if (!toggleContainer && menuGrid) {
@@ -164,14 +291,35 @@ document.addEventListener('DOMContentLoaded', () => {
                     priceHtml = `<span class="menu-price">₹${item.half} | ₹${item.full}</span>`;
                     btnHtml = `
                         <div style="display: flex; gap: 10px;">
-                            <button class="add-to-cart-btn" onclick="addToCart('${item.id}_half', '${item.name.replace(/'/g, "\\'")} Half', ${item.half}, '${item.image}')">Add Half</button>
-                            <button class="add-to-cart-btn" onclick="addToCart('${item.id}_full', '${item.name.replace(/'/g, "\\'")} Full', ${item.full}, '${item.image}')">Add Full</button>
+                            <div id="menu-btn-container-${item.id}_half" style="flex:1;">
+                                <button id="menu-add-btn-${item.id}_half" class="add-to-cart-btn" onclick="addToCart('${item.id}_half', '${item.name.replace(/'/g, "\\'")} Half', ${item.half}, '${item.image}')">Add Half</button>
+                                <div id="menu-qty-ctrl-${item.id}_half" style="display:none; align-items:center; justify-content:space-between; background:var(--bg-light); border: 1px solid var(--primary-color); border-radius:12px; padding:4px; height: 100%;">
+                                    <button style="background:transparent; border:none; width:30px; height:30px; font-weight:bold; color:var(--primary-color); cursor:pointer;" onclick="updateQuantity('${item.id}_half', -1)">-</button>
+                                    <span id="menu-qty-val-${item.id}_half" style="font-weight:bold; color:var(--text-primary); font-size:1.1rem;">0</span>
+                                    <button style="background:var(--primary-color); border:none; border-radius:8px; width:30px; height:30px; font-weight:bold; color:#0d0d0d; cursor:pointer;" onclick="updateQuantity('${item.id}_half', 1)">+</button>
+                                </div>
+                            </div>
+                            <div id="menu-btn-container-${item.id}_full" style="flex:1;">
+                                <button id="menu-add-btn-${item.id}_full" class="add-to-cart-btn" onclick="addToCart('${item.id}_full', '${item.name.replace(/'/g, "\\'")} Full', ${item.full}, '${item.image}')">Add Full</button>
+                                <div id="menu-qty-ctrl-${item.id}_full" style="display:none; align-items:center; justify-content:space-between; background:var(--bg-light); border: 1px solid var(--primary-color); border-radius:12px; padding:4px; height: 100%;">
+                                    <button style="background:transparent; border:none; width:30px; height:30px; font-weight:bold; color:var(--primary-color); cursor:pointer;" onclick="updateQuantity('${item.id}_full', -1)">-</button>
+                                    <span id="menu-qty-val-${item.id}_full" style="font-weight:bold; color:var(--text-primary); font-size:1.1rem;">0</span>
+                                    <button style="background:var(--primary-color); border:none; border-radius:8px; width:30px; height:30px; font-weight:bold; color:#0d0d0d; cursor:pointer;" onclick="updateQuantity('${item.id}_full', 1)">+</button>
+                                </div>
+                            </div>
                         </div>
                     `;
                 } else {
                     priceHtml = `<span class="menu-price">₹${item.price}</span>`;
                     btnHtml = `
-                        <button class="add-to-cart-btn" onclick="addToCart('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, '${item.image}')">Add to Cart</button>
+                        <div id="menu-btn-container-${item.id}">
+                            <button id="menu-add-btn-${item.id}" class="add-to-cart-btn" onclick="addToCart('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, '${item.image}')">Add to Cart</button>
+                            <div id="menu-qty-ctrl-${item.id}" style="display:none; align-items:center; justify-content:space-between; background:var(--bg-light); border: 1px solid var(--primary-color); border-radius:12px; padding:4px; height: 100%;">
+                                <button style="background:transparent; border:none; width:30px; height:30px; font-weight:bold; color:var(--primary-color); cursor:pointer;" onclick="updateQuantity('${item.id}', -1)">-</button>
+                                <span id="menu-qty-val-${item.id}" style="font-weight:bold; color:var(--text-primary); font-size:1.1rem;">0</span>
+                                <button style="background:var(--primary-color); border:none; border-radius:8px; width:30px; height:30px; font-weight:bold; color:#0d0d0d; cursor:pointer;" onclick="updateQuantity('${item.id}', 1)">+</button>
+                            </div>
+                        </div>
                     `;
                 }
 
@@ -188,7 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <h3 class="menu-title">${item.name}</h3>
                             ${priceHtml}
                         </div>
-                        <p class="menu-desc">${item.description || ''}</p>
+                        ${item.description && item.description !== 'nan' && item.description !== 'undefined' && item.description !== 'null' ? `<p class="menu-desc">${item.description}</p>` : ''}
                         ${btnHtml}
                     </div>
                 `;
@@ -199,6 +347,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isMenuExpanded) {
             initScrollSpy();
         }
+        
+        if (typeof syncMenuWithCart === 'function') syncMenuWithCart();
     }
 
     function setupFilters(items) {
@@ -313,6 +463,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let availableCoupons = [];
     let appliedCoupon = null;
     let discountAmount = 0;
+    
+    // Load initial state from localStorage
+    try {
+        const savedCoupon = localStorage.getItem('littiWaleAppliedCoupon');
+        if (savedCoupon) {
+            appliedCoupon = JSON.parse(savedCoupon);
+            discountAmount = Number(localStorage.getItem('littiWaleDiscountAmount')) || 0;
+        }
+    } catch (e) { console.error("Error loading coupon state", e); }
+
     let restaurantNote = '';
     
     // --- Delivery Logic ---
@@ -320,6 +480,56 @@ document.addEventListener('DOMContentLoaded', () => {
     let deliveryStatus = 'UNKNOWN'; // 'AVAILABLE', 'UNAVAILABLE', 'UNKNOWN'
     const RESTAURANT_LAT = 22.1152751;
     const RESTAURANT_LNG = 85.3871145;
+
+    // --- IPL Dynamic Coupon Logic ---
+    function generateIPLCoupons() {
+        if (typeof matches === 'undefined') return [];
+        const today = new Date().toISOString().split('T')[0];
+        const todayMatch = matches.find(m => m.date === today);
+        if (!todayMatch || !todayMatch.games) return [];
+
+        let iplCoupons = [];
+        let teamCounter = 0;
+        todayMatch.games.forEach(game => {
+            [game.team1, game.team2].forEach(team => {
+                const code = team.toUpperCase() + "20";
+                // Alternating logic: even index gets 20% OFF, odd gets Free Pepsi
+                if (teamCounter % 2 === 0) {
+                    iplCoupons.push({
+                        code: code,
+                        type: "DISCOUNT",
+                        discount: 20,
+                        maxDiscount: 30,
+                        minOrder: 500,
+                        active: true
+                    });
+                } else {
+                    iplCoupons.push({
+                        code: code,
+                        type: "PEPSI",
+                        discount: 0,
+                        maxDiscount: 0,
+                        minOrder: 300,
+                        active: true
+                    });
+                }
+                teamCounter++;
+            });
+        });
+        return iplCoupons;
+    }
+
+    function getMergedCoupons(staticCoupons) {
+        const iplCoupons = generateIPLCoupons();
+        const merged = [...staticCoupons];
+        iplCoupons.forEach(ipl => {
+            // Static coupons (coupon.json) take priority; don't overwrite if code exists
+            if (!merged.find(c => c.code === ipl.code)) {
+                merged.push(ipl);
+            }
+        });
+        return merged;
+    }
 
     function calculateDistance(lat1, lon1, lat2, lon2) {
         const R = 6371; // Earth's radius in km
@@ -334,6 +544,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getUserLocation() {
         if ("geolocation" in navigator) {
+            deliveryStatus = 'CALCULATING';
+            updateCartUI();
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const userLat = position.coords.latitude;
@@ -366,9 +578,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const storedCart = localStorage.getItem('littiWaleCart');
         if (storedCart) {
             cart = JSON.parse(storedCart);
-            updateCartUI();
         }
         
+        // Fetch coupons to validate stored coupon state
+        fetch('data/coupon.json')
+            .then(res => res.json())
+            .then(data => {
+                availableCoupons = getMergedCoupons(data);
+                if (appliedCoupon) {
+                    const stillValid = availableCoupons.find(c => c.code === appliedCoupon.code && c.active === true);
+                    // Edge case: Clear if invalid or cart is empty
+                    if (!stillValid || cart.length === 0) {
+                        appliedCoupon = null;
+                        discountAmount = 0;
+                        localStorage.removeItem('littiWaleAppliedCoupon');
+                        localStorage.removeItem('littiWaleDiscountAmount');
+                    }
+                }
+                updateCartUI();
+            })
+            .catch(err => {
+                console.error("Error validating coupons:", err);
+                updateCartUI();
+            });
+            
         // Fetch location details exclusively for Delivery Calculation
         getUserLocation();
     }
@@ -429,6 +662,31 @@ document.addEventListener('DOMContentLoaded', () => {
             cartDrawer.classList.add('open');
         }
         
+        return true;
+    };
+
+    window.addDealToCart = function(id, name, price, originalPrice, noteText, image) {
+        const existingItem = cart.find(item => item.id === id);
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({
+                id: id,
+                name: name,
+                price: price,
+                originalPrice: originalPrice,
+                isCombo: true,
+                note: noteText,
+                image: image,
+                quantity: 1
+            });
+        }
+        saveCart();
+        updateCartUI();
+        const cartDrawer = document.getElementById('cart-drawer');
+        if (cartDrawer) {
+            cartDrawer.classList.add('open');
+        }
         return true;
     };
 
@@ -496,6 +754,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <img src="${item.image}" alt="${item.name}" class="cart-item-img" onerror="this.remove()">
                         <div>
                             <div class="cart-item-title">${item.name}</div>
+                            ${item.isCombo && item.note ? `<div style="font-size: 0.8rem; color: #f4b400; margin-bottom: 5px;">${item.note}</div>` : ''}
                             <div class="cart-item-price">₹${item.price} x ${item.quantity} = ₹${itemTotal}</div>
                         </div>
                     </div>
@@ -510,6 +769,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 container.appendChild(cartItem);
             });
+
+            if (appliedCoupon && appliedCoupon.type === 'PEPSI') {
+                const cartItem = document.createElement('div');
+                cartItem.className = 'cart-item';
+                cartItem.innerHTML = `
+                    <div class="cart-item-info">
+                        <div style="width: 50px; height: 50px; background: rgba(74, 222, 128, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 1px dashed #4ade80;">🥤</div>
+                        <div>
+                            <div class="cart-item-title">Pepsi ×1 — FREE 🎁</div>
+                            <div class="cart-item-price" style="color: #4ade80; font-weight: bold;">₹0 (Free)</div>
+                        </div>
+                    </div>
+                    <div class="cart-controls"></div>
+                `;
+                container.appendChild(cartItem);
+            }
+
 
             // Update UI Details dynamically considering location logic
             let deliveryText = '';
@@ -528,6 +804,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 finalTotal += deliveryCharge;
             } else if (deliveryStatus === 'UNAVAILABLE') {
                 deliveryText = `Not available`;
+            } else if (deliveryStatus === 'CALCULATING') {
+                deliveryText = `Calculating...`;
+                noteHtml = `<div style="font-size: 0.8rem; color: var(--primary-color); margin-top: 4px; text-align: right;">Fetching location...</div>`;
             } else {
                 deliveryText = `Not calculated`;
                 noteHtml = `<div style="font-size: 0.8rem; color: #dc3545; margin-top: 4px; text-align: right;">*Delivery charges will be extra charged based on distance</div>`;
@@ -538,10 +817,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const couponContainer = document.getElementById('coupon-container');
             const appliedDisplay = document.getElementById('applied-coupon-display');
             const discountRow = document.getElementById('discount-row');
+            const msgEl = document.getElementById('coupon-message');
             
             if (couponSection) couponSection.style.display = 'block';
             
             let baseTotalAmount = finalTotal;
+            let eligibilitySubtotal = cart.reduce((sum, item) => sum + (Number(item.price) * Number(item.quantity)), 0);
+
+            if (appliedCoupon) {
+                if (appliedCoupon.type === 'PEPSI') {
+                    discountAmount = 20;
+                } else {
+                    // Standard discount coupons
+                    const pct = appliedCoupon.discount || appliedCoupon.discountPercent || 0;
+                    discountAmount = Math.min((baseTotalAmount * pct) / 100, appliedCoupon.maxDiscount || 0);
+                    discountAmount = Math.round(discountAmount);
+                }
+            } else {
+                discountAmount = 0;
+            }
 
             const couponInfoContainer = document.getElementById('coupon-applied-info-container');
             const baseTotalRow = document.getElementById('cart-base-total-row');
@@ -549,8 +843,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const cartBaseTotalAmount = document.getElementById('cart-base-total-amount');
 
             if (appliedCoupon) {
-                discountAmount = Math.min((baseTotalAmount * appliedCoupon.discountPercent) / 100, appliedCoupon.maxDiscount);
-                discountAmount = Math.round(discountAmount);
                 finalTotal -= discountAmount;
                 if (finalTotal < 0) finalTotal = 0;
                 
@@ -558,13 +850,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (appliedDisplay) {
                     appliedDisplay.style.display = 'flex';
                     document.getElementById('applied-code-text').textContent = appliedCoupon.code;
-                    document.getElementById('applied-discount-text').textContent = `${appliedCoupon.discountPercent}% OFF (Upto ₹${appliedCoupon.maxDiscount})`;
+                    let pct = appliedCoupon.discount || appliedCoupon.discountPercent || 0;
+                    let desc = appliedCoupon.type === 'PEPSI' ? 'Free Pepsi added to your order' : `${pct}% OFF (Upto ₹${appliedCoupon.maxDiscount || 0})`;
+                    document.getElementById('applied-discount-text').textContent = desc;
                 }
                 
                 if (couponInfoContainer) {
                     couponInfoContainer.style.display = 'block';
                     document.getElementById('cart-coupon-code-text').textContent = appliedCoupon.code;
-                    document.getElementById('cart-discount-amount').textContent = `-₹${discountAmount}`;
+                    if (appliedCoupon.type === 'PEPSI') {
+                        document.getElementById('cart-discount-amount').textContent = `-₹${discountAmount} (Free Pepsi)`;
+                    } else {
+                        document.getElementById('cart-discount-amount').textContent = `-₹${discountAmount}`;
+                    }
                 }
                 
                 if (baseTotalRow) baseTotalRow.style.display = 'flex';
@@ -572,7 +870,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (finalTotalLabel) finalTotalLabel.textContent = 'Final Total:';
                 
             } else {
-                discountAmount = 0;
                 if (couponContainer) couponContainer.style.display = 'block';
                 if (appliedDisplay) appliedDisplay.style.display = 'none';
                 
@@ -589,7 +886,86 @@ document.addEventListener('DOMContentLoaded', () => {
             totalEl.textContent = `₹${finalTotal}`;
             
             summary.style.display = 'block';
+            
+            // Sync checkout.html specific elements
+            const chkContainer = document.getElementById('checkout-items-container');
+            if (chkContainer) {
+                chkContainer.innerHTML = '';
+                cart.forEach(item => {
+                    const priceNum = Number(item.price) || 0;
+                    const qtyNum = Number(item.quantity) || 0;
+                    const itemTotal = priceNum * qtyNum;
+                    chkContainer.innerHTML += `
+                        <div style="margin-bottom:10px;">
+                            <div style="display:flex; justify-content:space-between;">
+                                <span>${item.quantity}x ${item.name}</span>
+                                <span>₹${itemTotal}</span>
+                            </div>
+                            ${item.isCombo && item.note ? `<div style="font-size: 0.8rem; color: #f4b400; margin-top: 2px;">${item.note}</div>` : ''}
+                        </div>
+                    `;
+                });
+                
+                if (appliedCoupon && appliedCoupon.type === 'PEPSI') {
+                     chkContainer.innerHTML += `
+                        <div style="margin-bottom:10px;">
+                            <div style="display:flex; justify-content:space-between;">
+                                <span style="color: #4ade80; font-weight: bold;">1x Pepsi — FREE 🎁</span>
+                                <span style="color: #4ade80;">₹0</span>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('checkout-subtotal').textContent = `₹${subtotalAmount}`;
+                
+                const chkDiscountRow = document.getElementById('checkout-discount-row');
+                if (appliedCoupon && chkDiscountRow) {
+                    chkDiscountRow.style.display = 'flex';
+                    const discEl = document.getElementById('checkout-discount');
+                    if (appliedCoupon.type === 'PEPSI') {
+                        discEl.textContent = `-₹${discountAmount} (Free Pepsi)`;
+                        discEl.style.fontSize = '0.9rem';
+                    } else {
+                        discEl.textContent = `-₹${discountAmount}`;
+                        discEl.style.fontSize = '';
+                    }
+                } else if (chkDiscountRow) {
+                    chkDiscountRow.style.display = 'none';
+                }
+                
+                const chkDeliveryEl = document.getElementById('checkout-delivery');
+                if (chkDeliveryEl) chkDeliveryEl.textContent = deliveryText;
+                
+                const chkTotalEl = document.getElementById('checkout-total');
+                if (chkTotalEl) chkTotalEl.textContent = `₹${finalTotal}`;
+            }
         }
+        
+        syncMenuWithCart();
+    }
+
+    function syncMenuWithCart() {
+        const addBtns = document.querySelectorAll('[id^="menu-add-btn-"]');
+        addBtns.forEach(btn => {
+            const fullId = btn.id.replace('menu-add-btn-', '');
+            const ctrl = document.getElementById(`menu-qty-ctrl-${fullId}`);
+            const valSpan = document.getElementById(`menu-qty-val-${fullId}`);
+            
+            // Find item in cart.
+            const cartItem = cart.find(item => item.id === fullId);
+            
+            if (cartItem) {
+                // Hide ADD button, Show QTY controls
+                btn.style.display = 'none';
+                if (ctrl) ctrl.style.display = 'flex';
+                if (valSpan) valSpan.textContent = cartItem.quantity;
+            } else {
+                // Show ADD button, Hide QTY controls
+                btn.style.display = 'block';
+                if (ctrl) ctrl.style.display = 'none';
+            }
+        });
     }
 
     function setupCartDrawer() {
@@ -608,8 +984,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="empty-cart">Your cart is empty</div>
                         </div>
                         
-                        <div id="restaurant-note-section" style="margin-bottom: 15px;">
-                            <div id="restaurant-note-preview" style="display: none; background: #f8f9fa; padding: 10px 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 10px; font-size: 0.9rem; color: var(--text-secondary);">
+                        <div id="restaurant-note-section" style="display: none; margin-bottom: 15px;">
+                            <div id="restaurant-note-preview" style="display: none; background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 10px; font-size: 0.9rem; color: var(--text-secondary);">
                                 <strong>📝 Note:</strong> <span id="restaurant-note-text"></span>
                             </div>
                             <button id="add-note-btn" class="btn btn-outline btn-block" style="border-style: dashed; padding: 10px;">
@@ -628,7 +1004,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <button id="view-all-coupons-btn" style="background: none; border: none; color: var(--primary-color); font-size: 0.9rem; cursor: pointer; text-decoration: underline;">View All Coupons</button>
                                 </div>
                             </div>
-                            <div id="applied-coupon-display" style="display: none; justify-content: space-between; margin-bottom: 5px; color: #28a745; background: #e8f5e9; padding: 10px; border-radius: 8px; align-items: center;">
+                            <div id="applied-coupon-display" style="display: none; justify-content: space-between; margin-bottom: 5px; color: #4ade80; background: rgba(74, 222, 128, 0.1); padding: 10px; border-radius: 8px; align-items: center;">
                                  <div>
                                      <div style="font-weight: bold;"><i class="fas fa-tag"></i> <span id="applied-code-text"></span> Applied</div>
                                      <div style="font-size: 0.85rem;" id="applied-discount-text"></div>
@@ -642,15 +1018,15 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span>Subtotal:</span>
                                 <span id="cart-subtotal-amount">₹0</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; color: var(--text-secondary); border-bottom: 1px dashed #ddd; padding-bottom: 15px;" id="cart-delivery-row">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; color: var(--text-secondary); border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 15px;" id="cart-delivery-row">
                                 <span>Delivery:</span>
                                 <div id="cart-delivery-amount" style="display: flex; flex-direction: column; align-items: flex-end;">Not calculated</div>
                             </div>
-                            <div id="cart-base-total-row" style="display: none; justify-content: space-between; margin-bottom: 15px; font-weight: bold; border-bottom: 1px dashed #ddd; padding-bottom: 15px;">
+                            <div id="cart-base-total-row" style="display: none; justify-content: space-between; margin-bottom: 15px; font-weight: bold; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 15px;">
                                 <span>Total:</span>
                                 <span id="cart-base-total-amount">₹0</span>
                             </div>
-                            <div id="coupon-applied-info-container" style="display: none; margin-bottom: 15px; color: #28a745; font-weight: bold; border-bottom: 1px dashed #ddd; padding-bottom: 15px;">
+                            <div id="coupon-applied-info-container" style="display: none; margin-bottom: 15px; color: #4ade80; font-weight: bold; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 15px;">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                      <span>Coupon Applied:</span>
                                      <span id="cart-coupon-code-text"></span>
@@ -668,23 +1044,17 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="order-type-selection mt-3" style="margin-bottom: 20px;">
                                 <label style="display:block; font-weight:bold; margin-bottom:10px;">Select Order Type:</label>
                                 <div style="display:flex; gap:10px;">
-                                    <label style="flex:1; background:#f8f9fa; padding:10px; border-radius:8px; border:1px solid #ddd; text-align:center; cursor:pointer;" class="order-type-label">
-                                        <input type="radio" name="orderType" id="order-type-delivery" value="delivery" checked style="margin-right:5px;"> Delivery
+                                    <label style="flex:1; background:#1c1c1c; color:#ffffff; padding:10px; border-radius:8px; border:1px solid #444; text-align:center; cursor:pointer;" class="order-type-label">
+                                        <input type="radio" name="orderType" id="order-type-delivery" value="delivery" checked style="margin-right:5px; accent-color: var(--primary-color);"> Delivery
                                     </label>
-                                    <label style="flex:1; background:#f8f9fa; padding:10px; border-radius:8px; border:1px solid #ddd; text-align:center; cursor:pointer;" class="order-type-label">
-                                        <input type="radio" name="orderType" id="order-type-takeaway" value="takeaway" style="margin-right:5px;"> Takeaway
+                                    <label style="flex:1; background:#1c1c1c; color:#ffffff; padding:10px; border-radius:8px; border:1px solid #444; text-align:center; cursor:pointer;" class="order-type-label">
+                                        <input type="radio" name="orderType" id="order-type-takeaway" value="takeaway" style="margin-right:5px; accent-color: var(--primary-color);"> Takeaway
                                     </label>
                                 </div>
                             </div>
 
-                            <div class="customer-details form-group mt-3">
-                                <input type="text" id="cust-name" placeholder="Your Name" required class="form-control mb-2">
-                                <input type="tel" id="cust-phone" placeholder="Phone Number" required class="form-control mb-2">
-                                <textarea id="cust-address" placeholder="Delivery Address" required class="form-control mb-2" rows="2"></textarea>
-                            </div>
-                            
-                            <button id="checkout-btn" class="btn btn-primary btn-block mt-3">
-                                <i class="fas fa-check-circle"></i> Place Order
+                            <button id="checkout-btn" class="btn btn-primary btn-block mt-3" style="font-size: 1.1rem; padding: 12px; border-radius: 8px;">
+                                Proceed to Checkout <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
                             </button>
                             <button id="clear-cart-btn" class="btn btn-outline btn-block mt-2">Clear Cart</button>
                         </div>
@@ -762,7 +1132,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     previewContainer.style.display = 'none';
                 }
             }
+            
+            const checkoutNotesInput = document.getElementById('checkout-notes');
+            if (checkoutNotesInput) {
+                checkoutNotesInput.value = restaurantNote || '';
+            }
         };
+
+        const globalCheckoutNotes = document.getElementById('checkout-notes');
+        if (globalCheckoutNotes) {
+            globalCheckoutNotes.addEventListener('input', (e) => {
+                restaurantNote = e.target.value.substring(0, 120);
+                const drawerInput = document.getElementById('restaurant-note-input');
+                if (drawerInput) drawerInput.value = restaurantNote;
+                if (typeof updateNoteUI === 'function') updateNoteUI();
+            });
+        }
 
         const noteModal = document.getElementById('restaurant-note-modal');
         document.getElementById('add-note-btn')?.addEventListener('click', () => {
@@ -796,29 +1181,48 @@ document.addEventListener('DOMContentLoaded', () => {
             msgEl.textContent = 'Applying...';
             msgEl.style.color = 'var(--text-secondary)';
             
-            fetch('/data/coupons.json')
+            console.log("Applying coupon code:", code);
+            
+            fetch('data/coupon.json')
                 .then(res => {
-                    if (!res.ok) throw new Error("Network error");
+                    if (!res.ok) throw new Error("Could not load coupon data");
                     return res.json();
                 })
                 .then(data => {
-                    availableCoupons = data; // store globally for reference
-                    const coupon = data.find(c => c.code === code && c.active === true);
+                    console.log("Coupons loaded for validation:", data);
+                    availableCoupons = getMergedCoupons(data);
+                    const coupon = availableCoupons.find(c => c.code === code && c.active === true);
                     
                     if (!coupon) {
-                        msgEl.textContent = 'Invalid Coupon Code';
+                        msgEl.textContent = 'Invalid or Inactive Coupon';
                         msgEl.style.color = '#dc3545';
                         return;
                     }
                     
+                    // Check minOrder if present
+                    const subtotal = cart.reduce((sum, item) => sum + (Number(item.price) * Number(item.quantity)), 0);
+                    if (coupon.minOrder && subtotal < coupon.minOrder) {
+                        msgEl.textContent = `Min order ₹${coupon.minOrder} required`;
+                        msgEl.style.color = '#dc3545';
+                        return;
+                    }
+
                     appliedCoupon = coupon;
+                    console.log("Coupon applied successfully:", coupon);
+                    
+                    // Persist coupon state
+                    localStorage.setItem('littiWaleAppliedCoupon', JSON.stringify(coupon));
+                    // We'll update the discountAmount in localStorage after updateCartUI recalculates it
+                    
                     codeInput.value = '';
-                    msgEl.textContent = '';
+                    msgEl.textContent = 'Applied!';
+                    msgEl.style.color = '#4ade80';
                     updateCartUI();
+                    localStorage.setItem('littiWaleDiscountAmount', discountAmount);
                 })
                 .catch(err => {
                     console.error('Error applying coupon:', err);
-                    msgEl.textContent = 'Invalid Coupon Code';
+                    msgEl.textContent = 'System Error: Try again';
                     msgEl.style.color = '#dc3545';
                 });
         });
@@ -826,6 +1230,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('remove-coupon-btn')?.addEventListener('click', () => {
             appliedCoupon = null;
             discountAmount = 0;
+            localStorage.removeItem('littiWaleAppliedCoupon');
+            localStorage.removeItem('littiWaleDiscountAmount');
             const msgEl = document.getElementById('coupon-message');
             if (msgEl) msgEl.textContent = '';
             updateCartUI();
@@ -839,25 +1245,34 @@ document.addEventListener('DOMContentLoaded', () => {
             container.innerHTML = '<p class="text-center" style="color: var(--text-secondary);">Loading coupons...</p>';
             couponsModal.classList.add('show');
             
-            fetch('data/coupons.json')
-                .then(res => res.json())
+            console.log("Fetching all coupons for modal...");
+            fetch('data/coupon.json')
+                .then(res => {
+                    if (!res.ok) throw new Error("Failed to fetch coupons");
+                    return res.json();
+                })
                 .then(data => {
-                    availableCoupons = data;
+                    console.log("Coupons fetched successfully for modal:", data);
+                    availableCoupons = getMergedCoupons(data);
                     container.innerHTML = '';
                     
-                    const activeCoupons = data.filter(c => c.active === true);
+                    const activeCoupons = availableCoupons.filter(c => c.active === true);
                     
                     if (activeCoupons.length === 0) {
-                        container.innerHTML = '<p class="text-center" style="color: var(--text-secondary);">No coupons available</p>';
+                        console.warn("No active coupons found in JSON");
+                        container.innerHTML = '<p class="text-center" style="color: var(--text-secondary);">No coupons available currently</p>';
                     } else {
                         activeCoupons.forEach(coupon => {
-                            const btnHtml = `<button class="btn btn-primary apply-modal-coupon-btn" data-code="${coupon.code}" style="padding: 5px 15px; font-size:0.85rem;">Apply</button>`;
+                            const btnHtml = `<button class="btn btn-primary select-modal-coupon-btn" data-code="${coupon.code}" style="padding: 5px 15px; font-size:0.85rem;">Select</button>`;
                                 
                             const html = `
-                                <div style="border: 1px dashed #c8e6c9; background: #e8f5e9; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+                                <div style="border: 1px dashed var(--primary-color); background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
                                     <div>
-                                        <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">${coupon.code}</div>
-                                        <div style="color: var(--text-secondary); font-size: 0.9rem;">${coupon.discountPercent}% OFF (Upto ₹${coupon.maxDiscount})</div>
+                                        <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; color: var(--primary-color);">${coupon.code}</div>
+                                        <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                                            ${coupon.type === 'PEPSI' ? 'Free Pepsi on this order' : `${coupon.discount}% OFF (Upto ₹${coupon.maxDiscount})`}
+                                        </div>
+                                        ${coupon.minOrder ? `<div style="color: #888; font-size: 0.75rem; margin-top: 5px;">Min Order: ₹${coupon.minOrder}</div>` : ''}
                                     </div>
                                     <div>
                                         ${btnHtml}
@@ -867,26 +1282,25 @@ document.addEventListener('DOMContentLoaded', () => {
                             container.insertAdjacentHTML('beforeend', html);
                         });
                         
-                        document.querySelectorAll('.apply-modal-coupon-btn').forEach(btn => {
+                        document.querySelectorAll('.select-modal-coupon-btn').forEach(btn => {
                             btn.addEventListener('click', (e) => {
                                 const code = e.target.getAttribute('data-code');
-                                const coupon = activeCoupons.find(c => c.code === code);
-                                if (!coupon) return;
+                                console.log("Coupon selected from modal:", code);
                                 
-                                // Apply
-                                appliedCoupon = coupon;
-                                const msgEl = document.getElementById('coupon-message');
-                                if (msgEl) msgEl.textContent = '';
-                                document.getElementById('coupon-input').value = '';
-                                updateCartUI();
-                                couponsModal.classList.remove('show');
+                                const codeInput = document.getElementById('coupon-input');
+                                if (codeInput) {
+                                    codeInput.value = code;
+                                    codeInput.focus();
+                                }
+                                
+                                if (couponsModal) couponsModal.classList.remove('show');
                             });
                         });
                     }
                 })
                 .catch(err => {
-                    console.error('Error fetching coupons:', err);
-                    container.innerHTML = '<p class="text-center" style="color: var(--text-secondary);">No coupons available</p>';
+                    console.error('Error fetching modal coupons:', err);
+                    container.innerHTML = '<p class="text-center" style="color: var(--text-secondary);">Error loading coupons. Please try manual entry.</p>';
                 });
         });
         
@@ -1042,7 +1456,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div id="payment-step-2" class="payment-step" style="display: none;">
                             <h3 class="text-center mb-2" style="font-family: var(--font-heading);">Payment Details</h3>
                             <div class="divider" style="margin-bottom:1.5rem;"></div>
-                            <div id="payment-delivery-warning" style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #ffc107; font-size:0.85rem; font-weight:bold; display:none;"></div>
+                            <div id="payment-delivery-warning" style="background-color: rgba(244,180,0,0.15); color: var(--primary-color); padding: 10px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--primary-color); font-size:0.85rem; font-weight:bold; display:none;"></div>
                             <button id="btn-pay-items" class="btn btn-outline btn-block mb-3 py-3" style="font-size:1.1rem;">Pay for Items Only (₹<span id="pay-items-amount">0</span>)</button>
                             <button id="btn-pay-full" class="btn btn-primary btn-block mb-2 py-3" style="font-size:1.1rem;">Pay Full (Items + Delivery) (₹<span id="pay-full-amount">0</span>)</button>
                             <button id="btn-back-step-1" class="btn btn-outline btn-block mt-4" style="border:none; text-decoration:underline;">Back</button>
@@ -1050,15 +1464,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         <div id="payment-step-3" class="payment-step" style="display: none; text-align: center;">
                             <h3 style="font-family: var(--font-heading); margin-bottom:10px;">Scan to Pay: ₹<span id="final-pay-amount">0</span></h3>
-                            <div style="background:#f8f9fa; padding:15px; border-radius:12px; margin-bottom:15px;">
+                            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:15px;">
                                 <img src="images/upi-qr.jpeg" alt="UPI QR Code" style="width: 200px; height: 200px; margin: 0 auto; border-radius:10px; box-shadow:var(--shadow-sm);">
                             </div>
                             <p style="font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; color:var(--text-primary);">UPI: manjukarmakar3-2@okaxis</p>
                             <button id="btn-copy-upi" class="btn btn-outline mb-4" style="font-size: 0.9rem; padding: 6px 20px; border-radius: 20px; display:inline-block; width:auto; border-width:2px; font-weight:600;">Copy UPI ID</button>
                             
-                            <div style="background-color: #fff3cd; padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107; text-align:left;">
-                                <p style="color: #856404; font-size: 0.9rem; font-weight: bold; margin-bottom: 5px;">⚠️ Payment Screenshot Required</p>
-                                <p style="color: #856404; font-size: 0.85rem; line-height:1.4;">Please attach your payment screenshot in WhatsApp before sending the order to confirm it.</p>
+                            <div style="background-color: rgba(244,180,0,0.15); padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--primary-color); text-align:left;">
+                                <p style="color: var(--primary-color); font-size: 0.9rem; font-weight: bold; margin-bottom: 5px;">⚠️ Payment Screenshot Required</p>
+                                <p style="color: #e0e0e0; font-size: 0.85rem; line-height:1.4;">Please attach your payment screenshot in WhatsApp before sending the order to confirm it.</p>
                             </div>
                             
                             <button id="btn-i-have-paid" class="btn btn-whatsapp btn-block py-3" style="font-size:1.1rem;">
@@ -1109,9 +1523,27 @@ document.addEventListener('DOMContentLoaded', () => {
             } = orderData;
             
             let itemsList = '';
-            cart.forEach(item => {
-                const itemTotal = Number(item.price) * (Number(item.quantity) || 1);
-                itemsList += `• ${item.name} ×${item.quantity || 1} — ₹${itemTotal}\n`;
+            let finalCart = [...cart];
+            
+            if (appliedCoupon && appliedCoupon.type === 'PEPSI') {
+                finalCart.push({
+                    name: "Pepsi",
+                    quantity: 1,
+                    price: 20,
+                    isFree: true
+                });
+            }
+
+            finalCart.forEach(item => {
+                if (item.isFree) {
+                    itemsList += `• ${item.name} ×${item.quantity} — FREE 🎁\n`;
+                } else {
+                    const itemTotal = Number(item.price) * (Number(item.quantity) || 1);
+                    itemsList += `• ${item.name} ×${item.quantity || 1} — ₹${itemTotal}\n`;
+                }
+                if (item.isCombo && item.note) {
+                    itemsList += `  └ ${item.note}\n`;
+                }
             });
             itemsList = itemsList.trimEnd();
 
@@ -1178,7 +1610,11 @@ document.addEventListener('DOMContentLoaded', () => {
             msg += `💰 Bill Summary:\n`;
             msg += `Subtotal: ₹${subtotalAmount}\n`;
             if (appliedCoupon) {
-                msg += `Discount: -₹${discountAmount}\n`;
+                if (appliedCoupon.type === 'PEPSI') {
+                    msg += `Discount: -₹${discountAmount} (Free Pepsi)\n`;
+                } else {
+                    msg += `Discount: -₹${discountAmount}\n`;
+                }
             }
             msg += `Delivery: ${deliveryText}\n`;
             msg += `Total: ₹${finalTotal}\n\n`;
@@ -1197,7 +1633,18 @@ document.addEventListener('DOMContentLoaded', () => {
             msg += `📍 Customer Details:\n`;
             msg += `Name: ${name}\n`;
             msg += `Phone: ${phone}\n`;
-            msg += `Address: ${address}\n\n`;
+            
+            if (!isDelivery) {
+                msg += `Order Type: 🛍️ Takeaway\n\n`;
+            } else {
+                msg += `Order Type: 🚚 Delivery\n`;
+                msg += `Address: ${address}\n`;
+                if (window.gpsLink) {
+                    msg += `Google Maps GPS: ${window.gpsLink}\n\n`;
+                } else {
+                    msg += `\n`;
+                }
+            }
             msg += `-----------------------`;
 
             if (!isCOD) {
@@ -1212,9 +1659,17 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         function sendWhatsAppMessage() {
-            const name = document.getElementById('cust-name').value.trim();
-            const phone = document.getElementById('cust-phone').value.trim();
-            const address = document.getElementById('cust-address').value.trim();
+            const getVal = (id1, id2) => {
+                const el1 = document.getElementById(id1);
+                const el2 = document.getElementById(id2);
+                if (el1 && el1.value.trim()) return el1.value.trim();
+                if (el2 && el2.value.trim()) return el2.value.trim();
+                return '';
+            };
+            
+            const name = getVal('checkout-name', 'cust-name');
+            const phone = getVal('checkout-phone', 'cust-phone');
+            const address = getVal('checkout-address', 'cust-address');
             
             let subtotalAmount = 0;
             cart.forEach(item => {
@@ -1223,8 +1678,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 subtotalAmount += (priceNum * qtyNum);
             });
 
-            const orderTypeDelivery = document.getElementById('order-type-delivery');
-            const isDelivery = orderTypeDelivery ? orderTypeDelivery.checked : true;
+            const orderTypeDel1 = document.getElementById('checkout-type-delivery');
+            const orderTypeDel2 = document.getElementById('order-type-delivery');
+            let isDelivery = true;
+            if (orderTypeDel1 && orderTypeDel1.checked !== undefined) {
+                isDelivery = orderTypeDel1.checked;
+            } else if (orderTypeDel2 && orderTypeDel2.checked !== undefined) {
+                isDelivery = orderTypeDel2.checked;
+            }
 
             const message = window.buildWhatsAppMessage({
                 isCOD,
@@ -1255,52 +1716,125 @@ document.addEventListener('DOMContentLoaded', () => {
             cartDrawer.classList.remove('open');
         }
 
-        if (checkoutBtn) {
-            checkoutBtn.addEventListener('click', () => {
-                if (cart.length === 0) return;
-                const name = document.getElementById('cust-name').value.trim();
-                const phoneInput = document.getElementById('cust-phone');
-                const phone = phoneInput.value.trim();
-                const address = document.getElementById('cust-address').value.trim();
-                
-                if (!name || !phone || !address) {
-                    alert('Please fill in your Name, Phone, and Address for delivery.');
-                    return;
-                }
-                
-                const phoneRegex = /^(\+91\d{10}|0\d{10}|\d{10})$/;
-                if (!phoneRegex.test(phone)) {
-                    alert('Please enter a valid phone number');
-                    phoneInput.style.borderColor = 'red';
-                    phoneInput.focus();
-                    return;
-                } else {
-                    phoneInput.style.borderColor = '';
-                }
-                
-                const orderTypeDelivery = document.getElementById('order-type-delivery');
-                const isDelivery = orderTypeDelivery ? orderTypeDelivery.checked : true;
+        function executeCheckout(nameId, phoneId, addressId, orderTypeDeliveryId) {
+            if (cart.length === 0) return;
+            const name = document.getElementById(nameId)?.value.trim();
+            const phoneInput = document.getElementById(phoneId);
+            const phone = phoneInput?.value.trim();
+            const address = document.getElementById(addressId)?.value.trim();
 
-                currentOrderSubtotal = 0;
-                cart.forEach(item => {
-                    const priceNum = Number(item.price) || 0;
-                    const qtyNum = Number(item.quantity) || 0;
-                    currentOrderSubtotal += (priceNum * qtyNum);
-                });
-                
-                currentOrderTotal = currentOrderSubtotal;
-                if (isDelivery && deliveryStatus === 'AVAILABLE') {
-                    currentOrderTotal += deliveryCharge;
-                }
-                
-                if (appliedCoupon) {
-                    currentOrderTotal -= discountAmount;
-                    if (currentOrderTotal < 0) currentOrderTotal = 0;
-                }
+            const orderTypeDelivery = document.getElementById(orderTypeDeliveryId);
+            const isDelivery = orderTypeDelivery ? orderTypeDelivery.checked : true;
+            
+            if (!name || !phone) {
+                alert('Please fill in your Name and Phone.');
+                return;
+            }
+            if (isDelivery && !address) {
+                alert('Please provide a delivery address.');
+                return;
+            }
+            
+            const phoneRegex = /^(\+91\d{10}|0\d{10}|\d{10})$/;
+            if (!phoneRegex.test(phone)) {
+                alert('Please enter a valid phone number');
+                phoneInput.style.borderColor = 'red';
+                phoneInput.focus();
+                return;
+            } else {
+                phoneInput.style.borderColor = '';
+            }
 
-                showUpsellModal();
+            currentOrderSubtotal = 0;
+            cart.forEach(item => {
+                const priceNum = Number(item.price) || 0;
+                const qtyNum = Number(item.quantity) || 0;
+                currentOrderSubtotal += (priceNum * qtyNum);
+            });
+            
+            currentOrderTotal = currentOrderSubtotal;
+            if (isDelivery && deliveryStatus === 'AVAILABLE') {
+                currentOrderTotal += deliveryCharge;
+            }
+            
+            if (appliedCoupon) {
+                currentOrderTotal -= discountAmount;
+                if (currentOrderTotal < 0) currentOrderTotal = 0;
+            }
+            
+            if (nameId === 'checkout-name') {
+               const notesInput = document.getElementById('checkout-notes');
+               if (notesInput && notesInput.value.trim() !== '') {
+                   restaurantNote = notesInput.value.trim();
+               }
+            }
+
+            showUpsellModal();
+        }
+
+        const cartDrawerCheckoutBtn = document.getElementById('checkout-btn');
+        if (cartDrawerCheckoutBtn) {
+            cartDrawerCheckoutBtn.addEventListener('click', () => {
+                const deliveryRadio = document.getElementById('order-type-delivery');
+                if (deliveryRadio) {
+                    localStorage.setItem('littiWaleOrderType', deliveryRadio.checked ? 'delivery' : 'takeaway');
+                }
+                window.location.href = 'checkout.html';
             });
         }
+        
+        const pageCheckoutBtn = document.getElementById('checkout-place-order-btn');
+        if (pageCheckoutBtn) {
+            pageCheckoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                const name = document.getElementById('checkout-name')?.value.trim();
+                const phone = document.getElementById('checkout-phone')?.value.trim();
+                const address = document.getElementById('checkout-address')?.value.trim();
+                const isDelivery = document.getElementById('checkout-type-delivery')?.checked;
+                
+                if (!name || !phone) {
+                    alert('Please fill in your Name and Phone.');
+                    return;
+                }
+                if (isDelivery && !address) {
+                    alert('Please provide a delivery address.');
+                    return;
+                }
+
+                executeCheckout('checkout-name', 'checkout-phone', 'checkout-address', 'checkout-type-delivery');
+            });
+        }
+        
+        const btnGps = document.getElementById('btn-gps');
+        if (btnGps) {
+            btnGps.addEventListener('click', () => {
+                if ("geolocation" in navigator) {
+                    btnGps.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Locating...';
+                    deliveryStatus = 'CALCULATING';
+                    updateCartUI();
+                    navigator.geolocation.getCurrentPosition(position => {
+                        window.gpsLink = `https://maps.google.com/?q=${position.coords.latitude},${position.coords.longitude}`;
+                        btnGps.innerHTML = '<i class="fas fa-check"></i> Location Captured';
+                        btnGps.style.background = '#28a745';
+                        const dist = calculateDistance(position.coords.latitude, position.coords.longitude, RESTAURANT_LAT, RESTAURANT_LNG);
+                        const roundedKm = Math.max(1, Math.round(dist));
+                        deliveryCharge = roundedKm * 30;
+                        deliveryStatus = 'AVAILABLE';
+                        updateCartUI();
+                    }, error => {
+                        alert("Could not get location. Ensure GPS is enabled.");
+                        btnGps.innerHTML = '<i class="fas fa-map-marker-alt"></i> Use Current Location (Optional)';
+                        deliveryStatus = 'UNKNOWN';
+                        deliveryCharge = 0;
+                        updateCartUI();
+                    });
+                } else {
+                    alert('Geolocation is not supported by your browser.');
+                }
+            });
+        }
+
 
         function showPaymentModalActual() {
             paymentModal.classList.add('show');
@@ -1376,13 +1910,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     const badgeHtml = isBestseller ? '<div style="font-size:0.75rem; color:#f7a22e; font-weight:bold; margin-bottom:2px;">⭐ Bestseller</div>' : '<div style="font-size:0.75rem; color:#28a745; font-weight:bold; margin-bottom:2px;">🔥 Popular</div>';
                     
                     const html = `
-                        <div style="display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; padding:10px 15px; border-radius:10px; border: 1px solid #ebebeb;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:#1c1c1c; padding:10px 15px; border-radius:10px; border: 1px solid #333; margin-bottom:10px;">
                             <div style="flex:1;">
                                 ${badgeHtml}
-                                <h4 style="font-size:1rem; margin-bottom:2px; font-family:var(--font-heading);">${item.name}</h4>
-                                <div style="color:var(--text-secondary); font-size:0.9rem;">₹${priceToUse}</div>
+                                <h4 style="font-size:1rem; margin-bottom:2px; font-family:var(--font-heading); color:#ffffff;">${item.name}</h4>
+                                <div style="color:var(--primary-color); font-weight:bold; font-size:1rem;">₹${priceToUse}</div>
                             </div>
-                            <button class="btn" style="border: 1px solid var(--primary-color); color:var(--primary-color); padding: 6px 15px; font-size:0.9rem;" onclick="const added = addToCart('${idToUse}', '${nameToUse}', ${priceToUse}, '${item.image}'); if(added) { document.getElementById('upsell-modal').classList.remove('show'); proceedToPaymentModal(); }">+ Add</button>
+                            <button class="btn" style="border: 1px solid var(--primary-color); background:transparent; color:var(--primary-color); padding: 6px 15px; font-size:0.9rem;" onclick="const added = addToCart('${idToUse}', '${nameToUse}', ${priceToUse}, '${item.image}'); if(added) { document.getElementById('upsell-modal').classList.remove('show'); proceedToPaymentModal(); }">+ Add</button>
                         </div>
                     `;
                     container.innerHTML += html;
@@ -1852,4 +2386,85 @@ document.addEventListener('DOMContentLoaded', () => {
     try { initAnnouncementCarousel(); } catch(e) { console.error("Slider failed", e); }
     try { initReviewsCarousel(); } catch(e) { console.error("Reviews failed", e); }
     try { setupCartDrawer(); initCart(); } catch(e) { console.error("Cart init failed", e); }
+    
+    // Checkout specific initialization
+    const checkoutTypeDel = document.getElementById('checkout-type-delivery');
+    const checkoutTypeTake = document.getElementById('checkout-type-takeaway');
+    const checkoutAddressBlock = document.getElementById('checkout-address')?.parentElement;
+    
+    if (checkoutTypeDel && checkoutTypeTake && checkoutAddressBlock) {
+        const savedOrderType = localStorage.getItem('littiWaleOrderType') || 'delivery';
+        
+        const updateAddressVisibility = () => {
+            if (checkoutTypeTake.checked) {
+                checkoutAddressBlock.style.display = 'none';
+            } else {
+                checkoutAddressBlock.style.display = 'block';
+            }
+        };
+
+        if (savedOrderType === 'takeaway') {
+            checkoutTypeTake.checked = true;
+        } else {
+            checkoutTypeDel.checked = true;
+        }
+        updateAddressVisibility();
+
+        checkoutTypeDel.addEventListener('change', updateAddressVisibility);
+        checkoutTypeTake.addEventListener('change', updateAddressVisibility);
+    }
+    
+    // UI Drawer Handlers (Get Deals & Menu)
+    const getDealsDrawer = document.getElementById('get-deals-drawer');
+    const menuNavDrawer = document.getElementById('menu-nav-drawer');
+
+    const openDrawer = (drawer) => {
+        if (drawer) {
+            drawer.classList.add('open');
+            document.body.style.overflow = 'hidden';
+            
+            // Auto-close mobile menu if open
+            const navLinks = document.querySelector('.nav-links');
+            if (navLinks && navLinks.classList.contains('active')) {
+                navLinks.classList.remove('active');
+            }
+        }
+    };
+
+    const closeDrawers = () => {
+        if (getDealsDrawer) getDealsDrawer.classList.remove('open');
+        if (menuNavDrawer) menuNavDrawer.classList.remove('open');
+        document.body.style.overflow = '';
+    };
+
+    document.querySelectorAll('.nav-get-deals-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Check if we are not on index.html
+            if (window.location.pathname.indexOf('index.html') === -1 && window.location.pathname.length > 2) {
+                window.location.href = 'index.html#craziest-deals-section';
+                return;
+            }
+            openDrawer(getDealsDrawer);
+        });
+    });
+
+    document.querySelectorAll('.nav-menu-drawer-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Check if we are not on index.html
+            if (window.location.pathname.indexOf('index.html') === -1 && window.location.pathname.length > 2) {
+                window.location.href = 'index.html#menu-section';
+                return;
+            }
+            
+            openDrawer(menuNavDrawer);
+        });
+    });
+
+    document.querySelectorAll('.close-sheet-btn, .nav-bottom-sheet-overlay').forEach(btn => {
+        btn.addEventListener('click', closeDrawers);
+    });
 });
+

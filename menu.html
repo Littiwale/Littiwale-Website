@@ -7,9 +7,14 @@
     <title>Litti Wale | Authentic Indian Comfort Food in Barbil</title>
     <meta name="description"
         content="Litti Wale brings the authentic taste of Indian street and comfort food to Barbil. Signature Litti Chokha, thalis, and fast food.">
+    
+    <!-- ✅ FAVICON -->
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="apple-touch-icon" href="images/logo.png">
+
     <link rel="stylesheet" href="css/style.css">
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -19,27 +24,27 @@
     <!-- Navbar -->
     <nav class="navbar">
         <div class="nav-container">
+            <button class="mobile-toggle hamburger" aria-label="Toggle Navigation">
+                <i class="fas fa-bars"></i>
+            </button>
             <a href="#" class="logo-link">
                 <!-- Fallback text if logo missing, but we expect images/logo.png -->
                 <img src="images/logo.png" alt="Litti Wale Logo" class="nav-logo"
                     onerror="this.outerHTML='<span class=\'logo-text\'>Litti Wale</span>'">
             </a>
 
-            <button class="mobile-toggle" aria-label="Toggle Navigation">
-                <i class="fas fa-bars"></i>
-            </button>
-
             <ul class="nav-links">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#menu-section">Menu</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#reach">Reach Us</a></li>
-                <li>
-                    <a href="javascript:void(0)" class="cart-link nav-cart-btn">
-                        <i class="fas fa-shopping-cart"></i> Cart <span id="cart-count" class="cart-badge">0</span>
-                    </a>
-                </li>
+                <li><a href="index.html#home">Home</a></li>
+                <li><a href="javascript:void(0)" class="nav-menu-drawer-btn">Menu</a></li>
+                <li><a href="index.html#about">About</a></li>
+                <li><a href="index.html#reach">Reach Us</a></li>
+                <li><a href="index.html#connect">Social</a></li>
+                <li><a href="javascript:void(0)" class="nav-get-deals-btn">🔥 Get Deals</a></li>
             </ul>
+
+            <a href="javascript:void(0)" class="cart-link nav-cart-btn">
+                <i class="fas fa-shopping-cart"></i> Cart <span id="cart-count" class="cart-badge">0</span>
+            </a>
         </div>
     </nav>
 
@@ -256,7 +261,10 @@
         </a>
     </div>
 
+
+    <script src="IPL/MatchDetails/matchData.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/restaurant-timing.js"></script>
 </body>
 
 </html>

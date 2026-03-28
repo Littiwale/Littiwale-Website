@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- ✅ SEO TITLE -->
+    <title>Littiwale Barbil | Best Restaurant in Barbil | Litti Chokha, Pizza, Biryani</title>
+
+    <!-- ✅ SEO DESCRIPTION -->
+    <meta name="description"
+content="Littiwale Barbil is the best restaurant in Barbil offering authentic Litti Chokha, thali, meals, biryani, pizza, snacks and fast food. If you are searching for food near me in Barbil, enjoy fresh, tasty and affordable meals at Littiwale.">
+
+    <!-- ✅ SEO KEYWORDS -->
+    <meta name="keywords"
+        content="littiwale barbil, best restaurant in barbil, food near me barbil, pizza barbil, biryani barbil, litti chokha barbil, cheap food, budget friendly meals, meals near me">
+
+    <!-- ✅ AUTHOR -->
+    <meta name="author" content="Littiwale Barbil">
+
+    <!-- ✅ SOCIAL (Google + WhatsApp preview) -->
+    <meta property="og:title" content="Littiwale Barbil">
+    <meta property="og:description"
+        content="Best food in Barbil - Litti Chokha, Pizza, Biryani & More">
+    <meta property="og:type" content="website">
+
+    <!-- ✅ FAVICON -->
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="apple-touch-icon" href="images/logo.png">
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+
+<body>
+
+
+    <!-- NAVBAR -->
+
+    <nav class="navbar">
+
+        <div class="nav-container">
+
+            <a href="index.html" class="logo-link">
+
+                <img src="images/logo.png" class="nav-logo" alt="Litti Wale">
+
+            </a>
+
+
+            <button class="mobile-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+
+
+            <ul class="nav-links">
+
+                <li><a href="index.html#home">Home</a></li>
+
+                <li><a href="menu.html">Menu</a></li>
+
+                <li><a href="index.html#about">About</a></li>
+
+                <li><a href="index.html#reach">Reach Us</a></li>
+
+                <li>
+                    <a href="javascript:void(0)" class="cart-link nav-cart-btn">
+                        <i class="fas fa-shopping-cart"></i>
+                        Cart
+                        <span id="cart-count" class="cart-badge">0</span>
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+
+    </nav>
+
+
+
+    <!-- CHECKOUT SECTION -->
+    <section id="checkout-section" class="menu-section" style="padding:40px 0; min-height:60vh; margin-top:80px;">
+        <div class="container">
+            <h2 class="section-title text-center">Complete Your Order</h2>
+            <div class="divider"></div>
+            
+            <div class="checkout-grid" style="display:flex; flex-wrap:wrap; gap:30px; margin-top:30px;">
+                <!-- Left: Order Summary -->
+                <div style="flex:1; min-width:300px; background:var(--bg-light); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:25px;">
+                    <h3 style="margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">Order Summary</h3>
+                    <div id="checkout-items-container">
+                        <!-- Items injected here by js/main.js -->
+                    </div>
+                    <div id="checkout-summary" style="margin-top:20px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                            <span>Subtotal</span>
+                            <span id="checkout-subtotal">₹0</span>
+                        </div>
+                        <div id="checkout-discount-row" style="display:none; justify-content:space-between; margin-bottom:10px; color:#28a745;">
+                            <span>Discount</span>
+                            <span id="checkout-discount">-₹0</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                            <span>Delivery</span>
+                            <span id="checkout-delivery">₹0</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-top:15px; border-top:1px dashed rgba(255,255,255,0.2); padding-top:15px; font-weight:bold; font-size:1.2rem; color:var(--primary-color);">
+                            <span>Total</span>
+                            <span id="checkout-total">₹0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Form -->
+                <div style="flex:1; min-width:300px; background:var(--bg-light); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:25px;">
+                    <h3 style="margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">Delivery Details</h3>
+                    
+                    <div class="form-group mt-3" style="margin-bottom:15px;">
+                        <label>Select Order Type:</label>
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <label style="flex:1; background:#1c1c1c; color:#ffffff; padding:10px; border-radius:8px; border:1px solid var(--primary-color); text-align:center; cursor:pointer;" class="order-type-label">
+                                <input type="radio" name="checkoutOrderType" id="checkout-type-delivery" value="delivery" checked style="margin-right:5px; accent-color:var(--primary-color);"> Delivery
+                            </label>
+                            <label style="flex:1; background:#1c1c1c; color:#ffffff; padding:10px; border-radius:8px; border:1px solid #444; text-align:center; cursor:pointer;" class="order-type-label">
+                                <input type="radio" name="checkoutOrderType" id="checkout-type-takeaway" value="takeaway" style="margin-right:5px; accent-color:var(--primary-color);"> Takeaway
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <input type="text" id="checkout-name" class="form-control" placeholder="Your Name" style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:8px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <input type="tel" id="checkout-phone" class="form-control" placeholder="Phone Number" style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:8px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom:15px; position:relative;">
+                        <textarea id="checkout-address" class="form-control" placeholder="Complete Delivery Address" rows="3" style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:8px;"></textarea>
+                        <button type="button" id="btn-gps" style="margin-top:10px; width:100%; padding:10px; background:#1a73e8; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;"><i class="fas fa-map-marker-alt"></i> Use Current Location (Optional)</button>
+                    </div>
+                    <div class="form-group" style="margin-bottom:20px;">
+                        <input type="text" id="checkout-notes" class="form-control" placeholder="Any special instructions? (Optional)" style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:8px;">
+                    </div>
+
+                    <button id="checkout-place-order-btn" class="btn btn-primary" style="width:100%; padding:15px; font-size:1.2rem; border-radius:8px; color:#0d0d0d; font-weight:bold;">Proceed to Payment</button>
+                    <p style="text-align:center; margin-top:10px; font-size:0.85rem; color:var(--text-secondary);">Payments are securely verified before WhatsApp redirection.</p>
+                </div>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- CONNECT -->
+
+    <section class="connect-section">
+
+        <div class="container text-center">
+
+            <h2 class="section-title">
+                Connect With Us
+            </h2>
+
+            <div class="divider"></div>
+
+
+            <div class="social-links-large">
+
+                <a href="https://www.instagram.com/littiwaleofficial/" target="_blank" class="social-card instagram">
+
+                    <i class="fab fa-instagram"></i>
+
+                    Instagram
+
+                </a>
+
+
+                <a href="https://www.facebook.com/share/18fQs5NEQU/" target="_blank" class="social-card facebook">
+
+                    <i class="fab fa-facebook-f"></i>
+
+                    Facebook
+
+                </a>
+
+
+                <a href="https://wa.me/916370680744" target="_blank" class="social-card whatsapp">
+
+                    <i class="fab fa-whatsapp"></i>
+
+                    WhatsApp
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- REACH US -->
+
+    <section id="reach" class="reach-section">
+
+        <div class="container">
+
+            <div class="reach-grid">
+
+
+                <div class="reach-info">
+
+                    <h2 class="section-title">
+                        Reach Us
+                    </h2>
+
+                    <div class="divider left"></div>
+
+
+                    <p>
+
+                        Ward no - 7<br>
+						Punjabi Para<br>
+                        Barbil<br>
+                        Odisha 758035
+
+                    </p>
+
+                    <p>
+
+                        Phone: +91 63706 80744
+
+                    </p>
+
+                    <p>
+
+                        11:00 AM – 10:30 PM
+
+                    </p>
+
+
+                    <div class="reach-actions">
+
+                        <a href="tel:+916370680744" class="btn btn-outline">
+
+                            Call Now
+
+                        </a>
+
+                        <a href="https://wa.me/916370680744" target="_blank" class="btn btn-whatsapp">
+
+                            WhatsApp
+
+                        </a>
+
+                        <a href="https://maps.google.com/maps?q=22.1152751,85.3871145" target="_blank"
+                            class="btn btn-primary">
+
+                            Get Directions
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="map-container">
+
+                    <iframe width="100%" height="350" style="border:0;border-radius:12px" loading="lazy"
+                        src="https://maps.google.com/maps?q=22.1152751,85.3871145&z=17&output=embed">
+
+                    </iframe>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- FOOTER -->
+
+    <footer class="footer">
+
+        <div class="container footer-content">
+
+            <div class="footer-brand">
+
+                <img src="images/logo.png" class="footer-logo" alt="Litti Wale">
+
+                <p>
+
+                    Barbil's home of authentic flavors.
+
+                </p>
+
+            </div>
+
+
+            <div class="footer-links">
+
+                <h4>Quick Links</h4>
+
+                <ul>
+
+                    <li><a href="index.html#home">Home</a></li>
+
+                    <li><a href="menu.html">Menu</a></li>
+
+                    <li><a href="index.html#about">About</a></li>
+
+                    <li><a href="index.html#reach">Reach Us</a></li>
+
+                </ul>
+
+            </div>
+
+
+        </div>
+
+    </footer>
+
+
+
+    <!-- FLOAT BUTTONS -->
+
+    <div class="fab-container">
+
+        <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" class="fab-btn" style="background:#e23744;color:white">
+
+            <i class="fas fa-utensils"></i>
+
+        </a>
+
+
+        <a href="javascript:void(0)" class="fab-btn cart-fab" style="background:#333;color:white">
+
+            <i class="fas fa-shopping-cart"></i>
+
+            <span id="fab-cart-badge">0</span>
+
+        </a>
+
+
+        <a href="tel:+916370680744" class="fab-btn" style="background:#007bff;color:white">
+
+            <i class="fas fa-phone"></i>
+
+        </a>
+
+
+        <a href="https://wa.me/916370680744" target="_blank" class="fab-btn" style="background:#25d366;color:white">
+
+            <i class="fab fa-whatsapp"></i>
+
+        </a>
+
+    </div>
+
+
+
+    <script src="IPL/MatchDetails/matchData.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/restaurant-timing.js"></script>
+
+</body>
+
+</html>

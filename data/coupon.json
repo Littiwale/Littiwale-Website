@@ -1,0 +1,11 @@
+[
+  {
+    "code": "DHURANDHAR30",
+    "type": "DISCOUNT",
+    "discount": 30,
+    "maxDiscount": 100,
+    "minOrder": 300,
+    "active": false,
+    "expiry": "2026-03-25"
+  }
+]
