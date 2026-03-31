@@ -76,9 +76,13 @@ document.addEventListener("DOMContentLoaded", () => {
             <p>Match ${foundMatchNumber}</p>
         </div>
 
-        <div class="ipl-players-anim" id="ipl-players-anim">
-            <img src="IPL/PlayersImage/${team1.toLowerCase()}.png" class="player-cutout left-player" alt="${team1}">
-            <img src="IPL/PlayersImage/${team2.toLowerCase()}.png" class="player-cutout right-player" alt="${team2}">
+        <div class="ipl-players-anim players-wrapper" id="ipl-players-anim">
+            <div class="player-container left-player">
+                <img src="IPL/PlayersImage/${team1.toLowerCase()}.png" class="player-cutout" alt="${team1}">
+            </div>
+            <div class="player-container right-player">
+                <img src="IPL/PlayersImage/${team2.toLowerCase()}.png" class="player-cutout" alt="${team2}">
+            </div>
         </div>
 
         <div class="ipl-vs-screen" id="ipl-vs-screen">
@@ -144,6 +148,21 @@ document.addEventListener("DOMContentLoaded", () => {
         executeExit();
     });
 
+    // Ensure balancing runs as images load
+    const checkImages = overlay.querySelectorAll('img');
+    let loadedCount = 0;
+    checkImages.forEach(img => {
+        if (img.complete) {
+            loadedCount++;
+        } else {
+            img.addEventListener('load', () => {
+                loadedCount++;
+                if (loadedCount === checkImages.length) balancePlayers();
+            });
+        }
+    });
+    if (loadedCount === checkImages.length) setTimeout(balancePlayers, 100);
+
     const startIntroFlow = () => {
         // Sequence Execution starts
 
@@ -156,7 +175,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 2s: Player Entry triggers
         setTimeout(() => {
-            if (!isHidden) playersAnim.classList.add("active");
+            if (!isHidden) {
+                playersAnim.classList.add("active");
+                // Re-balance once they are shown and layout is active
+                balancePlayers();
+            }
         }, 2000);
 
         // 2.8s: Thunder Moment + Collision
@@ -229,6 +252,58 @@ document.addEventListener("DOMContentLoaded", () => {
                 }, 500);
                 startIntroFlow();
             });
-        }, 200); // 200ms ensures the visual feedback finishes its punch
     });
+});
+
+// ✅ AUTO SCALE ENGINE (CORE LOGIC)
+function balancePlayers() {
+    const players = document.querySelectorAll(".player-container img");
+    if (!players.length) return;
+
+    let maxHeight = 0;
+
+    // Reset scale first
+    players.forEach(img => {
+        img.style.setProperty("--player-scale", 1);
+    });
+
+    // Measure actual height
+    players.forEach(img => {
+        const rect = img.getBoundingClientRect();
+        if (rect.height > maxHeight) {
+            maxHeight = rect.height;
+        }
+    });
+
+    // Apply scaling
+    players.forEach(img => {
+        const rect = img.getBoundingClientRect();
+        if (!rect.height) return;
+
+        const scale = maxHeight / rect.height;
+        if (scale > 1.03) {
+            img.style.setProperty("--player-scale", scale.toFixed(2));
+        }
+    });
+}
+
+// RUN ON LOAD
+window.addEventListener("load", () => {
+    setTimeout(balancePlayers, 100);
+});
+
+// RUN ON RESIZE
+window.addEventListener("resize", () => {
+    setTimeout(balancePlayers, 100);
+});
+
+// RUN WHEN IMAGES CHANGE (MutationObserver)
+const introObserver = new MutationObserver(() => {
+    setTimeout(balancePlayers, 100);
+});
+
+introObserver.observe(document.body, {
+    subtree: true,
+    childList: true
+});
 });

@@ -187,31 +187,53 @@
 }
 
 /* PLAYERS */
-.ipl-players-anim {
+/* PLAYERS REFACTORED FOR EQUAL VISUAL FRAMES */
+.players-wrapper {
+    display: flex !important;
+    width: 100% !important;
+    height: 100% !important;
     position: absolute;
-    width: 100%;
-    height: 100%;
+    top: 0;
+    left: 0;
     z-index: 3;
     pointer-events: none;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
 }
-.player-cutout {
-    height: 85vh; 
-    max-height: 800px;
-    object-fit: contain;
+
+.player-container {
+    flex: 1 !important; /* Equal visual halves */
+    position: relative !important;
+    overflow: hidden !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: flex-end !important;
+    height: 100%;
     opacity: 0;
-    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.8s ease-out, filter 0.5s ease-out; 
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.8s ease-out;
 }
-.left-player { transform: translateX(-100%); transform-origin: bottom left; }
-.right-player { transform: translateX(100%); transform-origin: bottom right; }
 
-.ipl-players-anim.active .left-player { opacity: 1; transform: translateX(10%); }
-.ipl-players-anim.active .right-player { opacity: 1; transform: translateX(-10%); }
+/* Slide Initial Positions (Applied to Container) */
+.left-player { 
+    transform: translateX(-100%); 
+    transform-origin: bottom center; 
+}
+.right-player { 
+    transform: translateX(100%); 
+    transform-origin: bottom center; 
+}
 
-.ipl-players-anim.dimmed .player-cutout {
-    filter: brightness(0.4) blur(1px); /* slight dimming behind VS */
+/* Slide Final Positions (When Active) */
+.ipl-players-anim.active .left-player { 
+    opacity: 1; 
+    transform: translateX(0) !important; 
+}
+.ipl-players-anim.active .right-player { 
+    opacity: 1; 
+    transform: translateX(0) !important; 
+}
+
+/* Dimming Logic */
+.ipl-players-anim.dimmed .player-container {
+    filter: brightness(0.4) blur(1px);
 }
 
 /* THUNDER FLASH */
@@ -352,4 +374,32 @@
     .ipl-unlock-text { font-size: 1.5rem; margin-bottom: 25px; }
     .ipl-tap-cue { font-size: 1rem; padding: 10px 20px; }
     .ipl-ready-text { font-size: 1.2rem; }
+}
+
+/* DYNAMIC AUTO-SCALING SYSTEM */
+.player-container {
+    position: relative !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: flex-end !important;
+    overflow: hidden !important;
+}
+
+.player-container img {
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 50% !important;
+    transform: translateX(-50%) scale(var(--player-scale, 1)) !important;
+    transform-origin: bottom center !important;
+    max-height: 90% !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    transition: transform 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .player-container img {
+        max-height: 75% !important;
+    }
 }

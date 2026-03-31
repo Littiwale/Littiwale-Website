@@ -4,38 +4,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Litti Wale | Authentic Indian Comfort Food in Barbil</title>
+
+    <!-- ✅ SEO TITLE -->
+    <title>Full Menu | Littiwale Barbil | Litti Chokha, Pizza, Biryani & More</title>
+
+    <!-- ✅ SEO DESCRIPTION -->
     <meta name="description"
-        content="Litti Wale brings the authentic taste of Indian street and comfort food to Barbil. Signature Litti Chokha, thalis, and fast food.">
-    
+        content="Browse the full menu at Littiwale Barbil. From authentic Litti Chokha to Pizzas, Biryanis, and Thalis. High-quality food at affordable prices in Barbil.">
+
+    <!-- ✅ SEO KEYWORDS -->
+    <meta name="keywords"
+        content="littiwale menu, litti chokha menu, pizza menu barbil, biryani price barbil, food menu barbil">
+
     <!-- ✅ FAVICON -->
     <link rel="icon" type="image/png" href="images/logo.png">
     <link rel="apple-touch-icon" href="images/logo.png">
 
     <link rel="stylesheet" href="css/style.css">
+
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
-<body>
+<body class="menu-page">
 
-    <!-- Navbar -->
+    <!-- NAVBAR -->
     <nav class="navbar">
         <div class="nav-container">
-            <button class="mobile-toggle hamburger" aria-label="Toggle Navigation">
+            <button class="mobile-toggle hamburger">
                 <i class="fas fa-bars"></i>
             </button>
-            <a href="#" class="logo-link">
-                <!-- Fallback text if logo missing, but we expect images/logo.png -->
-                <img src="images/logo.png" alt="Litti Wale Logo" class="nav-logo"
-                    onerror="this.outerHTML='<span class=\'logo-text\'>Litti Wale</span>'">
+
+            <a href="index.html" class="logo-link">
+                <img src="images/logo.png" class="nav-logo" alt="Litti Wale">
             </a>
 
             <ul class="nav-links">
                 <li><a href="index.html#home">Home</a></li>
-                <li><a href="javascript:void(0)" class="nav-menu-drawer-btn">Menu</a></li>
+                <li><a href="menu.html" class="active">Menu</a></li>
                 <li><a href="index.html#about">About</a></li>
                 <li><a href="index.html#reach">Reach Us</a></li>
                 <li><a href="index.html#connect">Social</a></li>
@@ -43,228 +52,147 @@
             </ul>
 
             <a href="javascript:void(0)" class="cart-link nav-cart-btn">
-                <i class="fas fa-shopping-cart"></i> Cart <span id="cart-count" class="cart-badge">0</span>
+                <i class="fas fa-shopping-cart"></i>
+                Cart
+                <span id="cart-count" class="cart-badge">0</span>
             </a>
         </div>
     </nav>
 
-    <!-- Announcement Section -->
-    <section id="announcement" style="display:none;">
-        <div class="announcement-container" style="max-width: 800px; margin: 0 auto; padding: 0 20px; overflow: hidden; position: relative; touch-action: pan-y;">
-            <h2 class="announcement-title">📢 New Announcement</h2>
-            <div id="announcement-carousel" style="display:flex; transition: transform 0.5s ease; width: 100%;">
-                <!-- Images injected here -->
-            </div>
-            <div id="announcement-dots" style="text-align:center; margin-top:15px;">
-                <!-- Dots injected here -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Hero Section -->
-    <header id="home" class="hero">
-        <div class="hero-content container">
-            <h1 class="hero-title">Barbil’s Home of Authentic Litti Chokha</h1>
-            <p class="hero-subtitle">Authentic Indian flavors served fresh every day.</p>
-            <div class="hero-buttons">
-                <a href="#menu-section" class="btn btn-primary">Explore Menu</a>
-                <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" class="btn btn-secondary">Order on Zomato</a>
-                <a href="https://wa.me/916370680744" target="_blank" class="btn btn-whatsapp"><i
-                        class="fab fa-whatsapp"></i> WhatsApp Order</a>
-            </div>
-        </div>
-    </header>
-
-    <!-- About Section -->
-    <section id="about" class="about-section">
-        <div class="container text-center">
-            <h2 class="section-title">A Local Favorite for Authentic Indian Comfort Food</h2>
-            <div class="divider"></div>
-            <p class="about-text" style="font-size: 1.1rem; line-height: 1.6; color: var(--text-secondary);">
-                <strong>🍽️ Best food in Barbil | Pizza, Burgers, Meals, Thali & Combos</strong><br><br>
-                Looking for food near me in Barbil? Littiwale offers the best pizza, burgers, thali, and combo meals with fast delivery and great taste.
-            </p>
-        </div>
-    </section>
-
-    <!-- Menu Section -->
-    <section id="menu-section" class="menu-section">
+    <!-- MENU SECTION -->
+    <section id="menu-section" class="menu-section" style="padding-top: 100px; min-height: 100vh;">
         <div class="container">
-            <h2 class="section-title text-center">Our Menu</h2>
+            <h2 class="section-title text-center">Full Menu</h2>
             <div class="divider"></div>
 
             <div class="category-filters" id="category-filters">
-                <!-- Categories populated by JS -->
                 <button class="filter-btn active" data-filter="all">All</button>
             </div>
 
             <div class="menu-grid" id="menu-grid">
-                <!-- Menu items populated by JS -->
-                <div class="loading-spinner">Loading deliciousness...</div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Featured on Instagram Section -->
-    <section id="instagram-reels" class="instagram-section bg-light">
-        <div class="container">
-            <h2 class="section-title text-center">Featured on Instagram</h2>
-            <div class="divider"></div>
-
-            <div class="reels-grid">
-                <a href="https://www.instagram.com/reel/DM0OaRuTorz/" target="_blank" class="reel-card">
-                    <div class="reel-overlay"><i class="fab fa-instagram"></i> Play Reel</div>
-                    <img src="images/instagram/reel1.png" alt="Instagram Reel 1">
-                </a>
-                <a href="https://www.instagram.com/reel/DVOCmnIk-Yt/" target="_blank" class="reel-card">
-                    <div class="reel-overlay"><i class="fab fa-instagram"></i> Play Reel</div>
-                    <img src="images/instagram/reel2.png" alt="Instagram Reel 2">
-                </a>
-                <a href="https://www.instagram.com/reel/DUsneR7E1Vh/" target="_blank" class="reel-card">
-                    <div class="reel-overlay"><i class="fab fa-instagram"></i> Play Reel</div>
-                    <img src="images/instagram/reel3.png" alt="Instagram Reel 3">
-                </a>
-                <a href="https://www.instagram.com/reel/DU20uoDE9vY/" target="_blank" class="reel-card">
-                    <div class="reel-overlay"><i class="fab fa-instagram"></i> Play Reel</div>
-                    <img src="images/instagram/reel4.png" alt="Instagram Reel 4">
-                </a>
-                <a href="https://www.instagram.com/reel/DUVd2y6k_bG/" target="_blank" class="reel-card">
-                    <div class="reel-overlay"><i class="fab fa-instagram"></i> Play Reel</div>
-                    <img src="images/instagram/reel5.png" alt="Instagram Reel 5">
-                </a>
-                <a href="https://www.instagram.com/reel/DTcsHKbE2C7/" target="_blank" class="reel-card">
-                    <div class="reel-overlay"><i class="fab fa-instagram"></i> Play Reel</div>
-                    <img src="images/instagram/reel6.png" alt="Instagram Reel 6">
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Connect With Us Section -->
-    <section id="connect" class="connect-section">
-        <div class="container text-center">
-            <h2 class="section-title">Connect With Us</h2>
-            <div class="divider"></div>
-            <div class="social-links-large">
-                <a href="https://www.instagram.com/littiwaleofficial/" target="_blank" class="social-card instagram">
-                    <i class="fab fa-instagram"></i>
-                    <span>Instagram</span>
-                </a>
-                <a href="https://www.facebook.com/share/18fQs5NEQU/" target="_blank" class="social-card facebook">
-                    <i class="fab fa-facebook-f"></i>
-                    <span>Facebook</span>
-                </a>
-                <a href="https://wa.me/916370680744" target="_blank" class="social-card whatsapp">
-                    <i class="fab fa-whatsapp"></i>
-                    <span>WhatsApp</span>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Cart Drawer handles UI -->
-    <!-- Reach Us Section -->
-    <section id="reach" class="reach-section">
-        <div class="container">
-            <div class="reach-grid">
-                <div class="reach-info">
-                    <h2 class="section-title">Reach Us</h2>
-                    <div class="divider left"></div>
-
-                    <div class="info-block">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <div>
-                            <h4>Address</h4>
-                            <p>Spicy 88<br>Barbil<br>Odisha 758035</p>
-                        </div>
-                    </div>
-
-                    <div class="info-block">
-                        <i class="fas fa-phone-alt"></i>
-                        <div>
-                            <h4>Phone</h4>
-                            <p>+91 63706 80744</p>
-                        </div>
-                    </div>
-
-                    <div class="info-block">
-                        <i class="fas fa-clock"></i>
-                        <div>
-                            <h4>Working Hours</h4>
-                            <p>11:00 AM – 10:30 PM (Delivery Only)</p>
-                        </div>
-                    </div>
-
-                    <div class="reach-actions mt-4">
-                        <a href="tel:+916370680744" class="btn btn-outline"><i class="fas fa-phone"></i> Call Now</a>
-                        <a href="https://wa.me/916370680744" target="_blank" class="btn btn-whatsapp"><i
-                                class="fab fa-whatsapp"></i> WhatsApp Order</a>
-                        <a href="https://maps.google.com/maps?q=22.1152751,85.3871145" target="_blank"
-                            class="btn btn-primary"><i class="fas fa-directions"></i> Get Directions</a>
-                    </div>
-                </div>
-
-                <div class="map-container">
-                    <iframe width="100%" height="350"
-                        style="border:0; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);" loading="lazy"
-                        allowfullscreen src="https://maps.google.com/maps?q=22.1152751,85.3871145&z=17&output=embed">
-                    </iframe>
+                <div class="loading-spinner">
+                    Loading deliciousness...
                 </div>
             </div>
+
+            <!-- Expansion toggle container (hidden in menu.html via main.js) -->
+            <div id="menu-toggle-container" style="text-align:center;margin-top:30px">
+            </div>
         </div>
     </section>
 
-    <!-- Footer -->
+    <!-- FOOTER -->
     <footer class="footer">
         <div class="container footer-content">
             <div class="footer-brand">
-                <img src="images/logo.png" alt="Litti Wale Logo" class="footer-logo"
-                    onerror="this.outerHTML='<h3 class=\'footer-logo-text\'>Litti Wale</h3>'">
+                <img src="images/logo.png" class="footer-logo" alt="Litti Wale">
                 <p>Barbil's home of authentic flavors.</p>
             </div>
+
             <div class="footer-links">
                 <h4>Quick Links</h4>
                 <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#menu-section">Menu</a></li>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="#reach">Reach Us</a></li>
+                    <li><a href="index.html#home">Home</a></li>
+                    <li><a href="menu.html">Menu</a></li>
+                    <li><a href="index.html#about">About</a></li>
+                    <li><a href="index.html#reach">Reach Us</a></li>
                 </ul>
-            </div>
-            <div class="footer-legal">
-                <p>&copy; <span id="year"></span> Litti Wale. All rights reserved.</p>
-                <p>100% Delivery Focused</p>
             </div>
         </div>
     </footer>
 
-    <!-- Floating Action Buttons -->
+    <!-- FLOAT BUTTONS -->
     <div class="fab-container">
-        <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" class="fab-btn tooltip-container"
-            style="background: #e23744; color: white;">
+        <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" class="fab-btn" style="background:#e23744;color:white">
             <i class="fas fa-utensils"></i>
-            <span class="tooltip">Zomato</span>
         </a>
-        <a href="javascript:void(0)" class="fab-btn tooltip-container cart-fab" style="background: #333; color: white;">
+        <a href="javascript:void(0)" class="fab-btn cart-fab" style="background:#333;color:white">
             <i class="fas fa-shopping-cart"></i>
-            <span class="fab-badge" id="fab-cart-badge">0</span>
-            <span class="tooltip">Cart</span>
+            <span id="fab-cart-badge">0</span>
         </a>
-        <a href="tel:+916370680744" class="fab-btn tooltip-container" style="background: #007bff; color: white;">
-            <i class="fas fa-phone-alt"></i>
-            <span class="tooltip">Call</span>
+        <a href="tel:+916370680744" class="fab-btn" style="background:#007bff;color:white">
+            <i class="fas fa-phone"></i>
         </a>
-        <a href="https://wa.me/916370680744" target="_blank" class="fab-btn tooltip-container"
-            style="background: #25d366; color: white;">
+        <a href="https://wa.me/916370680744" target="_blank" class="fab-btn" style="background:#25d366;color:white">
             <i class="fab fa-whatsapp"></i>
-            <span class="tooltip">WhatsApp</span>
         </a>
     </div>
 
+    <!-- 🔥 GET DEALS DRAWER SYSTEM -->
+    <div id="get-deals-drawer" class="nav-bottom-sheet">
+        <div class="nav-bottom-sheet-overlay deals-drawer-overlay"></div>
+        <div class="nav-bottom-sheet-content">
+            <div class="sheet-header">
+                <h2>🔥 Get Deals</h2>
+                <button class="close-sheet-btn deals-close-btn">&times;</button>
+            </div>
+            <div class="sheet-body">
+                <button class="sheet-card-btn" onclick="location.href='index.html#craziest-deals-section'">
+                    <span class="sheet-card-icon">🔥</span>
+                    <div class="sheet-card-info">
+                        <h3>Craziest Deals</h3>
+                        <p>Deals renewing every hour</p>
+                    </div>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <button class="sheet-card-btn" onclick="location.href='index.html#offers-section'">
+                    <span class="sheet-card-icon">🎁</span>
+                    <div class="sheet-card-info">
+                        <h3>Exclusive Offers</h3>
+                        <p>Special discounts & freebies</p>
+                    </div>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🍔 MENU DRAWER SYSTEM -->
+    <div id="menu-nav-drawer" class="nav-bottom-sheet">
+        <div class="nav-bottom-sheet-overlay menu-nav-drawer-overlay"></div>
+        <div class="nav-bottom-sheet-content">
+            <div class="sheet-header">
+                <h2>🍔 Menu</h2>
+                <button class="close-sheet-btn menu-nav-close-btn">&times;</button>
+            </div>
+            <div class="sheet-body">
+                <button class="sheet-card-btn" onclick="location.href='index.html#craziest-deals-section'">
+                    <span class="sheet-card-icon">🔥</span>
+                    <div class="sheet-card-info">
+                        <h3>Craziest Deals of the Hour</h3>
+                        <p>Quick grabs!</p>
+                    </div>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <button class="sheet-card-btn" onclick="scrollToSection('menu-section')">
+                    <span class="sheet-card-icon">🍔</span>
+                    <div class="sheet-card-info">
+                        <h3>Full Menu</h3>
+                        <p>Browse our entire catalog</p>
+                    </div>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UNIVERSAL SERVICE POPUP -->
+    <div id="service-popup" class="payment-modal">
+        <div class="payment-modal-content" style="max-width: 400px; text-align: center;">
+            <button id="close-service-popup" class="close-btn" style="position: absolute; right: 20px; top: 15px;">&times;</button>
+            <div style="font-size: 3rem; margin-bottom: 10px; line-height: 1;" id="service-icon">🎉</div>
+            <h2 id="service-popup-title" style="font-family: var(--font-heading); color: var(--primary-color); margin-bottom: 15px;">Book Your Service</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 30px; line-height: 1.5;">Our team will help you customize your order to match your exact needs.</p>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <a href="tel:+916370680744" class="btn btn-primary" style="font-size: 1.1rem; padding: 12px;">
+                    <i class="fas fa-phone-alt"></i> Call Now
+                </a>
+            </div>
+        </div>
+    </div>
 
     <script src="IPL/MatchDetails/matchData.js"></script>
     <script src="js/main.js"></script>
     <script src="js/restaurant-timing.js"></script>
 </body>
-
 </html>

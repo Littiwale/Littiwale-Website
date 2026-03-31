@@ -57,7 +57,7 @@ content="Littiwale Barbil is the best restaurant in Barbil offering authentic Li
 
             <ul class="nav-links">
                 <li><a href="index.html#home">Home</a></li>
-                <li><a href="javascript:void(0)" class="nav-menu-drawer-btn">Menu</a></li>
+                <li><a href="menu.html">Menu</a></li>
                 <li><a href="index.html#about">About</a></li>
                 <li><a href="index.html#reach">Reach Us</a></li>
                 <li><a href="index.html#connect">Social</a></li>
@@ -264,35 +264,27 @@ content="Littiwale Barbil is the best restaurant in Barbil offering authentic Li
         </div>
     </section>
 
-    <section id="menu-section" class="menu-section">
-
+    <section id="best-seller" class="menu-section">
         <div class="container">
-
-            <h2 class="section-title text-center">Our Menu</h2>
+            <div class="section-header text-center">
+                <h2 class="section-title">Best Seller</h2>
+                <p class="section-subtitle">Top rated by customers</p>
+            </div>
 
             <div class="divider"></div>
 
-            <div class="category-filters" id="category-filters">
-
-                <button class="filter-btn active" data-filter="all">
-                    All
-                </button>
-
-            </div>
-
-
-            <div class="menu-grid" id="menu-grid">
+            <div id="best-seller-items" class="menu-grid">
                 <div class="loading-spinner">
                     Loading deliciousness...
                 </div>
             </div>
 
-
-            <div id="menu-toggle-container" style="text-align:center;margin-top:30px">
+            <div class="view-full-menu" style="text-align:center; margin-top: 40px;">
+                <button class="btn btn-primary" onclick="window.location.href='menu.html'">
+                    View Full Menu
+                </button>
             </div>
-
         </div>
-
     </section>
 
 
@@ -642,7 +634,7 @@ content="Littiwale Barbil is the best restaurant in Barbil offering authentic Li
                     </div>
                     <i class="fas fa-arrow-right"></i>
                 </button>
-                <button class="sheet-card-btn" onclick="scrollToSection('menu-section')">
+                <button class="sheet-card-btn" onclick="location.href='menu.html'">
                     <span class="sheet-card-icon" style="color:#28a745;">🍔</span>
                     <div class="sheet-card-info">
                         <h3>Full Menu</h3>

@@ -1,0 +1,662 @@
+[
+    {
+        "item": "Mumbai Street Vada Pav",
+        "normalized": "mumbai street vada pav",
+        "image": "images/menu/Full Menu/Star Special/vadapav.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Authentic Bihari Litti Chokha",
+        "normalized": "authentic bihari litti chokha",
+        "image": "images/menu/Full Menu/Star Special/littichokha.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Desi Delight Chick-a-Litti",
+        "normalized": "desi delight chick-a-litti",
+        "image": "images/menu/Full Menu/Star Special/littichicken.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "A1 Swag Combo - Veg",
+        "normalized": "a1 swag combo - veg",
+        "image": "images/menu/Full Menu/Star Special/swagveg.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "A1 Swag Combo - Non Veg",
+        "normalized": "a1 swag combo - non veg",
+        "image": "images/menu/Full Menu/Star Special/swagnonveg.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Veg Hot n Sour Soup",
+        "normalized": "veg hot n sour soup",
+        "image": "images/menu/Full Menu/Soup/soup.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Veg Manchow Soup",
+        "normalized": "veg manchow soup",
+        "image": "images/menu/Full Menu/Soup/soup.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chicken Hot n Sour Soup",
+        "normalized": "chicken hot n sour soup",
+        "image": "images/menu/Full Menu/Soup/soup.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chicken Manchow Soup",
+        "normalized": "chicken manchow soup",
+        "image": "images/menu/Full Menu/Soup/soup.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Littiwale Mega Feast - Chilly Paneer Veg Fried Rice Lacha Paratha",
+        "normalized": "littiwale mega feast - chilly paneer veg fried rice lacha paratha",
+        "image": "images/menu/Full Menu/Littiwale Mega Feast/pcvflp.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Littiwale Mega Feast - Chilly Chicken Veg Fried Rice Lacha Paratha",
+        "normalized": "littiwale mega feast - chilly chicken veg fried rice lacha paratha",
+        "image": "images/menu/Full Menu/Littiwale Mega Feast/ccvflp.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Littiwale Mega Feast - Chilly Chicken Egg Fried Rice Lacha Paratha",
+        "normalized": "littiwale mega feast - chilly chicken egg fried rice lacha paratha",
+        "image": "images/menu/Full Menu/Littiwale Mega Feast/cceflp.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Littiwale Mega Feast - Chilly Chicken Chicken Fried Rice Lacha Paratha",
+        "normalized": "littiwale mega feast - chilly chicken chicken fried rice lacha paratha",
+        "image": "images/menu/Full Menu/Littiwale Mega Feast/cccflp.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Meals for one - Lacha Paratha Paneer Chilly",
+        "normalized": "meals for one - lacha paratha paneer chilly",
+        "image": "images/menu/Full Menu/Littiwale Meal for One/pclp.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Meals for one - Veg Noodles Paneer Chilly",
+        "normalized": "meals for one - veg noodles paneer chilly",
+        "image": "images/menu/Full Menu/Littiwale Meal for One/pcvn.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Meals for one - Veg Fried Rice Paneer Chilly",
+        "normalized": "meals for one - veg fried rice paneer chilly",
+        "image": "images/menu/Full Menu/Littiwale Meal for One/pcvf.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Meals for one - Veg Fried Rice Chicken Chilly",
+        "normalized": "meals for one - veg fried rice chicken chilly",
+        "image": "images/menu/Full Menu/Littiwale Meal for One/ccvf.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Meals for one - Lacha Paratha Chicken Chilly",
+        "normalized": "meals for one - lacha paratha chicken chilly",
+        "image": "images/menu/Full Menu/Littiwale Meal for One/cclp.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Meals for one - Veg Noodles Chicken Chilly",
+        "normalized": "meals for one - veg noodles chicken chilly",
+        "image": "images/menu/Full Menu/Littiwale Meal for One/ccvn.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Meals for one - Egg Fried Rice Chilly Chicken",
+        "normalized": "meals for one - egg fried rice chilly chicken",
+        "image": "images/menu/Full Menu/Littiwale Meal for One/ccef.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Meals for one - Egg Noodles Chilly Chicken",
+        "normalized": "meals for one - egg noodles chilly chicken",
+        "image": "images/menu/Full Menu/Littiwale Meal for One/ccen.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Meals for one - Chicken Noodles Chilly Chicken",
+        "normalized": "meals for one - chicken noodles chilly chicken",
+        "image": "images/menu/Full Menu/Littiwale Meal for One/cccn.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Meals for one - Chicken Fried Rice Chilly Chicken",
+        "normalized": "meals for one - chicken fried rice chilly chicken",
+        "image": "images/menu/Full Menu/Littiwale Meal for One/cccf.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Veg Sandwich",
+        "normalized": "veg sandwich",
+        "image": "images/menu/Full Menu/Sandwiches/vs.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Cheese Veg Grilled Sandwich",
+        "normalized": "cheese veg grilled sandwich",
+        "image": "images/menu/Full Menu/Sandwiches/vgs.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Veg Sandwich Clubbed (3 layered)",
+        "normalized": "veg sandwich clubbed",
+        "image": "images/menu/Full Menu/Sandwiches/vcs.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Corn Cheese Sandwich Grilled",
+        "normalized": "corn cheese sandwich grilled",
+        "image": "images/menu/Full Menu/Sandwiches/cornsandwich.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Cheese Chicken Sandwich",
+        "normalized": "cheese chicken sandwich",
+        "image": "images/menu/Full Menu/Sandwiches/cheesechickensandwich.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Corn Sandwich Clubbed (3 layered)",
+        "normalized": "corn sandwich clubbed",
+        "image": "images/menu/Full Menu/Sandwiches/clubbedcorn.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Paneer Sandwich Clubbed (3 layered)",
+        "normalized": "paneer sandwich clubbed",
+        "image": "images/menu/Full Menu/Sandwiches/paneerclubbedsandwich.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chicken Clubbed Sandwich (3 layered)",
+        "normalized": "chicken clubbed sandwich",
+        "image": "images/menu/Full Menu/Sandwiches/ccs.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Veg Noodles (Half)",
+        "normalized": "veg noodles",
+        "image": "images/menu/Full Menu/Noodles/vegnoodles.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Veg Noodles (Full)",
+        "normalized": "veg noodles",
+        "image": "images/menu/Full Menu/Noodles/vegnoodles.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Egg Noodles (Half)",
+        "normalized": "egg noodles",
+        "image": "images/menu/Full Menu/Noodles/eggnoodles.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Egg Noodles (Full)",
+        "normalized": "egg noodles",
+        "image": "images/menu/Full Menu/Noodles/eggnoodles.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chicken Noodles (Half)",
+        "normalized": "chicken noodles",
+        "image": "images/menu/Full Menu/Noodles/chickennoodles.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chicken Noodles (Full)",
+        "normalized": "chicken noodles",
+        "image": "images/menu/Full Menu/Noodles/chickennoodles.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Mix Veg Noodles (Half)",
+        "normalized": "mix veg noodles",
+        "image": "images/menu/Full Menu/Noodles/mixvegnoodles.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Mix Veg Noodles (Full)",
+        "normalized": "mix veg noodles",
+        "image": "images/menu/Full Menu/Noodles/mixvegnoodles.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Mix Non Veg Noodles (Half)",
+        "normalized": "mix non veg noodles",
+        "image": "images/menu/Full Menu/Noodles/mixnonvegnoodles.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Mix Non Veg Noodles (Full)",
+        "normalized": "mix non veg noodles",
+        "image": "images/menu/Full Menu/Noodles/mixnonvegnoodles.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Veg Fried Rice (Half)",
+        "normalized": "veg fried rice",
+        "image": "images/menu/Full Menu/Noodles/Rice/vfr.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Veg Fried Rice (Full)",
+        "normalized": "veg fried rice",
+        "image": "images/menu/Full Menu/Noodles/Rice/vfr.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Egg Fried Rice (Half)",
+        "normalized": "egg fried rice",
+        "image": "images/menu/Full Menu/Noodles/Rice/efr.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Egg Fried Rice (Full)",
+        "normalized": "egg fried rice",
+        "image": "images/menu/Full Menu/Noodles/Rice/efr.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chicken Fried RIce (Half)",
+        "normalized": "chicken fried rice",
+        "image": "images/menu/Full Menu/Noodles/Rice/cfr.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chicken Fried RIce (Full)",
+        "normalized": "chicken fried rice",
+        "image": "images/menu/Full Menu/Noodles/Rice/cfr.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chilly Gobi (Half)",
+        "normalized": "chilly gobi",
+        "image": "images/menu/Full Menu/Starters/gobic.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chilly Gobi (Full)",
+        "normalized": "chilly gobi",
+        "image": "images/menu/Full Menu/Starters/gobic.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Veg Manchurian (Half)",
+        "normalized": "veg manchurian",
+        "image": "images/menu/Full Menu/Starters/vegmanchurian.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Veg Manchurian (Full)",
+        "normalized": "veg manchurian",
+        "image": "images/menu/Full Menu/Starters/vegmanchurian.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Mushroom Chilly (Half)",
+        "normalized": "mushroom chilly",
+        "image": "images/menu/Full Menu/Starters/mushroomchilly.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Mushroom Chilly (Full)",
+        "normalized": "mushroom chilly",
+        "image": "images/menu/Full Menu/Starters/mushroomchilly.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chilly Paneer (Half)",
+        "normalized": "chilly paneer",
+        "image": "images/menu/Full Menu/Starters/paneerchilly.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chilly Paneer (Full)",
+        "normalized": "chilly paneer",
+        "image": "images/menu/Full Menu/Starters/paneerchilly.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chilly Chicken (Half)",
+        "normalized": "chilly chicken",
+        "image": "images/menu/Full Menu/Starters/chillychicken.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chilly Chicken (Full)",
+        "normalized": "chilly chicken",
+        "image": "images/menu/Full Menu/Starters/chillychicken.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Laccha Paratha",
+        "normalized": "laccha paratha",
+        "image": "images/menu/Full Menu/Breads/lacchaparatha.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Tawa Roti",
+        "normalized": "tawa roti",
+        "image": "images/menu/Full Menu/Breads/tawaroti.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Garam Gobi Gully Paratha",
+        "normalized": "garam gobi gully paratha",
+        "image": "images/menu/Full Menu/Breads/gobiparatha.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Punjabi Patiala Aloo Paratha",
+        "normalized": "punjabi patiala aloo paratha",
+        "image": "images/menu/Full Menu/Breads/alooparatha.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Dil Se Paneer Paratha",
+        "normalized": "dil se paneer paratha",
+        "image": "images/menu/Full Menu/Breads/paneerparatha.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Cheesy Corn Chulbuli Paratha",
+        "normalized": "cheesy corn chulbuli paratha",
+        "image": "images/menu/Full Menu/Breads/cheesecornparatha.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Littiwale Loaded Paratha",
+        "normalized": "littiwale loaded paratha",
+        "image": "images/menu/Full Menu/Breads/littiwaleloadedparatha.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Veg Pizza",
+        "normalized": "veg pizza",
+        "image": "images/menu/Full Menu/Pizza/vp.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Corn Pizza",
+        "normalized": "corn pizza",
+        "image": "images/menu/Full Menu/Pizza/cp.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Paneer Pizza",
+        "normalized": "paneer pizza",
+        "image": "images/menu/Full Menu/Pizza/pp.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chicken Pizza",
+        "normalized": "chicken pizza",
+        "image": "images/menu/Full Menu/Pizza/chickenpizza.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Red Sauce Pasta (Half)",
+        "normalized": "red sauce pasta",
+        "image": "images/menu/Full Menu/Pasta/rsp.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Red Sauce Pasta (Full)",
+        "normalized": "red sauce pasta",
+        "image": "images/menu/Full Menu/Pasta/rsp.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "White Sauce Pasta (Half)",
+        "normalized": "white sauce pasta",
+        "image": "images/menu/Full Menu/Pasta/wsp.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "White Sauce Pasta (Full)",
+        "normalized": "white sauce pasta",
+        "image": "images/menu/Full Menu/Pasta/wsp.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Veg Maggie (Half)",
+        "normalized": "veg maggie",
+        "image": "images/menu/Full Menu/Maggi/vegmaggi.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Veg Maggie (Full)",
+        "normalized": "veg maggie",
+        "image": "images/menu/Full Menu/Maggi/vegmaggi.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Cheese Maggie (Half)",
+        "normalized": "cheese maggie",
+        "image": "images/menu/Full Menu/Maggi/cheesemaggi.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Cheese Maggie (Full)",
+        "normalized": "cheese maggie",
+        "image": "images/menu/Full Menu/Maggi/cheesemaggi.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Dal Makhani (Half)",
+        "normalized": "dal makhani",
+        "image": "images/menu/Full Menu/Main Course/eggtadka.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Dal Makhani (Full)",
+        "normalized": "dal makhani",
+        "image": "images/menu/Full Menu/Main Course/eggtadka.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Dal Tadka (Half)",
+        "normalized": "dal tadka",
+        "image": "images/menu/Full Menu/Main Course/eggtadka.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Dal Tadka (Full)",
+        "normalized": "dal tadka",
+        "image": "images/menu/Full Menu/Main Course/eggtadka.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Mix Veg (Half)",
+        "normalized": "mix veg",
+        "image": "images/menu/Full Menu/Main Course/mixveg.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Mix Veg (Full)",
+        "normalized": "mix veg",
+        "image": "images/menu/Full Menu/Main Course/mixveg.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Paneer Butter Masala (Half)",
+        "normalized": "paneer butter masala",
+        "image": "images/menu/Full Menu/Main Course/paneerbuttermasala.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Paneer Butter Masala (Full)",
+        "normalized": "paneer butter masala",
+        "image": "images/menu/Full Menu/Main Course/paneerbuttermasala.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Paneer Masala (Half)",
+        "normalized": "paneer masala",
+        "image": "images/menu/Full Menu/Main Course/paneermasala.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Paneer Masala (Full)",
+        "normalized": "paneer masala",
+        "image": "images/menu/Full Menu/Main Course/paneermasala.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Egg tadka (Half)",
+        "normalized": "egg tadka",
+        "image": "images/menu/Full Menu/Main Course/eggtadka.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Egg tadka (Full)",
+        "normalized": "egg tadka",
+        "image": "images/menu/Full Menu/Main Course/eggtadka.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Mushroom Masala (Half)",
+        "normalized": "mushroom masala",
+        "image": "images/menu/Full Menu/Main Course/mushroommasala.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Mushroom Masala (Full)",
+        "normalized": "mushroom masala",
+        "image": "images/menu/Full Menu/Main Course/mushroommasala.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chicken Chatpata (Half)",
+        "normalized": "chicken chatpata",
+        "image": "images/menu/Full Menu/Main Course/chickenchatpata.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chicken Chatpata (Full)",
+        "normalized": "chicken chatpata",
+        "image": "images/menu/Full Menu/Main Course/chickenchatpata.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chicken Masala (Half)",
+        "normalized": "chicken masala",
+        "image": "images/menu/Full Menu/Main Course/chickenkadhai.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chicken Masala (Full)",
+        "normalized": "chicken masala",
+        "image": "images/menu/Full Menu/Main Course/chickenkadhai.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chicken Handi (Half)",
+        "normalized": "chicken handi",
+        "image": "images/menu/Full Menu/Main Course/chickenhandi.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chicken Handi (Full)",
+        "normalized": "chicken handi",
+        "image": "images/menu/Full Menu/Main Course/chickenhandi.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chicken Champaran (Half)",
+        "normalized": "chicken champaran",
+        "image": "images/menu/Full Menu/Main Course/champaranchicken.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chicken Champaran (Full)",
+        "normalized": "chicken champaran",
+        "image": "images/menu/Full Menu/Main Course/champaranchicken.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Fish Curry (Half)",
+        "normalized": "fish curry",
+        "image": "images/menu/Full Menu/Main Course/fishcurry.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Fish Curry (Full)",
+        "normalized": "fish curry",
+        "image": "images/menu/Full Menu/Main Course/fishcurry.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Veg Thali",
+        "normalized": "veg thali",
+        "image": "images/menu/Full Menu/Thali/veg.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Paneer Thali",
+        "normalized": "paneer thali",
+        "image": "images/menu/Full Menu/Thali/veg.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Egg Thali",
+        "normalized": "egg thali",
+        "image": "images/menu/Full Menu/Thali/egg.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Fish Thali",
+        "normalized": "fish thali",
+        "image": "images/menu/Full Menu/Thali/fish.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chicken Thali",
+        "normalized": "chicken thali",
+        "image": "images/menu/Full Menu/Thali/chicken.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Masterchef Special Thecha Chowmein (Half)",
+        "normalized": "masterchef special thecha chowmein",
+        "image": "images/menu/Full Menu/Star Special/thechachowmein.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Masterchef Special Thecha Chowmein (Full)",
+        "normalized": "masterchef special thecha chowmein",
+        "image": "images/menu/Full Menu/Star Special/thechachowmein.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Rajma Chawal",
+        "normalized": "rajma chawal",
+        "image": "images/menu/Full Menu/Littiwale Rice Bowl Combos/rajmachawal.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chole Chawal",
+        "normalized": "chole chawal",
+        "image": "images/menu/Full Menu/Littiwale Rice Bowl Combos/cholechawal.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Kadhi Chawal",
+        "normalized": "kadhi chawal",
+        "image": "images/menu/Full Menu/Littiwale Rice Bowl Combos/kadhichawal.webp",
+        "source": "imagemapping.xlsx"
+    }
+]

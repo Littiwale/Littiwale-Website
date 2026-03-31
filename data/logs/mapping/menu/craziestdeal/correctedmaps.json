@@ -1,0 +1,27 @@
+[
+    {
+        "deal": "Kuch bhi khila de \ud83d\ude2d",
+        "slug": "kuch-bhi-khila-de",
+        "image": "images/menu/Craziest Deal Menu/kuch-bhi-khila-de.png"
+    },
+    {
+        "deal": "Tera jo mann wo khila de \ud83d\ude0f",
+        "slug": "tera-jo-mann-wo-khila-de",
+        "image": "images/menu/Craziest Deal Menu/tera-jo-mann-wo-khila-de.png"
+    },
+    {
+        "deal": "Aaj diet bhool ja \ud83d\ude08",
+        "slug": "aaj-diet-bhool-ja",
+        "image": "images/menu/Craziest Deal Menu/aaj-diet-bhool-ja.png"
+    },
+    {
+        "deal": "Bhook lagi hai boss \ud83d\udd25",
+        "slug": "bhook-lagi-hai-boss",
+        "image": "images/menu/Craziest Deal Menu/bhook-lagi-hai-boss.png"
+    },
+    {
+        "deal": "Pet bhar combo \ud83d\udc80",
+        "slug": "pet-bhar-combo",
+        "image": "images/menu/Craziest Deal Menu/pet-bhar-combo.png"
+    }
+]

@@ -28,29 +28,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Menu Rendering & Filtering ---
     let menuData = [];
+    let menuImageMap = {};
     const menuGrid = document.getElementById('menu-grid');
     const categoryFilters = document.getElementById('category-filters');
 
     function initMenu() {
-        // Fetch Menu Data
-        fetch('./data/menu.json')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                menuData = data;
-                console.log("Menu loaded:", menuData);
-                initMenuDisplay();
-            })
-            .catch(error => {
-                console.error('Error loading menu:', error);
-                if(menuGrid) {
-                    menuGrid.innerHTML = '<div class="error" style="grid-column: 1/-1; text-align: center; color: red;">Failed to load menu items.</div>';
-                }
-            });
+        // Fetch Menu Data and Image Map
+        Promise.all([
+            fetch('./data/menu.json').then(res => res.json()),
+            fetch('./data/imagemap.json').then(res => res.json())
+        ])
+        .then(([menu, map]) => {
+            menuData = menu;
+            menuImageMap = map;
+            console.log("Menu & Map loaded:", menuData, menuImageMap);
+            initMenuDisplay();
+        })
+        .catch(error => {
+            console.error('Error loading menu/map:', error);
+            if(menuGrid) {
+                menuGrid.innerHTML = '<div class="error" style="grid-column: 1/-1; text-align: center; color: red;">Failed to load menu items.</div>';
+            }
+        });
+    }
+
+    // Helper: Normalize item name for image lookup
+    function getNormalizedName(name) {
+        if (!name) return "";
+        return name.replace(/\(.*?\)/g, "").toLowerCase().trim();
+    }
+
+    // Helper: Get item image with fallback
+    function getItemImage(name) {
+        const normalized = getNormalizedName(name);
+        return menuImageMap[normalized] || 'images/logo.png';
+    }
+
+    // Helper: Get Craziest Deal image (Folder based)
+    function getDealImage(title) {
+        if (!title) return 'images/logo.png';
+        const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        return `images/menu/Craziest Deal Menu/${slug}.png`;
     }
 
     let isMenuExpanded = false;
@@ -65,16 +83,36 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     function initMenuDisplay() {
-        const numItems = Math.floor(Math.random() * 3) + 4; // 4 to 6 items
-        const shuffled = [...menuData].sort(() => 0.5 - Math.random());
-        initialBestsellers = shuffled.slice(0, numItems);
-        currentFilteredData = menuData;
+        const isFullMenuPage = window.location.pathname.includes('menu.html');
         
-        if (categoryFilters) categoryFilters.style.display = 'none';
-        
-        setupFilters(menuData);
-        setupExpandButton();
-        renderMenu(initialBestsellers);
+        if (isFullMenuPage) {
+            isMenuExpanded = true;
+            currentFilteredData = menuData;
+            if (categoryFilters) categoryFilters.style.display = 'flex';
+            setupFilters(menuData);
+            renderMenu(menuData);
+            
+            // Hide the "View Full Menu" button on the dedicated menu page
+            const toggleContainer = document.getElementById('menu-toggle-container');
+            if (toggleContainer) toggleContainer.style.display = 'none';
+        } else {
+            // Pick 6 random items for the Best Seller section
+            const shuffled = [...menuData].sort(() => 0.5 - Math.random());
+            
+            // Filter unique by base name to avoid showing Half/Full as separate items in the 6 picks
+            const uniqueBases = [];
+            const pickedItems = [];
+            for (const item of shuffled) {
+                const base = getNormalizedName(item.name);
+                if (!uniqueBases.includes(base)) {
+                    uniqueBases.push(base);
+                    pickedItems.push(item);
+                }
+                if (pickedItems.length >= 6) break;
+            }
+            
+            renderBestSellers(pickedItems);
+        }
         
         generateSmartDeals();
     }
@@ -179,64 +217,150 @@ document.addEventListener('DOMContentLoaded', () => {
             card.style.border = '1px solid var(--primary-color)';
             
             const noteText = `Includes: ${deal.item1.name} + ${deal.item2.name}`.replace(/'/g, "\\'");
-            const safeAddCall = `window.addDealToCart('${deal.id}', '${deal.title.replace(/'/g, "\\'")}', ${deal.finalPrice}, ${deal.fakePrice}, '${noteText}', '${deal.item1.image}');`;
+            const dealImage = getDealImage(deal.title);
+            const safeAddCall = `window.addDealToCart('${deal.id}', '${deal.title.replace(/'/g, "\\'")}', ${deal.finalPrice}, ${deal.fakePrice}, '${noteText}', '${dealImage}');`;
 
             card.innerHTML = `
-                <div class="menu-details">
-                    <div style="font-size: 0.85rem; color: #f4b400; font-weight: bold; margin-bottom:5px;">HOURLY DEAL</div>
+                <div class="menu-img-container image-wrapper">
+                    <img src="${dealImage}" class="menu-img" loading="lazy" onerror="this.src='images/logo.png'">
+                </div>
+                <div class="menu-details menu-card-content">
+                    <div style="font-size: 0.85rem; color: #facc15; font-weight: bold; margin-bottom:5px;">HOURLY DEAL</div>
                     <div class="menu-title-row" style="margin-bottom: 5px;">
-                        <h3 class="menu-title" style="color: #ffffff; font-size: 1.2rem;">${deal.title}</h3>
+                        <h3 class="menu-title menu-card-title">${deal.title}</h3>
                     </div>
                     <p class="menu-desc" style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 10px;">
                         Includes: <strong>${deal.item1.name}</strong> + <strong>${deal.item2.name}</strong>
                     </p>
-                    <div class="menu-title-row" style="margin-top:auto;">
+                    <div class="menu-title-row">
                         <div>
                             <span style="text-decoration: line-through; color: #888; margin-right: 5px; font-size: 0.9rem;">₹${deal.fakePrice}</span>
                             <span class="menu-price" style="font-size: 1.3rem;">₹${deal.finalPrice}</span>
                         </div>
                     </div>
-                    <button class="add-to-cart-btn mt-2" style="background-color: var(--primary-color); color: #0d0d0d; border-radius: 8px; font-weight: bold; border:none;" onclick="${safeAddCall}">Grab this Deal</button>
+                    <div class="button-wrapper">
+                        <button class="add-to-cart-btn add-to-cart" onclick="${safeAddCall}">Grab this Deal</button>
+                    </div>
                 </div>
             `;
+
             grid.appendChild(card);
         });
     }
     // =========================================================================
 
     function setupExpandButton() {
-        let toggleContainer = document.getElementById('menu-toggle-container');
-        if (!toggleContainer && menuGrid) {
-            toggleContainer = document.createElement('div');
-            toggleContainer.id = 'menu-toggle-container';
-            toggleContainer.style.textAlign = 'center';
-            toggleContainer.style.marginTop = '30px';
-            menuGrid.parentNode.insertBefore(toggleContainer, menuGrid.nextSibling);
-        }
+        // Obsolete for Best Seller section, button is now static in HTML
+    }
+
+    function createMenuCard(group) {
+        const card = document.createElement('div');
+        card.className = 'menu-card';
         
-        if (toggleContainer) {
-            toggleContainer.innerHTML = '';
-            const btn = document.createElement('button');
-            btn.className = 'btn btn-primary';
-            btn.id = 'toggle-full-menu-btn';
-            btn.textContent = 'View Full Menu';
-            
-            btn.addEventListener('click', () => {
-                isMenuExpanded = !isMenuExpanded;
-                if (isMenuExpanded) {
-                    btn.textContent = 'Show Less';
-                    if (categoryFilters) categoryFilters.style.display = 'flex';
-                    renderMenu(currentFilteredData);
-                } else {
-                    btn.textContent = 'View Full Menu';
-                    if (categoryFilters) categoryFilters.style.display = 'none';
-                    renderMenu(initialBestsellers);
-                    // Smoothly scroll back to top of menu when collapsing to prevent being left in the middle of nowhere!
-                    document.getElementById('menu-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
-            toggleContainer.appendChild(btn);
+        let btnHtml = '';
+        const itemImg = group.image;
+
+        // Case 1: Dual Variants (Half & Full)
+        if (group.variants.half && group.variants.full) {
+            const half = group.variants.half;
+            const full = group.variants.full;
+            btnHtml = `
+                <div class="variant-buttons">
+                    <div id="menu-btn-container-${half.id}" style="flex:1; display: flex;">
+                        <button id="menu-add-btn-${half.id}" class="add-to-cart-btn" onclick="addToCart('${half.id}', '${half.name.replace(/'/g, "\\'")}', ${half.price}, '${itemImg}')">Half ₹${half.price}</button>
+                        <div id="menu-qty-ctrl-${half.id}" style="display:none; align-items:center; justify-content:space-between; width: 100%; padding:0 8px;">
+                            <button style="background:transparent; border:none; width:30px; height:30px; font-weight:bold; color:#facc15; cursor:pointer;" onclick="updateQuantity('${half.id}', -1)">-</button>
+                            <span id="menu-qty-val-${half.id}" style="font-weight:bold; color:var(--text-primary); font-size:1rem;">0</span>
+                            <button style="background:#facc15; border:none; border-radius:4px; width:30px; height:30px; font-weight:bold; color:#0d0d0d; cursor:pointer;" onclick="updateQuantity('${half.id}', 1)">+</button>
+                        </div>
+                    </div>
+                    <div id="menu-btn-container-${full.id}" style="flex:1; display: flex;">
+                        <button id="menu-add-btn-${full.id}" class="add-to-cart-btn" onclick="addToCart('${full.id}', '${full.name.replace(/'/g, "\\'")}', ${full.price}, '${itemImg}')">Full ₹${full.price}</button>
+                        <div id="menu-qty-ctrl-${full.id}" style="display:none; align-items:center; justify-content:space-between; width: 100%; padding:0 8px;">
+                            <button style="background:transparent; border:none; width:30px; height:30px; font-weight:bold; color:#facc15; cursor:pointer;" onclick="updateQuantity('${full.id}', -1)">-</button>
+                            <span id="menu-qty-val-${full.id}" style="font-weight:bold; color:var(--text-primary); font-size:1rem;">0</span>
+                            <button style="background:#facc15; border:none; border-radius:4px; width:30px; height:30px; font-weight:bold; color:#0d0d0d; cursor:pointer;" onclick="updateQuantity('${full.id}', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } 
+        // Case 2: Standard Single Item
+        else {
+            const item = group.variants.standard || group.variants.half || group.variants.full;
+            btnHtml = `
+                <div id="menu-btn-container-${item.id}" style="width:100%;">
+                    <button id="menu-add-btn-${item.id}" class="add-to-cart-btn add-to-cart" onclick="addToCart('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, '${itemImg}')">Add to Cart — ₹${item.price}</button>
+                    <div id="menu-qty-ctrl-${item.id}" style="display:none; align-items:center; justify-content:space-between; background:transparent; border: 1px solid #facc15; border-radius:999px; padding:4px; height: 48px;">
+                        <button style="background:transparent; border:none; width:40px; height:100%; font-weight:bold; color:#facc15; cursor:pointer;" onclick="updateQuantity('${item.id}', -1)">-</button>
+                        <span id="menu-qty-val-${item.id}" style="font-weight:bold; color:var(--text-primary); font-size:1.1rem;">0</span>
+                        <button style="background:#facc15; border:none; border-radius:999px; width:40px; height:36px; font-weight:bold; color:#0d0d0d; cursor:pointer;" onclick="updateQuantity('${item.id}', 1)">+</button>
+                    </div>
+                </div>
+            `;
         }
+
+        // Determine Veg/Non-Veg (heuristic based on name)
+        const combinedText = (group.displayName + " " + (group.description || "")).toLowerCase();
+        const isEggless = combinedText.includes("eggless");
+        const hasNonVegWords = /chicken|egg|fish|mutton|murgh|seekh|kebab|kabab|keema/.test(combinedText);
+        const isNonVeg = !isEggless && hasNonVegWords;
+        const foodTypeBadge = isNonVeg ? '<span class="food-tag non-veg">NON-VEG</span>' : '<span class="food-tag veg">VEG</span>';
+
+        card.innerHTML = `
+            <div class="menu-img-container image-wrapper">
+                <img src="${itemImg}" class="menu-img" loading="lazy" onerror="this.src='images/logo.png'">
+            </div>
+            <div class="menu-details menu-card-content">
+                <div>${foodTypeBadge}</div>
+                <div class="menu-title-row">
+                    <h3 class="menu-title menu-card-title">${group.displayName}</h3>
+                </div>
+                ${group.description && group.description !== 'nan' && group.description !== 'undefined' ? `<p class="menu-desc">${group.description}</p>` : ''}
+                <div class="button-wrapper">
+                    ${btnHtml}
+                </div>
+            </div>
+        `;
+        return card;
+    }
+
+    function renderBestSellers(items) {
+        const grid = document.getElementById('best-seller-items');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        // Process items into Half/Full groups
+        const baseGroups = {};
+        items.forEach(item => {
+            const baseName = getNormalizedName(item.name);
+            const category = item.category || 'Other';
+            const groupKey = `${category}_${baseName}`;
+
+            if (!baseGroups[groupKey]) {
+                let displayName = item.name.replace(/\((Half|Full|half|full)\)/g, "").trim();
+                baseGroups[groupKey] = {
+                    name: baseName,
+                    displayName: displayName,
+                    category: category,
+                    description: item.description,
+                    image: getItemImage(item.name),
+                    variants: {}
+                };
+            }
+
+            const lowerName = item.name.toLowerCase();
+            if (lowerName.includes('(half)')) baseGroups[groupKey].variants.half = item;
+            else if (lowerName.includes('(full)')) baseGroups[groupKey].variants.full = item;
+            else baseGroups[groupKey].variants.standard = item;
+        });
+
+        // Render first 6 groups
+        Object.values(baseGroups).slice(0, 6).forEach(group => {
+            grid.appendChild(createMenuCard(group));
+        });
+
+        if (typeof syncMenuWithCart === 'function') syncMenuWithCart();
     }
 
     function renderMenu(items) {
@@ -244,8 +368,9 @@ document.addEventListener('DOMContentLoaded', () => {
         menuGrid.innerHTML = '';
         
         let displayItems = items;
+
         if (currentDietaryFilter !== 'all') {
-            displayItems = items.filter(item => {
+            displayItems = displayItems.filter(item => {
                 const combinedText = (item.name + " " + (item.description || "")).toLowerCase();
                 const isEggless = combinedText.includes("eggless");
                 const hasNonVegWords = /chicken|egg|fish|mutton|murgh|seekh|kebab|kabab|keema/.test(combinedText);
@@ -259,17 +384,49 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const grouped = {};
+        // --- NEW: Grouping Logic (Half/Full) ---
+        const baseGroups = {};
         displayItems.forEach(item => {
-            const cat = item.category || 'Other';
-            if (!grouped[cat]) grouped[cat] = [];
-            grouped[cat].push(item);
+            const baseName = getNormalizedName(item.name);
+            const category = item.category || 'Other';
+            const groupKey = `${category}_${baseName}`;
+
+            if (!baseGroups[groupKey]) {
+                // Determine original display name (strip (Half)/(Full) but keep case)
+                let displayName = item.name.replace(/\((Half|Full|half|full)\)/g, "").trim();
+
+                baseGroups[groupKey] = {
+                    name: baseName, // for lookup
+                    displayName: displayName, // for UI display
+                    category: category,
+                    description: item.description,
+                    image: getItemImage(item.name),
+                    variants: {} // { half: item, full: item, standard: item }
+                };
+            }
+
+            const lowerName = item.name.toLowerCase();
+            if (lowerName.includes('(half)')) {
+                baseGroups[groupKey].variants.half = item;
+            } else if (lowerName.includes('(full)')) {
+                baseGroups[groupKey].variants.full = item;
+            } else {
+                // If it's a standard item (no half/full in name)
+                baseGroups[groupKey].variants.standard = item;
+            }
         });
 
-        const orderedCategories = [...new Set([...CATEGORY_ORDER, ...Object.keys(grouped)])];
+        // Group the resulting cards by category for final display
+        const groupedByCategory = {};
+        Object.values(baseGroups).forEach(group => {
+            if (!groupedByCategory[group.category]) groupedByCategory[group.category] = [];
+            groupedByCategory[group.category].push(group);
+        });
+
+        const orderedCategories = [...new Set([...CATEGORY_ORDER, ...Object.keys(groupedByCategory)])];
 
         orderedCategories.forEach(category => {
-            if (!grouped[category] || grouped[category].length === 0) return;
+            if (!groupedByCategory[category] || groupedByCategory[category].length === 0) return;
             
             const catHeader = document.createElement('div');
             catHeader.style.gridColumn = '1/-1';
@@ -280,73 +437,15 @@ document.addEventListener('DOMContentLoaded', () => {
             catHeader.innerHTML = `<h2 style="font-family: var(--font-heading); color: var(--primary-color); border-bottom: 2px solid var(--primary-color); display: inline-block; padding-bottom: 5px;">${category}</h2>`;
             menuGrid.appendChild(catHeader);
 
-            grouped[category].forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'menu-card';
-                
-                let priceHtml = '';
-                let btnHtml = '';
-                
-                if (item.half !== undefined && item.full !== undefined) {
-                    priceHtml = `<span class="menu-price">₹${item.half} | ₹${item.full}</span>`;
-                    btnHtml = `
-                        <div style="display: flex; gap: 10px;">
-                            <div id="menu-btn-container-${item.id}_half" style="flex:1;">
-                                <button id="menu-add-btn-${item.id}_half" class="add-to-cart-btn" onclick="addToCart('${item.id}_half', '${item.name.replace(/'/g, "\\'")} Half', ${item.half}, '${item.image}')">Add Half</button>
-                                <div id="menu-qty-ctrl-${item.id}_half" style="display:none; align-items:center; justify-content:space-between; background:var(--bg-light); border: 1px solid var(--primary-color); border-radius:12px; padding:4px; height: 100%;">
-                                    <button style="background:transparent; border:none; width:30px; height:30px; font-weight:bold; color:var(--primary-color); cursor:pointer;" onclick="updateQuantity('${item.id}_half', -1)">-</button>
-                                    <span id="menu-qty-val-${item.id}_half" style="font-weight:bold; color:var(--text-primary); font-size:1.1rem;">0</span>
-                                    <button style="background:var(--primary-color); border:none; border-radius:8px; width:30px; height:30px; font-weight:bold; color:#0d0d0d; cursor:pointer;" onclick="updateQuantity('${item.id}_half', 1)">+</button>
-                                </div>
-                            </div>
-                            <div id="menu-btn-container-${item.id}_full" style="flex:1;">
-                                <button id="menu-add-btn-${item.id}_full" class="add-to-cart-btn" onclick="addToCart('${item.id}_full', '${item.name.replace(/'/g, "\\'")} Full', ${item.full}, '${item.image}')">Add Full</button>
-                                <div id="menu-qty-ctrl-${item.id}_full" style="display:none; align-items:center; justify-content:space-between; background:var(--bg-light); border: 1px solid var(--primary-color); border-radius:12px; padding:4px; height: 100%;">
-                                    <button style="background:transparent; border:none; width:30px; height:30px; font-weight:bold; color:var(--primary-color); cursor:pointer;" onclick="updateQuantity('${item.id}_full', -1)">-</button>
-                                    <span id="menu-qty-val-${item.id}_full" style="font-weight:bold; color:var(--text-primary); font-size:1.1rem;">0</span>
-                                    <button style="background:var(--primary-color); border:none; border-radius:8px; width:30px; height:30px; font-weight:bold; color:#0d0d0d; cursor:pointer;" onclick="updateQuantity('${item.id}_full', 1)">+</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    priceHtml = `<span class="menu-price">₹${item.price}</span>`;
-                    btnHtml = `
-                        <div id="menu-btn-container-${item.id}">
-                            <button id="menu-add-btn-${item.id}" class="add-to-cart-btn" onclick="addToCart('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, '${item.image}')">Add to Cart</button>
-                            <div id="menu-qty-ctrl-${item.id}" style="display:none; align-items:center; justify-content:space-between; background:var(--bg-light); border: 1px solid var(--primary-color); border-radius:12px; padding:4px; height: 100%;">
-                                <button style="background:transparent; border:none; width:30px; height:30px; font-weight:bold; color:var(--primary-color); cursor:pointer;" onclick="updateQuantity('${item.id}', -1)">-</button>
-                                <span id="menu-qty-val-${item.id}" style="font-weight:bold; color:var(--text-primary); font-size:1.1rem;">0</span>
-                                <button style="background:var(--primary-color); border:none; border-radius:8px; width:30px; height:30px; font-weight:bold; color:#0d0d0d; cursor:pointer;" onclick="updateQuantity('${item.id}', 1)">+</button>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                const combinedText = (item.name + " " + (item.description || "")).toLowerCase();
-                const isEggless = combinedText.includes("eggless");
-                const hasNonVegWords = /chicken|egg|fish|mutton|murgh|seekh|kebab|kabab|keema/.test(combinedText);
-                const isNonVeg = !isEggless && hasNonVegWords;
-                const foodTypeBadge = isNonVeg ? '<span class="food-tag non-veg">NON-VEG</span>' : '<span class="food-tag veg">VEG</span>';
-
-                card.innerHTML = `
-                    <div class="menu-details">
-                        <div>${foodTypeBadge}</div>
-                        <div class="menu-title-row">
-                            <h3 class="menu-title">${item.name}</h3>
-                            ${priceHtml}
-                        </div>
-                        ${item.description && item.description !== 'nan' && item.description !== 'undefined' && item.description !== 'null' ? `<p class="menu-desc">${item.description}</p>` : ''}
-                        ${btnHtml}
-                    </div>
-                `;
-                menuGrid.appendChild(card);
+            groupedByCategory[category].forEach(group => {
+                menuGrid.appendChild(createMenuCard(group));
             });
         });
         
         if (isMenuExpanded) {
             initScrollSpy();
         }
+        
         
         if (typeof syncMenuWithCart === 'function') syncMenuWithCart();
     }
@@ -1330,16 +1429,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const clearBtn = document.getElementById('clear-cart-btn');
-        if (clearBtn) {
-            clearBtn.addEventListener('click', () => {
-                if(confirm('Are you sure you want to clear your cart?')) {
-                    cart = [];
-                    restaurantNote = '';
-                    if (typeof updateNoteUI === 'function') updateNoteUI();
-                    saveCart();
-                    updateCartUI();
+        const clearBtnGlobal = document.getElementById('clear-cart-global');
+        
+        const handleClearCart = () => {
+            if(confirm('Are you sure you want to clear your cart?')) {
+                cart = [];
+                restaurantNote = '';
+                if (typeof updateNoteUI === 'function') updateNoteUI();
+                saveCart();
+                updateCartUI();
+                
+                if (window.location.pathname.includes('checkout.html')) {
+                    location.reload();
                 }
-            });
+            }
+        };
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', handleClearCart);
+        }
+        
+        if (clearBtnGlobal) {
+            clearBtnGlobal.addEventListener('click', handleClearCart);
         }
 
         // Delivery Info Modal HTML Injection
@@ -1401,18 +1512,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.removeItem('paymentSharedPending');
                 document.getElementById('screenshot-modal').classList.remove('show');
                 
-                // Clear cart on success to give fresh UX
-                cart = [];
-                restaurantNote = '';
-                if (typeof updateNoteUI === 'function') updateNoteUI();
-                saveCart();
-                updateCartUI();
-                
-                alert('Order received. Please call to confirm.');
+                // NEW: Show Step 2 Modal instead of immediately clearing cart
+                const contactModal = document.getElementById('restaurant-contact-modal');
+                if (contactModal) contactModal.classList.add('show');
             });
             
             document.getElementById('btn-scr-no')?.addEventListener('click', () => {
-                document.getElementById('screenshot-modal').classList.remove('show');
+                // DO NOT close modal automatically on NO
+                // document.getElementById('screenshot-modal').classList.remove('show');
                 
                 localStorage.setItem('paymentSharedPending', 'true');
                 const message = 'Hi, I will share the payment screenshot for order confirmation.';
@@ -1420,21 +1527,127 @@ document.addEventListener('DOMContentLoaded', () => {
                 const encodedMessage = encodeURIComponent(message);
                 const whatsappUrl = `https://wa.me/${phoneTarget}?text=${encodedMessage}`;
                 window.open(whatsappUrl, '_blank');
+                
+                // Safety: Re-open modal if closed by environment/re-render
+                setTimeout(() => {
+                    if (typeof window.openScreenshotModal === "function") {
+                        window.openScreenshotModal();
+                    }
+                }, 800);
+                
+                return;
             });
             
-            window.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'visible') {
-                    if (localStorage.getItem('paymentSharedPending') === 'true') {
-                        localStorage.removeItem('paymentSharedPending');
-                        document.getElementById('screenshot-modal').classList.add('show');
-                    }
+            window.openScreenshotModal = function() {
+                localStorage.removeItem("paymentInitiated");
+                const modal = document.getElementById("screenshot-modal");
+                if (modal && !modal.classList.contains("show")) {
+                    modal.classList.add("show");
+                }
+            };
+
+            const checkPendingActions = () => {
+                if (localStorage.getItem('paymentInitiated') === 'true') {
+                    localStorage.removeItem('paymentInitiated');
+                    if (typeof window.openScreenshotModal === 'function') window.openScreenshotModal();
+                }
+                if (localStorage.getItem('restaurantConfirmPending') === 'true') {
+                    localStorage.removeItem('restaurantConfirmPending');
+                    document.getElementById('restaurant-verify-modal')?.classList.add('show');
+                }
+            };
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') checkPendingActions();
+            });
+            
+            window.addEventListener('focus', checkPendingActions);
+
+            // CHECK ON PAGE LOAD
+            checkPendingActions();
+        }
+
+        // Restaurant Contact Modal (Step 2)
+        if (!document.getElementById('restaurant-contact-modal')) {
+            const contactModalHTML = `
+                <div id="restaurant-contact-modal" class="payment-modal">
+                    <div class="payment-modal-content" style="text-align:center;">
+                        <h3 style="font-family: var(--font-heading); margin-bottom:15px;"><i class="fas fa-phone-alt"></i> Final Confirmation Required</h3>
+                        <p style="color:var(--text-secondary); margin-bottom:20px;">To confirm your order, please contact the restaurant and verify your payment with the screenshot you shared.</p>
+                        <div style="display:flex; flex-direction:column; gap:10px;">
+                            <a href="tel:+916370680744" id="btn-contact-call" class="btn btn-primary btn-block py-3" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:10px;">
+                                <i class="fas fa-phone"></i> Call Restaurant
+                            </a>
+                            <button id="btn-contact-wa" class="btn btn-whatsapp btn-block py-3" style="display:flex; align-items:center; justify-content:center; gap:10px;">
+                                <i class="fab fa-whatsapp"></i> Confirm via WhatsApp
+                            </button>
+                            <button id="btn-contact-back" class="btn btn-outline btn-block">Back</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', contactModalHTML);
+            
+            document.getElementById('btn-contact-call')?.addEventListener('click', () => {
+                localStorage.setItem('restaurantConfirmPending', 'true');
+            });
+            
+            document.getElementById('btn-contact-wa')?.addEventListener('click', () => {
+                localStorage.setItem('restaurantConfirmPending', 'true');
+                const message = 'Hi, I have placed an order and shared my payment screenshot. Please confirm my order.';
+                const phoneTarget = '916370680744';
+                const encodedMessage = encodeURIComponent(message);
+                const whatsappUrl = `https://wa.me/${phoneTarget}?text=${encodedMessage}`;
+                window.open(whatsappUrl, '_blank');
+            });
+            
+            document.getElementById('btn-contact-back')?.addEventListener('click', () => {
+                document.getElementById('restaurant-contact-modal').classList.remove('show');
+            });
+        }
+
+        // Restaurant Verification Modal (Step 3)
+        if (!document.getElementById('restaurant-verify-modal')) {
+            const verifyModalHTML = `
+                <div id="restaurant-verify-modal" class="payment-modal">
+                    <div class="payment-modal-content" style="text-align:center;">
+                        <h3 style="font-family: var(--font-heading); margin-bottom:15px;">Verify Order Confirmation</h3>
+                        <p style="color:var(--text-secondary); margin-bottom:20px;">Did you confirm with the restaurant?</p>
+                        <div style="display:flex; gap:10px;">
+                            <button id="btn-verify-yes" class="btn btn-primary btn-block">YES</button>
+                            <button id="btn-verify-no" class="btn btn-outline btn-block">NO</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', verifyModalHTML);
+            
+            document.getElementById('btn-verify-yes')?.addEventListener('click', () => {
+                localStorage.removeItem('restaurantConfirmPending');
+                document.getElementById('restaurant-verify-modal').classList.remove('show');
+                
+                // Execute original confirmation logic
+                cart = [];
+                restaurantNote = '';
+                if (typeof updateNoteUI === 'function') updateNoteUI();
+                saveCart();
+                updateCartUI();
+                
+                alert('Order received!\n\nPlease confirm your payment status.\n\n* If your payment is still pending, contact the restaurant.\n* If the restaurant has confirmed your payment in WhatsApp, your order is successfully placed.');
+                
+                // Sync checkout page if applicable
+                if (window.location.pathname.includes('checkout.html')) {
+                    location.reload();
                 }
             });
             
-            window.addEventListener('focus', () => {
-                if (localStorage.getItem('paymentSharedPending') === 'true') {
-                    localStorage.removeItem('paymentSharedPending');
-                    document.getElementById('screenshot-modal').classList.add('show');
+            document.getElementById('btn-verify-no')?.addEventListener('click', () => {
+                alert('Please confirm your payment first');
+                document.getElementById('restaurant-verify-modal').classList.remove('show');
+                
+                // Loop back to screenshot modal
+                if (typeof window.openScreenshotModal === 'function') {
+                    window.openScreenshotModal();
                 }
             });
         }
@@ -1708,7 +1921,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const whatsappUrl = 'https://wa.me/' + phoneTarget + '?text=' + encodedMessage;
             
             if (!isCOD) {
-                localStorage.setItem('paymentSharedPending', 'true');
+                localStorage.setItem('paymentInitiated', 'true');
+                
+                // UNIVERSAL FALLBACK (1.2s)
+                setTimeout(() => {
+                    const flag = localStorage.getItem("paymentInitiated");
+                    if (flag === "true") {
+                        if (typeof window.openScreenshotModal === "function") {
+                            window.openScreenshotModal();
+                        }
+                    }
+                }, 1200);
+
+                // SECOND SAFETY TIMER (3s)
+                setTimeout(() => {
+                    const flag = localStorage.getItem("paymentInitiated");
+                    if (flag === "true") {
+                        if (typeof window.openScreenshotModal === "function") {
+                            window.openScreenshotModal();
+                        }
+                    }
+                }, 3000);
             }
             
             window.open(whatsappUrl, '_blank');
