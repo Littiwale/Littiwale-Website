@@ -642,6 +642,121 @@ border-right: 1px solid #facc15;
     color: #0d0d0d;
 }
 
+
+/* Half/Full Sync UI */
+.half-full-wrapper {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    margin-top: auto;
+}
+
+.half-full-box {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(250, 204, 21, 0.3);
+    border-radius: 12px;
+    padding: 10px 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: var(--transition);
+}
+
+.half-full-box:hover {
+    border-color: var(--primary-color);
+    background: rgba(250, 204, 21, 0.05);
+}
+
+.hf-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.hf-price {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin: 2px 0 10px 0;
+}
+
+.hf-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: #000;
+    border-radius: 8px;
+    padding: 3px;
+    border: 1px solid rgba(250, 204, 21, 0.2);
+}
+
+.hf-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    font-weight: 800;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: var(--transition);
+}
+
+.hf-btn:hover {
+    background: var(--primary-color);
+    color: #0d0d0d;
+}
+
+.hf-btn.plus {
+    background: var(--primary-color);
+    color: #000;
+}
+
+.hf-value {
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: white;
+}
+
+/* Toast Notification */
+#cart-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #ffffff;
+    color: #0d0d0d;
+    padding: 14px 28px;
+    border-radius: 16px;
+    font-weight: 700;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 10001;
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-left: 5px solid var(--primary-color);
+}
+
+#cart-toast.show {
+    transform: translateX(-50%) translateY(0);
+}
+
+#cart-toast i {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
 /* ==========================================================================
    Instagram Reels Section
    ========================================================================== */

@@ -264,22 +264,32 @@ document.addEventListener('DOMContentLoaded', () => {
         if (group.variants.half && group.variants.full) {
             const half = group.variants.half;
             const full = group.variants.full;
+            
+            // Variants for descriptions
+            const hDesc = (half.description && half.description !== 'nan' && half.description !== 'undefined') ? half.description : "";
+            const fDesc = (full.description && full.description !== 'nan' && full.description !== 'undefined') ? full.description : "";
+            
+            // Base ID for the description container
+            const baseId = group.variants.half.id.replace(/-half|_half/g, '');
+
             btnHtml = `
-                <div class="variant-buttons">
-                    <div id="menu-btn-container-${half.id}" style="flex:1; display: flex;">
-                        <button id="menu-add-btn-${half.id}" class="add-to-cart-btn" onclick="addToCart('${half.id}', '${half.name.replace(/'/g, "\\'")}', ${half.price}, '${itemImg}')">Half ₹${half.price}</button>
-                        <div id="menu-qty-ctrl-${half.id}" style="display:none; align-items:center; justify-content:space-between; width: 100%; padding:0 8px;">
-                            <button style="background:transparent; border:none; width:30px; height:30px; font-weight:bold; color:#facc15; cursor:pointer;" onclick="updateQuantity('${half.id}', -1)">-</button>
-                            <span id="menu-qty-val-${half.id}" style="font-weight:bold; color:var(--text-primary); font-size:1rem;">0</span>
-                            <button style="background:#facc15; border:none; border-radius:4px; width:30px; height:30px; font-weight:bold; color:#0d0d0d; cursor:pointer;" onclick="updateQuantity('${half.id}', 1)">+</button>
+                <div class="half-full-wrapper">
+                    <div class="half-full-box">
+                        <div class="hf-label">Half</div>
+                        <div class="hf-price">₹${half.price}</div>
+                        <div class="hf-controls">
+                            <button class="hf-btn minus" onclick="event.stopPropagation(); updateQuantity('${half.id}', -1)">-</button>
+                            <span class="hf-value" id="hf-val-${half.id}">0</span>
+                            <button class="hf-btn plus" onclick="event.stopPropagation(); addToCart('${half.id}', '${half.name.replace(/'/g, "\\'")}', ${half.price}, '${itemImg}'); if(document.getElementById('desc-${baseId}')) document.getElementById('desc-${baseId}').innerText = '${hDesc.replace(/'/g, "\\'")}';">+</button>
                         </div>
                     </div>
-                    <div id="menu-btn-container-${full.id}" style="flex:1; display: flex;">
-                        <button id="menu-add-btn-${full.id}" class="add-to-cart-btn" onclick="addToCart('${full.id}', '${full.name.replace(/'/g, "\\'")}', ${full.price}, '${itemImg}')">Full ₹${full.price}</button>
-                        <div id="menu-qty-ctrl-${full.id}" style="display:none; align-items:center; justify-content:space-between; width: 100%; padding:0 8px;">
-                            <button style="background:transparent; border:none; width:30px; height:30px; font-weight:bold; color:#facc15; cursor:pointer;" onclick="updateQuantity('${full.id}', -1)">-</button>
-                            <span id="menu-qty-val-${full.id}" style="font-weight:bold; color:var(--text-primary); font-size:1rem;">0</span>
-                            <button style="background:#facc15; border:none; border-radius:4px; width:30px; height:30px; font-weight:bold; color:#0d0d0d; cursor:pointer;" onclick="updateQuantity('${full.id}', 1)">+</button>
+                    <div class="half-full-box">
+                        <div class="hf-label">Full</div>
+                        <div class="hf-price">₹${full.price}</div>
+                        <div class="hf-controls">
+                            <button class="hf-btn minus" onclick="event.stopPropagation(); updateQuantity('${full.id}', -1)">-</button>
+                            <span class="hf-value" id="hf-val-${full.id}">0</span>
+                            <button class="hf-btn plus" onclick="event.stopPropagation(); addToCart('${full.id}', '${full.name.replace(/'/g, "\\'")}', ${full.price}, '${itemImg}'); if(document.getElementById('desc-${baseId}')) document.getElementById('desc-${baseId}').innerText = '${fDesc.replace(/'/g, "\\'")}';">+</button>
                         </div>
                     </div>
                 </div>
@@ -307,6 +317,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const isNonVeg = !isEggless && hasNonVegWords;
         const foodTypeBadge = isNonVeg ? '<span class="food-tag non-veg">NON-VEG</span>' : '<span class="food-tag veg">VEG</span>';
 
+        // Determine description and baseId for dynamic updates
+        const hItem = group.variants.half;
+        const fItem = group.variants.full;
+        const halfDesc = (hItem && hItem.description && hItem.description !== 'nan' && hItem.description !== 'undefined') ? hItem.description : "";
+        const fullDesc = (fItem && fItem.description && fItem.description !== 'nan' && fItem.description !== 'undefined') ? fItem.description : "";
+        
+        let currentDesc = halfDesc || fullDesc || group.description || "";
+        if (currentDesc === 'nan' || currentDesc === 'undefined') currentDesc = "";
+        
+        const baseId = (group.variants.half || group.variants.full || group.variants.standard).id.replace(/-half|_half|-full|_full/g, '');
+
         card.innerHTML = `
             <div class="menu-img-container image-wrapper">
                 <img src="${itemImg}" class="menu-img" loading="lazy" onerror="this.src='images/logo.png'">
@@ -316,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="menu-title-row">
                     <h3 class="menu-title menu-card-title">${group.displayName}</h3>
                 </div>
-                ${group.description && group.description !== 'nan' && group.description !== 'undefined' ? `<p class="menu-desc">${group.description}</p>` : ''}
+                <p class="menu-desc" id="desc-${baseId}">${currentDesc}</p>
                 <div class="button-wrapper">
                     ${btnHtml}
                 </div>
@@ -350,9 +371,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const lowerName = item.name.toLowerCase();
-            if (lowerName.includes('(half)')) baseGroups[groupKey].variants.half = item;
-            else if (lowerName.includes('(full)')) baseGroups[groupKey].variants.full = item;
-            else baseGroups[groupKey].variants.standard = item;
+            if (lowerName.includes('(half)')) {
+                baseGroups[groupKey].variants.half = item;
+                // Capture Half description specifically if it exists
+                if (item.description && item.description !== 'nan' && item.description !== 'undefined') {
+                    baseGroups[groupKey].halfDesc = item.description;
+                }
+            } else if (lowerName.includes('(full)')) {
+                baseGroups[groupKey].variants.full = item;
+                // Capture Full description specifically if it exists
+                if (item.description && item.description !== 'nan' && item.description !== 'undefined') {
+                    baseGroups[groupKey].fullDesc = item.description;
+                }
+            } else {
+                baseGroups[groupKey].variants.standard = item;
+            }
         });
 
         // Render first 6 groups
@@ -408,10 +441,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const lowerName = item.name.toLowerCase();
             if (lowerName.includes('(half)')) {
                 baseGroups[groupKey].variants.half = item;
+                if (item.description && item.description !== 'nan' && item.description !== 'undefined') {
+                    baseGroups[groupKey].halfDesc = item.description;
+                }
             } else if (lowerName.includes('(full)')) {
                 baseGroups[groupKey].variants.full = item;
+                if (item.description && item.description !== 'nan' && item.description !== 'undefined') {
+                    baseGroups[groupKey].fullDesc = item.description;
+                }
             } else {
-                // If it's a standard item (no half/full in name)
                 baseGroups[groupKey].variants.standard = item;
             }
         });
@@ -672,6 +710,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- Toast Notification ---
+    function showToast(message) {
+        const toast = document.getElementById('cart-toast');
+        if (!toast) return;
+        
+        toast.innerHTML = `<i class="fas fa-check-circle"></i> <span>${message}</span>`;
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2000);
+    }
+
     // Initialize Cart
     function initCart() {
         const storedCart = localStorage.getItem('littiWaleCart');
@@ -754,6 +805,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         saveCart();
         updateCartUI();
+        showToast(`${cartName} added to cart!`);
         
         // Auto-open the cart drawer smoothly
         const cartDrawer = document.getElementById('cart-drawer');
@@ -782,6 +834,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         saveCart();
         updateCartUI();
+        showToast(`${name} added to cart!`);
         const cartDrawer = document.getElementById('cart-drawer');
         if (cartDrawer) {
             cartDrawer.classList.add('open');
@@ -1045,24 +1098,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function syncMenuWithCart() {
+        // --- 1. Sync Standard Items (Add/Qty controls) ---
         const addBtns = document.querySelectorAll('[id^="menu-add-btn-"]');
         addBtns.forEach(btn => {
             const fullId = btn.id.replace('menu-add-btn-', '');
             const ctrl = document.getElementById(`menu-qty-ctrl-${fullId}`);
             const valSpan = document.getElementById(`menu-qty-val-${fullId}`);
-            
-            // Find item in cart.
             const cartItem = cart.find(item => item.id === fullId);
             
             if (cartItem) {
-                // Hide ADD button, Show QTY controls
                 btn.style.display = 'none';
                 if (ctrl) ctrl.style.display = 'flex';
                 if (valSpan) valSpan.textContent = cartItem.quantity;
             } else {
-                // Show ADD button, Hide QTY controls
                 btn.style.display = 'block';
                 if (ctrl) ctrl.style.display = 'none';
+            }
+        });
+
+        // --- 2. Sync Half/Full Variants (STRICTLY Independent quantities) ---
+        document.querySelectorAll('.half-full-wrapper').forEach(wrapper => {
+            const boxes = wrapper.querySelectorAll('.half-full-box');
+            if (boxes.length === 2) {
+                const hValSpan = boxes[0].querySelector('.hf-value');
+                const fValSpan = boxes[1].querySelector('.hf-value');
+                
+                if (hValSpan && fValSpan) {
+                    const hId = hValSpan.id.replace('hf-val-', '');
+                    const fId = fValSpan.id.replace('hf-val-', '');
+                    
+                    // Directly fetch quantities from cart by exact ID match
+                    const hQty = cart.find(i => i.id === hId)?.quantity || 0;
+                    const fQty = cart.find(i => i.id === fId)?.quantity || 0;
+                    
+                    // Explicitly set each variant to its own quantity ONLY
+                    hValSpan.textContent = hQty; 
+                    fValSpan.textContent = fQty;
+                }
             }
         });
     }
