@@ -376,12 +376,12 @@
     .ipl-ready-text { font-size: 1.2rem; }
 }
 
-/* DYNAMIC AUTO-SCALING SYSTEM */
+/* ENHANCED PLAYER RENDERING SYSTEM (SAFE) */
 .player-container {
     position: relative !important;
     display: flex !important;
-    justify-content: center !important;
     align-items: flex-end !important;
+    justify-content: center !important;
     overflow: hidden !important;
 }
 
@@ -389,17 +389,15 @@
     position: absolute !important;
     bottom: 0 !important;
     left: 50% !important;
+
     transform: translateX(-50%) scale(var(--player-scale, 1)) !important;
     transform-origin: bottom center !important;
-    max-height: 90% !important;
+
+    max-height: 85% !important;  /* limit size */
     width: auto !important;
     height: auto !important;
-    object-fit: contain !important;
-    transition: transform 0.3s ease;
-}
 
-@media (max-width: 768px) {
-    .player-container img {
-        max-height: 75% !important;
-    }
+    object-fit: contain !important; /* preserve ratio */
+    pointer-events: none;
+    transition: transform 0.3s ease;
 }

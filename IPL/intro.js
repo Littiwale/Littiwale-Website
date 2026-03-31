@@ -255,54 +255,61 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// ✅ AUTO SCALE ENGINE (CORE LOGIC)
+// ✅ SMART SCALE ENGINE (SAFE RENDERING)
 function balancePlayers() {
     const players = document.querySelectorAll(".player-container img");
     if (!players.length) return;
 
-    let maxHeight = 0;
+    let referenceHeight = 0;
 
-    // Reset scale first
+    // Reset scale first to measure natural size
     players.forEach(img => {
         img.style.setProperty("--player-scale", 1);
     });
 
-    // Measure actual height
+    // Find tallest natural image
     players.forEach(img => {
         const rect = img.getBoundingClientRect();
-        if (rect.height > maxHeight) {
-            maxHeight = rect.height;
+        if (rect.height > referenceHeight) {
+            referenceHeight = rect.height;
         }
     });
 
-    // Apply scaling
+    // Scale ONLY smaller images (never shrink larger ones to preserve quality)
     players.forEach(img => {
         const rect = img.getBoundingClientRect();
         if (!rect.height) return;
 
-        const scale = maxHeight / rect.height;
-        if (scale > 1.03) {
+        const scale = referenceHeight / rect.height;
+
+        // Apply scale up if threshold exceeded (1.02)
+        if (scale > 1.02) {
             img.style.setProperty("--player-scale", scale.toFixed(2));
+        } else {
+            img.style.setProperty("--player-scale", 1);
         }
     });
 }
 
-// RUN ON LOAD
+// 1. RUN AFTER EVERYTHING LOADS
 window.addEventListener("load", () => {
-    setTimeout(balancePlayers, 100);
+    setTimeout(balancePlayers, 300);
 });
 
-// RUN ON RESIZE
+// 2. RUN AFTER RESIZE
 window.addEventListener("resize", () => {
-    setTimeout(balancePlayers, 100);
+    setTimeout(balancePlayers, 200);
 });
 
-// RUN WHEN IMAGES CHANGE (MutationObserver)
-const introObserver = new MutationObserver(() => {
-    setTimeout(balancePlayers, 100);
+// 3. RUN AFTER INITIAL ANIMATIONS
+setTimeout(balancePlayers, 500);
+
+// 4. AUTO-DETECT IMAGE CHANGES (MutationObserver)
+const playerObserver = new MutationObserver(() => {
+    setTimeout(balancePlayers, 200);
 });
 
-introObserver.observe(document.body, {
+playerObserver.observe(document.body, {
     subtree: true,
     childList: true
 });
