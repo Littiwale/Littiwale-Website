@@ -774,20 +774,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 toastEl.innerHTML = `<i class="fas fa-check-circle"></i> <span>${message}</span>`;
                 toastEl.classList.add('show');
+                if (config.className) {
+                    toastEl.classList.add(config.className);
+                }
                 toastEl.classList.add('custom-toast');
 
-                if (this.isMobile) {
-                    // CSS Fallback: Force fade-out after 1s on mobile
-                    setTimeout(() => {
-                        if (this.activeId === toastId) { // Only if this toast is still active
-                            toastEl.classList.add('hide-toast');
-                        }
-                    }, 1000);
-                }
+                // Force visual hide after 1s (both mobile and desktop)
+                setTimeout(() => {
+                    if (this.activeId === toastId) {
+                        toastEl.classList.add('hide-toast');
+                    }
+                }, 1000);
 
+                // Safe cleanup after 1.3s
                 this.timeoutId = setTimeout(() => {
                     this.dismiss();
-                }, duration);
+                }, 1300);
 
             } catch (error) {
                 this.log("show", "failed", error.message);
@@ -2873,5 +2875,37 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.close-sheet-btn, .nav-bottom-sheet-overlay').forEach(btn => {
         btn.addEventListener('click', closeDrawers);
     });
+
+    // --- Floating Category Filter Button (Menu Page Only) ---
+    const filterFab = document.getElementById('filter-fab');
+    if (filterFab && (window.location.pathname.includes('menu.html') || document.body.classList.contains('menu-page'))) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                if (filterFab.style.display === 'none') {
+                    filterFab.style.display = 'flex';
+                }
+                setTimeout(() => filterFab.classList.add('visible'), 10);
+            } else {
+                filterFab.classList.remove('visible');
+                // Optional: hide display after transition
+                setTimeout(() => {
+                    if (!filterFab.classList.contains('visible')) {
+                        filterFab.style.display = 'none';
+                    }
+                }, 300);
+            }
+        });
+
+        filterFab.addEventListener('click', (e) => {
+            e.preventDefault();
+            const filters = document.getElementById('category-filters');
+            if (filters) {
+                const topPos = filters.getBoundingClientRect().top + window.scrollY - 120;
+                window.scrollTo({ top: topPos, behavior: 'smooth' });
+            } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    }
 });
 

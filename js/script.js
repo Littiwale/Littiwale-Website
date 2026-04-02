@@ -411,21 +411,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.activeId = toastId;
 
                 const toastEl = document.createElement('div');
+                if (config.className) {
+                    toastEl.classList.add(config.className);
+                }
                 toastEl.className = 'toast show custom-toast';
                 toastEl.textContent = message;
                 toastContainer.appendChild(toastEl);
 
-                if (this.isMobile) {
-                    setTimeout(() => {
-                        if (this.activeId === toastId) {
-                            toastEl.classList.add('hide-toast');
-                        }
-                    }, 1000);
-                }
+                // Force visual hide after 1s (both mobile and desktop)
+                setTimeout(() => {
+                    if (this.activeId === toastId) {
+                        toastEl.classList.add('hide-toast');
+                    }
+                }, 1000);
 
+                // Safe cleanup after 1.3s
                 this.timeoutId = setTimeout(() => {
                     this.dismiss();
-                }, duration);
+                }, 1300);
 
             } catch (error) {
                 this.log("show", "failed", error.message);

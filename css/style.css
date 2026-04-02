@@ -749,7 +749,8 @@ border-right: 1px solid #facc15;
 }
 
 .custom-toast {
-    transition: opacity 0.3s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    opacity: 1;
+    transition: opacity 0.3s ease;
 }
 
 .custom-toast.hide-toast {
@@ -1190,6 +1191,17 @@ border-right: 1px solid #facc15;
     flex-direction: column;
     gap: 15px;
     z-index: 999;
+}
+
+#filter-fab {
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition);
+}
+
+#filter-fab.visible {
+    opacity: 1;
+    visibility: visible;
 }
 
 .fab-btn {
