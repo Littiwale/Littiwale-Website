@@ -225,7 +225,15 @@ document.addEventListener('DOMContentLoaded', () => {
             cart.push({ ...item, quantity: 1 });
         }
         saveCart();
-        showToast('Item added to cart!');
+        if (!toast.isActive(TOAST_ID)) {
+            toast.success('Item added to cart!', {
+                toastId: TOAST_ID,
+                autoClose: toast.isMobile ? 1200 : 1500,
+                hideProgressBar: true,
+                pauseOnHover: false,
+                closeOnClick: true
+            });
+        }
     }
 
     function updateCartItem(id, change) {
@@ -344,16 +352,89 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==== UTILITIES ====
+    const TOAST_ID = "add-to-cart";
+    const toast = {
+        timeoutId: null,
+        activeId: null,
+        isMobile: window.innerWidth <= 768,
+
+        log(action, status, message = "") {
+            const timestamp = new Date().toISOString();
+            const logEntry = `[Toast] ${timestamp} | Action: ${action} | Status: ${status} ${message ? "| Msg: " + message : ""}`;
+            if (status === "failed") {
+                console.error(logEntry);
+            } else {
+                console.log(logEntry);
+            }
+        },
+
+        isActive(id) {
+            return this.activeId === id;
+        },
+
+        dismiss(id = null) {
+            try {
+                if (id && this.activeId !== id) return;
+
+                if (this.timeoutId) {
+                    clearTimeout(this.timeoutId);
+                    this.timeoutId = null;
+                }
+                const toastEl = document.querySelector('.toast.show');
+                if (toastEl) {
+                    toastEl.classList.remove('show');
+                    toastEl.classList.remove('hide-toast');
+                    setTimeout(() => toastEl.remove(), 300);
+                }
+                this.activeId = null;
+                this.log("dismiss", "success", id ? `ID: ${id}` : "");
+            } catch (error) {
+                this.log("dismiss", "failed", error.message);
+            }
+        },
+
+        success(message, config = {}) {
+            try {
+                const toastId = config.toastId || null;
+                const duration = this.isMobile ? (config.autoClose || 1300) : (config.autoClose || 1500);
+
+                if (this.isMobile) {
+                    this.dismiss();
+                }
+
+                if (!toastContainer) {
+                    this.log("show", "failed", "Toast container not found");
+                    return;
+                }
+
+                this.log("trigger", "success", message);
+                this.activeId = toastId;
+
+                const toastEl = document.createElement('div');
+                toastEl.className = 'toast show custom-toast';
+                toastEl.textContent = message;
+                toastContainer.appendChild(toastEl);
+
+                if (this.isMobile) {
+                    setTimeout(() => {
+                        if (this.activeId === toastId) {
+                            toastEl.classList.add('hide-toast');
+                        }
+                    }, 1000);
+                }
+
+                this.timeoutId = setTimeout(() => {
+                    this.dismiss();
+                }, duration);
+
+            } catch (error) {
+                this.log("show", "failed", error.message);
+            }
+        }
+    };
+
     function showToast(message) {
-        if (!toastContainer) return;
-        const toast = document.createElement('div');
-        toast.className = 'toast show';
-        toast.textContent = message;
-        toastContainer.appendChild(toast);
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
-        }, 2000);
+        toast.success(message);
     }
 
     function setupScrollSpy() {

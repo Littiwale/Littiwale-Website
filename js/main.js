@@ -711,16 +711,93 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Toast Notification ---
+    // ---- Robust Toast Utility (Mobile Optimized) ----
+    const TOAST_ID = "add-to-cart";
+    const toast = {
+        timeoutId: null,
+        activeId: null, // Track specific IDs for flow control
+        isMobile: window.innerWidth <= 768,
+
+        log(action, status, message = "") {
+            const timestamp = new Date().toISOString();
+            const logEntry = `[Toast] ${timestamp} | Action: ${action} | Status: ${status} ${message ? "| Msg: " + message : ""}`;
+            
+            if (status === "failed") {
+                console.error(logEntry);
+            } else {
+                console.log(logEntry);
+            }
+        },
+
+        isActive(id) {
+            return this.activeId === id;
+        },
+
+        dismiss(id = null) {
+            try {
+                // If ID is provided, ONLY dismiss if it matches activeId
+                if (id && this.activeId !== id) return;
+
+                if (this.timeoutId) {
+                    clearTimeout(this.timeoutId);
+                    this.timeoutId = null;
+                }
+                const toastEl = document.getElementById('cart-toast');
+                if (toastEl) {
+                    toastEl.classList.remove('show');
+                    toastEl.classList.remove('hide-toast'); // Ensure it's visible for next time
+                }
+                this.activeId = null;
+                this.log("dismiss", "success", id ? `ID: ${id}` : "");
+            } catch (error) {
+                this.log("dismiss", "failed", error.message);
+            }
+        },
+
+        success(message, config = {}) {
+            try {
+                const toastId = config.toastId || null;
+                const duration = this.isMobile ? (config.autoClose || 1300) : (config.autoClose || 1500);
+
+                if (this.isMobile) {
+                    this.dismiss(); // Force clear before show
+                }
+
+                const toastEl = document.getElementById('cart-toast');
+                if (!toastEl) {
+                    this.log("show", "failed", "Toast element not found");
+                    return;
+                }
+
+                this.log("trigger", "success", message);
+                this.activeId = toastId;
+
+                toastEl.innerHTML = `<i class="fas fa-check-circle"></i> <span>${message}</span>`;
+                toastEl.classList.add('show');
+                toastEl.classList.add('custom-toast');
+
+                if (this.isMobile) {
+                    // CSS Fallback: Force fade-out after 1s on mobile
+                    setTimeout(() => {
+                        if (this.activeId === toastId) { // Only if this toast is still active
+                            toastEl.classList.add('hide-toast');
+                        }
+                    }, 1000);
+                }
+
+                this.timeoutId = setTimeout(() => {
+                    this.dismiss();
+                }, duration);
+
+            } catch (error) {
+                this.log("show", "failed", error.message);
+            }
+        }
+    };
+
+    // Backward compatibility wrapper
     function showToast(message) {
-        const toast = document.getElementById('cart-toast');
-        if (!toast) return;
-        
-        toast.innerHTML = `<i class="fas fa-check-circle"></i> <span>${message}</span>`;
-        toast.classList.add('show');
-        
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 2000);
+        toast.success(message);
     }
 
     // Initialize Cart
@@ -805,7 +882,16 @@ document.addEventListener('DOMContentLoaded', () => {
         
         saveCart();
         updateCartUI();
-        showToast(`${cartName} added to cart!`);
+        
+        if (!toast.isActive(TOAST_ID)) {
+            toast.success(`${cartName} added to cart!`, {
+                toastId: TOAST_ID,
+                autoClose: toast.isMobile ? 1200 : 1500,
+                hideProgressBar: true,
+                pauseOnHover: false,
+                closeOnClick: true
+            });
+        }
         
         // Auto-open the cart drawer smoothly
         const cartDrawer = document.getElementById('cart-drawer');
@@ -834,7 +920,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         saveCart();
         updateCartUI();
-        showToast(`${name} added to cart!`);
+
+        if (!toast.isActive(TOAST_ID)) {
+            toast.success(`${name} added to cart!`, {
+                toastId: TOAST_ID,
+                autoClose: toast.isMobile ? 1200 : 1500,
+                hideProgressBar: true,
+                pauseOnHover: false,
+                closeOnClick: true
+            });
+        }
+
         const cartDrawer = document.getElementById('cart-drawer');
         if (cartDrawer) {
             cartDrawer.classList.add('open');
@@ -1505,6 +1601,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const handleClearCart = () => {
             if(confirm('Are you sure you want to clear your cart?')) {
+                // Mobile specific: dismiss toast on cart clear
+                if (toast.isMobile) {
+                    toast.dismiss(TOAST_ID);
+                    toast.log("dismiss", "success", "Cleared on cart reset");
+                }
+                
                 cart = [];
                 restaurantNote = '';
                 if (typeof updateNoteUI === 'function') updateNoteUI();
