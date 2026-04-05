@@ -1076,7 +1076,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (appliedCoupon) {
                 if (appliedCoupon.type === 'PEPSI') {
-                    discountAmount = 20;
+                    discountAmount = 0;
                 } else {
                     // Standard discount coupons
                     const pct = appliedCoupon.discount || appliedCoupon.discountPercent || 0;
