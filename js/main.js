@@ -2907,5 +2907,335 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-});
 
+    // =========================================================================
+    // MENU SEARCH MODULE v2 — Live Autocomplete + Filter
+    // Isolated: reads menuData & menuImageMap from enclosing DOMContentLoaded closure.
+    // =========================================================================
+    (function initMenuSearch() {
+        // Only activate on the full menu page
+        if (!window.location.pathname.includes('menu.html') && !document.body.classList.contains('menu-page')) return;
+
+        // ── Cache DOM nodes once — avoids repeated querying on scroll ────────
+        var searchInput  = document.getElementById('menu-search-input');
+        var dropdown     = document.getElementById('menu-search-dropdown');
+        var clearBtn     = document.getElementById('menu-search-clear');
+        var filterNotice = document.getElementById('lw-search-filter-notice');
+        var clearLink    = document.getElementById('lw-clear-search-link');
+        var stickyBar    = document.getElementById('lw-search-sticky-bar');
+        var spacer       = document.getElementById('lw-search-spacer');
+        var navbar       = document.querySelector('.navbar');
+
+        if (!searchInput || !dropdown || !clearBtn) return; // safety guard
+
+        var lwHighlightTimer = null;
+        var lwDropdownActive = false;
+        var lwActiveIndex    = -1;
+        var lwCurrentQuery   = '';
+
+        // ── Helper: strip (Half)/(Full) suffix ────────────────────────────────
+        function lwStripVariant(name) {
+            return name.replace(/\s*\((half|full)\)\s*/gi, '').trim();
+        }
+
+        // ── Helper: escape regex special chars ────────────────────────────────
+        function lwEscapeRe(str) {
+            return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        // ── Helper: bold-highlight matching substring ─────────────────────────
+        function lwHighlightMatch(text, query) {
+            if (!query) return text;
+            return text.replace(new RegExp('(' + lwEscapeRe(query) + ')', 'gi'), '<mark>$1</mark>');
+        }
+
+        // ── Helper: deduplicate by base name + category ───────────────────────
+        function lwDeduplicateItems(items) {
+            var seen = new Set();
+            return items.filter(function(item) {
+                var key = lwStripVariant(item.name).toLowerCase() + '||' + (item.category || '');
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+        }
+
+        // ── Toggle clear button via CSS class (scroll-proof) ──────────────────
+        // CSS rule: #menu-search-input.lw-has-text ~ #menu-search-clear { opacity:1; pointer-events:auto; }
+        function lwSyncClearBtn(hasText) {
+            if (hasText) {
+                searchInput.classList.add('lw-has-text');
+            } else {
+                searchInput.classList.remove('lw-has-text');
+            }
+        }
+
+        // ── Build dropdown suggestion list ────────────────────────────────────
+        function lwRenderDropdown(query) {
+            dropdown.innerHTML = '';
+            lwActiveIndex = -1;
+
+            var q = query.trim().toLowerCase();
+            if (!q) { lwCloseDropdown(); return; }
+
+            if (!menuData || !menuData.length) {
+                dropdown.innerHTML = '<div class="lw-no-results">Loading menu\u2026</div>';
+                dropdown.style.display = 'block';
+                lwDropdownActive = true;
+                return;
+            }
+
+            var matched = menuData.filter(function(item) {
+                var hay = (item.name + ' ' + (item.category || '') + ' ' + (item.description || '')).toLowerCase();
+                return hay.includes(q);
+            });
+            var unique = lwDeduplicateItems(matched);
+
+            if (!unique.length) {
+                dropdown.innerHTML = '<div class="lw-no-results">No items found for \u201c<strong style="color:#f4b400">' + lwEscapeHTML(query) + '</strong>\u201d</div>';
+                dropdown.style.display = 'block';
+                lwDropdownActive = true;
+                return;
+            }
+
+            var frag = document.createDocumentFragment();
+            unique.slice(0, 10).forEach(function(item, idx) {
+                var displayName = lwStripVariant(item.name);
+                var imgSrc = (menuImageMap && menuImageMap[getNormalizedName(item.name)]) ? menuImageMap[getNormalizedName(item.name)] : 'images/logo.png';
+
+                var el = document.createElement('div');
+                el.className = 'lw-suggestion-item';
+                el.setAttribute('role', 'option');
+                el.setAttribute('data-idx', idx);
+                el.setAttribute('data-name', displayName);
+                el.setAttribute('data-cat', item.category || '');
+                el.innerHTML =
+                    '<img src="' + imgSrc + '" class="lw-suggestion-icon" loading="lazy" onerror="this.src=\'images/logo.png\'" alt="">' +
+                    '<div class="lw-suggestion-text">' +
+                        '<span class="lw-suggestion-name">' + lwHighlightMatch(displayName, query.trim()) + '</span>' +
+                        '<span class="lw-suggestion-cat">' + lwEscapeHTML(item.category || '') + '</span>' +
+                    '</div>' +
+                    '<i class="fas fa-chevron-right" style="font-size:0.7rem;color:#555;flex-shrink:0;"></i>';
+
+                // mousedown fires before blur, so selection registers before input loses focus
+                el.addEventListener('mousedown', function(e) {
+                    e.preventDefault();
+                    lwSelectSuggestion(displayName);
+                });
+                frag.appendChild(el);
+            });
+
+            dropdown.appendChild(frag);
+            dropdown.style.display = 'block';
+            lwDropdownActive = true;
+        }
+
+        // ── XSS-safe HTML escape ──────────────────────────────────────────────
+        function lwEscapeHTML(str) {
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        // ── Keyboard: move focus within dropdown ──────────────────────────────
+        function lwMoveFocus(dir) {
+            var items = dropdown.querySelectorAll('.lw-suggestion-item');
+            if (!items.length) return;
+            if (items[lwActiveIndex]) items[lwActiveIndex].classList.remove('lw-active');
+            lwActiveIndex = (lwActiveIndex + dir + items.length) % items.length;
+            if (items[lwActiveIndex]) {
+                items[lwActiveIndex].classList.add('lw-active');
+                items[lwActiveIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        // ── Close dropdown ────────────────────────────────────────────────────
+        function lwCloseDropdown() {
+            dropdown.style.display = 'none';
+            lwDropdownActive = false;
+            lwActiveIndex = -1;
+        }
+
+        // ── Select a suggestion ───────────────────────────────────────────────
+        function lwSelectSuggestion(displayName) {
+            searchInput.value = displayName;
+            lwSyncClearBtn(true);
+            lwCloseDropdown();
+            lwApplySearchFilter(displayName);
+            requestAnimationFrame(function() {
+                setTimeout(function() { lwScrollToAndHighlight(displayName); }, 120);
+            });
+        }
+
+        // ── Apply search filter ───────────────────────────────────────────────
+        // Filters menuData by text query, passes result to existing renderMenu().
+        // renderMenu() internally re-applies currentDietaryFilter, so
+        // combination "Veg filter + search keyword" works automatically.
+        function lwApplySearchFilter(query) {
+            lwCurrentQuery = query;
+            var q = query.trim().toLowerCase();
+            if (!q) { lwResetSearch(); return; }
+
+            var matched = menuData.filter(function(item) {
+                var hay = (item.name + ' ' + (item.category || '') + ' ' + (item.description || '')).toLowerCase();
+                return hay.includes(q);
+            });
+
+            if (filterNotice) filterNotice.style.display = 'block';
+            renderMenu(matched); // renderMenu applies currentDietaryFilter internally
+        }
+
+        // ── Full reset: restore original menu state ───────────────────────────
+        function lwResetSearch() {
+            lwCurrentQuery = '';
+            searchInput.value = '';
+            lwSyncClearBtn(false);
+            if (filterNotice) filterNotice.style.display = 'none';
+            lwCloseDropdown();
+            // currentFilteredData = menuData (set by initMenuDisplay on menu.html)
+            renderMenu(currentFilteredData);
+        }
+
+        // ── Scroll to + pulse-highlight the first matching card ───────────────
+        function lwScrollToAndHighlight(displayName) {
+            var allCards = document.querySelectorAll('.menu-card');
+            var targetCard = null;
+            var qLower = displayName.toLowerCase();
+
+            // Exact title match first
+            for (var i = 0; i < allCards.length; i++) {
+                var titleEl = allCards[i].querySelector('.menu-card-title');
+                if (titleEl && titleEl.textContent.trim().toLowerCase() === qLower) {
+                    targetCard = allCards[i]; break;
+                }
+            }
+            // Partial match fallback
+            if (!targetCard) {
+                for (var j = 0; j < allCards.length; j++) {
+                    var tEl = allCards[j].querySelector('.menu-card-title');
+                    if (tEl && tEl.textContent.trim().toLowerCase().includes(qLower)) {
+                        targetCard = allCards[j]; break;
+                    }
+                }
+            }
+
+            if (targetCard) {
+                var navH    = navbar ? navbar.offsetHeight : 70;
+                var stickyH = stickyBar ? stickyBar.offsetHeight : 0;
+                var offset  = navH + stickyH + 12;
+                var topPos  = targetCard.getBoundingClientRect().top + window.scrollY - offset;
+                window.scrollTo({ top: topPos, behavior: 'smooth' });
+
+                clearTimeout(lwHighlightTimer);
+                targetCard.classList.remove('lw-search-highlight');
+                void targetCard.offsetWidth; // force reflow to restart CSS animation
+                targetCard.classList.add('lw-search-highlight');
+                lwHighlightTimer = setTimeout(function() {
+                    targetCard.classList.remove('lw-search-highlight');
+                }, 1600);
+            }
+        }
+
+        // ================================================================
+        // STICKY BAR SETUP
+        // 1. Set --lw-nav-h to real navbar height.
+        // 2. Match spacer height to sticky bar so layout doesn't jump.
+        // 3. Add .lw-scrolled shadow when bar is sticking.
+        // ================================================================
+        (function lwSetupSticky() {
+            if (!stickyBar || !spacer) return;
+
+            function lwSyncDimensions() {
+                var navH = navbar ? navbar.offsetHeight : 70;
+                document.documentElement.style.setProperty('--lw-nav-h', navH + 'px');
+                spacer.style.height = stickyBar.offsetHeight + 'px';
+            }
+
+            lwSyncDimensions();
+            window.addEventListener('resize', lwSyncDimensions, { passive: true });
+
+            window.addEventListener('scroll', function() {
+                if (spacer.getBoundingClientRect().top <= 0) {
+                    stickyBar.classList.add('lw-scrolled');
+                } else {
+                    stickyBar.classList.remove('lw-scrolled');
+                }
+            }, { passive: true });
+        })();
+
+        // ================================================================
+        // EVENT LISTENERS — all on cached nodes, registered once
+        // ================================================================
+
+        // Typing
+        searchInput.addEventListener('input', function() {
+            var val = searchInput.value;
+            lwSyncClearBtn(val.length > 0);
+            lwRenderDropdown(val);
+            if (val.trim().length >= 2) {
+                lwApplySearchFilter(val.trim());
+            } else if (val.trim().length === 0) {
+                lwResetSearch();
+            }
+        });
+
+        // Keyboard navigation
+        searchInput.addEventListener('keydown', function(e) {
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    if (!lwDropdownActive) lwRenderDropdown(searchInput.value);
+                    lwMoveFocus(1);
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    lwMoveFocus(-1);
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    var activeItem = dropdown.querySelector('.lw-suggestion-item.lw-active');
+                    if (activeItem) {
+                        lwSelectSuggestion(activeItem.dataset.name);
+                    } else {
+                        lwCloseDropdown();
+                        lwApplySearchFilter(searchInput.value.trim());
+                    }
+                    break;
+                case 'Escape':
+                    if (lwDropdownActive) {
+                        lwCloseDropdown();
+                    } else {
+                        lwResetSearch();
+                    }
+                    break;
+            }
+        });
+
+        // Clear button — single DOM node, always works even when page is scrolled
+        clearBtn.addEventListener('click', lwResetSearch);
+
+        // Inline "clear search" link in filter notice banner
+        if (clearLink) {
+            clearLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                lwResetSearch();
+                searchInput.focus();
+            });
+        }
+
+        // Close dropdown on outside click
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#menu-search-wrapper')) {
+                lwCloseDropdown();
+            }
+        }, { passive: true });
+
+        // Reopen dropdown on re-focus if already has a query
+        searchInput.addEventListener('focus', function() {
+            if (searchInput.value.trim().length >= 1) {
+                lwRenderDropdown(searchInput.value);
+            }
+        });
+
+    })(); // end initMenuSearch IIFE
+    // =========================================================================
+
+});

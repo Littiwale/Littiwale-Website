@@ -27,6 +27,246 @@
         rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- ✅ MENU SEARCH BAR STYLES -->
+    <style>
+        /* ── CSS variable: set by JS to actual navbar height ── */
+        :root { --lw-nav-h: 70px; }
+
+        /* ================================================================
+           STICKY SEARCH BAR
+           Sits outside .container so it can span full width and stick.
+           z-index: 500 — below navbar (1000) but above menu cards.
+        ================================================================ */
+        #lw-search-sticky-bar {
+            position: sticky;
+            top: var(--lw-nav-h);
+            z-index: 500;
+            background: rgba(13, 13, 13, 0.97);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(244, 180, 0, 0.1);
+            padding: 10px 20px 8px;
+            /* Smooth appearance — no layout jump */
+            transition: box-shadow 0.25s ease;
+        }
+
+        /* Subtle shadow when scrolled (js adds class) */
+        #lw-search-sticky-bar.lw-scrolled {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        /* === Search Bar Container (inner) === */
+        #menu-search-wrapper {
+            width: 100%;
+            max-width: 560px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* === Search Input Field === */
+        #menu-search-input {
+            width: 100%;
+            padding: 13px 44px 13px 46px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1.5px solid rgba(244, 180, 0, 0.35);
+            border-radius: 50px;
+            color: #fff;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            outline: none;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+            caret-color: #f4b400;
+        }
+
+        #menu-search-input::placeholder { color: #555; }
+
+        #menu-search-input:focus {
+            border-color: #f4b400;
+            background: rgba(255, 255, 255, 0.09);
+            box-shadow: 0 0 0 3px rgba(244, 180, 0, 0.12);
+        }
+
+        /* === Search Icon (left) === */
+        #menu-search-wrapper .search-icon-lw {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #f4b400;
+            font-size: 1rem;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* === Clear Button (right) ===
+           Always rendered in the DOM; opacity/pointer-events toggled by JS
+           so it's never "lost" when sticky bar is onscreen. */
+        #menu-search-clear {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.08);
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #aaa;
+            font-size: 0.8rem;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, color 0.2s ease, background 0.2s ease;
+            z-index: 2;
+        }
+
+        /* JS adds .lw-has-text to input → shows clear btn */
+        #menu-search-input.lw-has-text ~ #menu-search-clear {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #menu-search-clear:hover {
+            color: #f4b400;
+            background: rgba(244, 180, 0, 0.15);
+        }
+
+        /* === Dropdown Suggestion List === */
+        #menu-search-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: #191919;
+            border: 1px solid rgba(244, 180, 0, 0.25);
+            border-radius: 16px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75);
+            max-height: 320px;
+            overflow-y: auto;
+            display: none;
+            z-index: 999;
+            padding: 6px 0;
+            scrollbar-width: thin;
+            scrollbar-color: #f4b400 #111;
+        }
+
+        #menu-search-dropdown::-webkit-scrollbar { width: 5px; }
+        #menu-search-dropdown::-webkit-scrollbar-track { background: #111; border-radius: 10px; }
+        #menu-search-dropdown::-webkit-scrollbar-thumb { background: #f4b400; border-radius: 10px; }
+
+        /* First / last items get rounded corners */
+        .lw-suggestion-item:first-child { border-radius: 16px 16px 0 0; }
+        .lw-suggestion-item:last-child  { border-radius: 0 0 16px 16px; }
+
+        /* === Single Suggestion Item === */
+        .lw-suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .lw-suggestion-item:hover,
+        .lw-suggestion-item.lw-active {
+            background: rgba(244, 180, 0, 0.1);
+        }
+
+        .lw-suggestion-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #111;
+        }
+
+        .lw-suggestion-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .lw-suggestion-name {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lw-suggestion-name mark {
+            background: transparent;
+            color: #f4b400;
+            font-weight: 700;
+        }
+
+        .lw-suggestion-cat { font-size: 0.75rem; color: #666; }
+
+        /* === No-results row === */
+        .lw-no-results {
+            padding: 14px 16px;
+            color: #666;
+            font-size: 0.88rem;
+            text-align: center;
+        }
+
+        /* === Search result highlight on menu card === */
+        .lw-search-highlight {
+            outline: 2px solid #f4b400;
+            outline-offset: 3px;
+            animation: lwHighlightPulse 1.5s ease forwards;
+        }
+
+        @keyframes lwHighlightPulse {
+            0%   { box-shadow: 0 0 0 0   rgba(244,180,0,0.55); }
+            40%  { box-shadow: 0 0 0 12px rgba(244,180,0,0.12); }
+            100% { box-shadow: 0 0 0 0   rgba(244,180,0,0);   outline-color: transparent; }
+        }
+
+        /* === Filter notice banner === */
+        #lw-search-filter-notice {
+            display: none;
+            text-align: center;
+            font-size: 0.78rem;
+            color: rgba(244, 180, 0, 0.9);
+            padding: 5px 0 0;
+            letter-spacing: 0.01em;
+        }
+
+        #lw-search-filter-notice a {
+            color: #f4b400;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            cursor: pointer;
+        }
+
+        /* === Spacer: reserves the exact height of the sticky bar
+           so content below doesn't jump when bar becomes sticky === */
+        #lw-search-spacer {
+            /* Height set dynamically by JS */
+            display: block;
+            height: 0;
+        }
+
+        @media (max-width: 600px) {
+            #lw-search-sticky-bar { padding: 8px 14px 6px; }
+            #menu-search-input {
+                font-size: 0.88rem;
+                padding: 11px 42px 11px 42px;
+            }
+        }
+    </style>
 </head>
 
 <body class="menu-page">
@@ -61,6 +301,38 @@
 
     <!-- MENU SECTION -->
     <section id="menu-section" class="menu-section" style="padding-top: 100px; min-height: 100vh;">
+
+        <!-- ✅ STICKY SEARCH BAR
+             Lives outside .container so it spans full width and sticks
+             below the navbar without affecting inner layout. -->
+        <div id="lw-search-sticky-bar">
+            <div id="menu-search-wrapper">
+                <i class="fas fa-search search-icon-lw"></i>
+                <input
+                    type="text"
+                    id="menu-search-input"
+                    placeholder="Search for litti, pizza, biryani..."
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-label="Search menu items"
+                    aria-autocomplete="list"
+                    aria-controls="menu-search-dropdown"
+                >
+                <button id="menu-search-clear" aria-label="Clear search" tabindex="0">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div id="menu-search-dropdown" role="listbox" aria-label="Search suggestions"></div>
+            </div>
+            <!-- Filter notice: shown while search active -->
+            <div id="lw-search-filter-notice">
+                &#9432; Showing results for your search &mdash;
+                <a href="javascript:void(0)" id="lw-clear-search-link">clear search</a>
+                to restore full menu
+            </div>
+        </div>
+        <!-- Spacer: holds height while sticky bar is detached from flow -->
+        <div id="lw-search-spacer"></div>
+
         <div class="container">
             <h2 class="section-title text-center">Full Menu</h2>
             <div class="divider"></div>
