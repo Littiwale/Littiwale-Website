@@ -638,7 +638,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         discount: 20,
                         maxDiscount: 30,
                         minOrder: 500,
-                        active: true
+                        active: true,
+                        isDynamic: true
                     });
                 } else {
                     iplCoupons.push({
@@ -647,7 +648,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         discount: 0,
                         maxDiscount: 0,
                         minOrder: 300,
-                        active: true
+                        active: true,
+                        isDynamic: true
                     });
                 }
                 teamCounter++;
@@ -1539,9 +1541,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <div>
                                         <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; color: var(--primary-color);">${coupon.code}</div>
                                         <div style="color: var(--text-secondary); font-size: 0.9rem;">
-                                            ${coupon.type === 'PEPSI' ? 'Free Pepsi on this order' : `${coupon.discount}% OFF (Upto ₹${coupon.maxDiscount})`}
+                                            ${coupon.type === 'PEPSI' ? 'Free Pepsi on this order' : (coupon.isDynamic ? `${coupon.discount}% OFF` : `${coupon.discount}% OFF (Upto ₹${coupon.maxDiscount})`)}
                                         </div>
                                         ${coupon.minOrder ? `<div style="color: #888; font-size: 0.75rem; margin-top: 5px;">Min Order: ₹${coupon.minOrder}</div>` : ''}
+                                        ${coupon.isDynamic ? `<div style="color: #aaa; font-size: 0.75rem; margin-top: 3px;">*T&C Applied</div>` : ''}
                                     </div>
                                     <div>
                                         ${btnHtml}
@@ -3238,4 +3241,39 @@ document.addEventListener('DOMContentLoaded', () => {
     })(); // end initMenuSearch IIFE
     // =========================================================================
 
+});
+
+// --- Multi-Partner Modal Logic ---
+window.openPartnerModal = function() {
+    const modal = document.getElementById('partner-popup');
+    if (modal) {
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('show'), 10);
+    }
+};
+
+window.closePartnerModal = function() {
+    const modal = document.getElementById('partner-popup');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const partnerModal = document.getElementById('partner-popup');
+    const closeBtn = document.getElementById('close-partner-popup');
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', window.closePartnerModal);
+    }
+    
+    if (partnerModal) {
+        partnerModal.addEventListener('click', (e) => {
+            // Close if clicking outside the modal content
+            if (e.target === partnerModal) {
+                window.closePartnerModal();
+            }
+        });
+    }
 });

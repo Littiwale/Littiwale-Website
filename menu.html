@@ -380,9 +380,9 @@
             <i class="fas fa-filter"></i>
             <span class="tooltip">Filter</span>
         </a>
-        <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" class="fab-btn" style="background:#e23744;color:white">
-            <i class="fas fa-utensils"></i>
-        </a>
+        <button onclick="openPartnerModal()" class="fab-btn" style="background:#ffbc00; color:#000; border:none; outline:none;">
+            <i class="fas fa-motorcycle"></i>
+        </button>
         <a href="javascript:void(0)" class="fab-btn cart-fab" style="background:#333;color:white">
             <i class="fas fa-shopping-cart"></i>
             <span id="fab-cart-badge">0</span>
@@ -463,6 +463,26 @@
             <div style="display: flex; flex-direction: column; gap: 15px;">
                 <a href="tel:+916370680744" class="btn btn-primary" style="font-size: 1.1rem; padding: 12px;">
                     <i class="fas fa-phone-alt"></i> Call Now
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- PARTNER MODAL -->
+    <div id="partner-popup" class="payment-modal">
+        <div class="payment-modal-content" style="max-width: 400px; text-align: center;">
+            <button id="close-partner-popup" class="close-btn" style="position: absolute; right: 20px; top: 15px;">&times;</button>
+            <div style="font-size: 3rem; margin-bottom: 10px; line-height: 1;">🛵</div>
+            <h2 style="font-family: var(--font-heading); color: var(--primary-color); margin-bottom: 15px;">Choose Your Preferred Ordering Option</h2>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <button onclick="document.getElementById('partner-popup').classList.remove('show'); setTimeout(() => document.getElementById('partner-popup').style.display='none', 300);" class="btn btn-primary" style="font-size: 1.1rem; padding: 12px; font-weight: bold; border:none;">
+                    Order Directly from Website
+                </button>
+                <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" class="btn" style="background:#e23744; color:#fff; font-size: 1.1rem; padding: 12px; border-radius: 8px; font-weight: bold; text-decoration:none;">
+                    Zomato
+                </a>
+                <a href="https://order.ebee.in/store?slug=littiwale" target="_blank" class="btn" style="background: linear-gradient(135deg, #2CCBFF 0%, #1DA1F2 100%); color:#fff; font-size: 1.1rem; padding: 12px; border-radius: 8px; font-weight: bold; text-decoration:none; box-shadow: 0 4px 15px rgba(29, 161, 242, 0.4);">
+                    eBee
                 </a>
             </div>
         </div>
