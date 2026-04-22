@@ -989,6 +989,16 @@ document.addEventListener('DOMContentLoaded', () => {
             summary.style.display = 'none';
             const couponSection = document.getElementById('coupon-section');
             if (couponSection) couponSection.style.display = 'none';
+            
+            // Sync checkout.html specific elements for empty state
+            const chkContainer = document.getElementById('checkout-items-container');
+            if (chkContainer) {
+                chkContainer.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-secondary);">Your cart is empty</div>';
+                document.getElementById('checkout-subtotal').textContent = '₹0';
+                document.getElementById('checkout-total').textContent = '₹0';
+                const chkDiscountRow = document.getElementById('checkout-discount-row');
+                if (chkDiscountRow) chkDiscountRow.style.display = 'none';
+            }
         } else {
             container.innerHTML = '';
             let subtotalAmount = 0;
@@ -1805,6 +1815,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.removeItem('restaurantConfirmPending');
                 document.getElementById('restaurant-verify-modal').classList.remove('show');
                 
+                // Clear form fields
+                document.getElementById('checkout-name') && (document.getElementById('checkout-name').value = '');
+                document.getElementById('checkout-phone') && (document.getElementById('checkout-phone').value = '');
+                document.getElementById('checkout-address') && (document.getElementById('checkout-address').value = '');
+                document.getElementById('checkout-notes') && (document.getElementById('checkout-notes').value = '');
+
                 // Execute original confirmation logic
                 cart = [];
                 restaurantNote = '';
@@ -1828,6 +1844,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (typeof window.openScreenshotModal === 'function') {
                     window.openScreenshotModal();
                 }
+            });
+        }
+
+        // COD Confirmation Modal HTML Injection
+        if (!document.getElementById('cod-confirm-modal')) {
+            const codConfirmModalHTML = `
+                <div id="cod-confirm-modal" class="payment-modal" style="z-index: 99999;">
+                    <div class="payment-modal-content" style="text-align:center;">
+                        <h3 style="font-family: var(--font-heading); margin-bottom:15px;">✅ Order Sent!</h3>
+                        <p style="color:var(--text-secondary); margin-bottom:5px; font-size:1rem;">Your COD order has been sent via WhatsApp.</p>
+                        <p style="font-weight:bold; margin-bottom:20px; font-size:1.05rem;">Please call the restaurant to confirm your order.</p>
+                        <div style="display:flex; flex-direction:column; gap:10px;">
+                            <a href="tel:+916370680744" id="btn-cod-call" class="btn btn-primary btn-block py-3" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:10px;">
+                                <i class="fas fa-phone"></i> Call Restaurant
+                            </a>
+                            <button id="btn-cod-done" class="btn btn-outline btn-block py-3">I'll confirm later</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', codConfirmModalHTML);
+
+            document.getElementById('btn-cod-call')?.addEventListener('click', () => {
+                document.getElementById('cod-confirm-modal').classList.remove('show');
+                
+                // Clear form fields
+                document.getElementById('checkout-name') && (document.getElementById('checkout-name').value = '');
+                document.getElementById('checkout-phone') && (document.getElementById('checkout-phone').value = '');
+                document.getElementById('checkout-address') && (document.getElementById('checkout-address').value = '');
+                document.getElementById('checkout-notes') && (document.getElementById('checkout-notes').value = '');
+                
+                cart = [];
+                restaurantNote = '';
+                if (typeof updateNoteUI === 'function') updateNoteUI();
+                saveCart();
+                updateCartUI();
+            });
+
+            document.getElementById('btn-cod-done')?.addEventListener('click', () => {
+                document.getElementById('cod-confirm-modal').classList.remove('show');
+
+                // Clear form fields
+                document.getElementById('checkout-name') && (document.getElementById('checkout-name').value = '');
+                document.getElementById('checkout-phone') && (document.getElementById('checkout-phone').value = '');
+                document.getElementById('checkout-address') && (document.getElementById('checkout-address').value = '');
+                document.getElementById('checkout-notes') && (document.getElementById('checkout-notes').value = '');
+
+                cart = [];
+                restaurantNote = '';
+                if (typeof updateNoteUI === 'function') updateNoteUI();
+                saveCart();
+                updateCartUI();
             });
         }
 
@@ -2126,6 +2194,20 @@ document.addEventListener('DOMContentLoaded', () => {
             window.open(whatsappUrl, '_blank');
             paymentModal.classList.remove('show');
             cartDrawer.classList.remove('open');
+
+            // COD: Show call-to-confirm popup after WhatsApp opens
+            if (isCOD) {
+                // Clear cart immediately for COD as order is sent
+                cart = [];
+                restaurantNote = '';
+                if (typeof updateNoteUI === 'function') updateNoteUI();
+                saveCart();
+                updateCartUI();
+                
+                setTimeout(() => {
+                    document.getElementById('cod-confirm-modal')?.classList.add('show');
+                }, 800);
+            }
         }
 
         function executeCheckout(nameId, phoneId, addressId, orderTypeDeliveryId) {
