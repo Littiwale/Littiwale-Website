@@ -1579,3 +1579,92 @@ border-right: 1px solid #facc15;
 .reel-badge.loved {
     background: #E1306C;
 }
+
+/* ==========================================================================
+   Membership Plans & Additional Sections
+   ========================================================================== */
+.plan-toggle {
+    display: inline-flex;
+    background: #000;
+    border-radius: 50px;
+    padding: 5px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.plan-toggle .toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 10px 25px;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.plan-toggle .toggle-btn.active {
+    background: var(--primary-color);
+    color: #000;
+}
+
+.plan-card {
+    background: #0a0a0a;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 40px;
+    position: relative;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.plan-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 10px 30px rgba(244, 180, 0, 0.1);
+    transform: translateY(-5px);
+}
+
+.plan-badge {
+    position: absolute;
+    top: -15px;
+    left: -15px;
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 0 L61 35 L98 35 L68 57 L79 91 L50 70 L21 91 L32 57 L2 35 L39 35 Z" fill="%23f4b400"/></svg>') no-repeat center center;
+    background-size: contain;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #000;
+    text-align: center;
+    padding: 10px;
+    line-height: 1.2;
+    transform: rotate(-15deg);
+}
+
+.plan-features {
+    list-style: none;
+    padding: 0;
+}
+
+.plan-features li {
+    margin-bottom: 15px;
+    font-size: 1rem;
+    color: var(--text-light);
+    display: flex;
+    align-items: flex-start;
+}
+
+.plan-features li i {
+    margin-top: 4px;
+}
+
+.faq-item {
+    transition: border-color 0.3s ease;
+}
+
+.faq-item:hover {
+    border-color: var(--primary-color) !important;
+}

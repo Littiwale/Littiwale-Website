@@ -2273,7 +2273,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (deliveryRadio) {
                     localStorage.setItem('littiWaleOrderType', deliveryRadio.checked ? 'delivery' : 'takeaway');
                 }
-                window.location.href = 'checkout.html';
+                window.location.href='checkout.html';
             });
         }
         
@@ -2936,7 +2936,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             // Check if we are not on index.html
             if (window.location.pathname.indexOf('index.html') === -1 && window.location.pathname.length > 2) {
-                window.location.href = 'index.html#craziest-deals-section';
+                window.location.href='index.html#craziest-deals-section';
                 return;
             }
             openDrawer(getDealsDrawer);
@@ -2949,7 +2949,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Check if we are not on index.html
             if (window.location.pathname.indexOf('index.html') === -1 && window.location.pathname.length > 2) {
-                window.location.href = 'index.html#menu-section';
+                window.location.href='index.html#menu-section';
                 return;
             }
             
