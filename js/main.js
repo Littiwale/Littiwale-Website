@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     function initMenuDisplay() {
-        const isFullMenuPage = window.location.pathname.includes('menu.html');
+        const isFullMenuPage = window.location.pathname.includes('menu.html') || window.location.pathname.endsWith('/menu');
         
         if (isFullMenuPage) {
             isMenuExpanded = true;
@@ -2983,7 +2983,7 @@ document.addEventListener('DOMContentLoaded', () => {
       currentLocationFilter = e.detail; // 'cloud' or 'outlet'
       
       // If already on menu page, re-render immediately
-      if (window.location.pathname.includes('menu.html')) {
+      if (window.location.pathname.includes('menu.html') || window.location.pathname.endsWith('/menu')) {
         renderMenu(menuData);
         setupFilters(menuData);
         
@@ -3089,7 +3089,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Floating Category Filter Button (Menu Page Only) ---
     const filterFab = document.getElementById('filter-fab');
-    if (filterFab && (window.location.pathname.includes('menu.html') || document.body.classList.contains('menu-page'))) {
+    if (filterFab && (window.location.pathname.includes('menu.html') || window.location.pathname.endsWith('/menu') || document.body.classList.contains('menu-page'))) {
         window.addEventListener('scroll', () => {
             if (window.scrollY > 300) {
                 if (filterFab.style.display === 'none') {
@@ -3125,7 +3125,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     (function initMenuSearch() {
         // Only activate on the full menu page
-        if (!window.location.pathname.includes('menu.html') && !document.body.classList.contains('menu-page')) return;
+        if (!window.location.pathname.includes('menu.html') && !window.location.pathname.endsWith('/menu') && !document.body.classList.contains('menu-page')) return;
 
         // ── Cache DOM nodes once — avoids repeated querying on scroll ────────
         var searchInput  = document.getElementById('menu-search-input');

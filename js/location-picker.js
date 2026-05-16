@@ -226,7 +226,7 @@
 
   // ─── Apply outlet top bar on menu page ────────────────────────────────────
   function applyOutletBar(loc) {
-    if (!window.location.pathname.includes('menu.html') && !window.location.href.includes('menu.html')) {
+    if (!window.location.pathname.includes('menu.html') && !window.location.pathname.endsWith('/menu')) {
       return; // Only show sticky bar on menu page
     }
 
@@ -377,7 +377,7 @@
       applyOutletBar(stored);
     } else {
       // Show picker only on menu page
-      if (window.location.pathname.includes('menu.html') || window.location.href.includes('menu.html')) {
+      if (window.location.pathname.includes('menu.html') || window.location.pathname.endsWith('/menu')) {
         showPicker(function (loc) {
           window.littiWaleSelectedLocation = loc;
           document.dispatchEvent(new CustomEvent('littiWaleLocationSelected', { detail: loc }));
