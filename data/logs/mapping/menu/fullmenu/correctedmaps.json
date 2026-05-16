@@ -186,6 +186,12 @@
         "source": "imagemapping.xlsx"
     },
     {
+        "item": "Mix Veg Sandwich Clubbed (3 layered)",
+        "normalized": "mix veg sandwich clubbed",
+        "image": "images/menu/Full Menu/Sandwiches/vcs.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
         "item": "Veg Noodles (Half)",
         "normalized": "veg noodles",
         "image": "images/menu/Full Menu/Noodles/vegnoodles.webp",
@@ -657,6 +663,216 @@
         "item": "Kadhi Chawal",
         "normalized": "kadhi chawal",
         "image": "images/menu/Full Menu/Littiwale Rice Bowl Combos/kadhichawal.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Steam Veg Momo",
+        "normalized": "steam veg momo",
+        "image": "images/menu/Full Menu/AI_Generated/steamed_momos.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Steam Paneer Momo",
+        "normalized": "steam paneer momo",
+        "image": "images/menu/Full Menu/AI_Generated/steamed_momos.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Kurkure Veg Momo",
+        "normalized": "kurkure veg momo",
+        "image": "images/menu/Full Menu/AI_Generated/kurkure_momos.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Paneer Kurkure Momo",
+        "normalized": "paneer kurkure momo",
+        "image": "images/menu/Full Menu/AI_Generated/kurkure_momos.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Fried Veg Momo",
+        "normalized": "fried veg momo",
+        "image": "images/menu/Full Menu/AI_Generated/fried_momos.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Fried Paneer Momo",
+        "normalized": "fried paneer momo",
+        "image": "images/menu/Full Menu/AI_Generated/fried_momos.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Pan Fried Veg Momo",
+        "normalized": "pan fried veg momo",
+        "image": "images/menu/Full Menu/AI_Generated/fried_momos.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Pan Fried Paneer Momo",
+        "normalized": "pan fried paneer momo",
+        "image": "images/menu/Full Menu/AI_Generated/fried_momos.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Aloo Paratha (2 Pc)",
+        "normalized": "aloo paratha",
+        "image": "images/menu/Full Menu/Breads/alooparatha.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Gobi Paratha (2 Pc)",
+        "normalized": "gobi paratha",
+        "image": "images/menu/Full Menu/Breads/gobiparatha.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Paneer Paratha (2 Pc)",
+        "normalized": "paneer paratha",
+        "image": "images/menu/Full Menu/Breads/paneerparatha.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chakuli Pitha with Sabzi",
+        "normalized": "chakuli pitha with sabzi",
+        "image": "images/menu/Full Menu/AI_Generated/chakuli_pitha.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Dahi Bara Aloo Dum",
+        "normalized": "dahi bara aloo dum",
+        "image": "images/menu/Full Menu/AI_Generated/dahi_bara_aloo_dum.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Idli",
+        "normalized": "idli",
+        "image": "images/menu/Full Menu/AI_Generated/idli_sambar.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Dhokla",
+        "normalized": "dhokla",
+        "image": "images/menu/Full Menu/AI_Generated/khaman_dhokla.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Puri Sabzi",
+        "normalized": "puri sabzi",
+        "image": "images/menu/Full Menu/AI_Generated/puri_sabzi.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chole Bhature",
+        "normalized": "chole bhature",
+        "image": "images/menu/Full Menu/AI_Generated/chole_bhature.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Upma",
+        "normalized": "upma",
+        "image": "images/menu/Full Menu/AI_Generated/rava_upma.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Lassi (Sweet / Salted)",
+        "normalized": "lassi",
+        "image": "images/menu/Full Menu/AI_Generated/punjabi_lassi.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Mango Shake",
+        "normalized": "mango shake",
+        "image": "images/menu/Full Menu/AI_Generated/fruit_shakes.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chocolate Shake",
+        "normalized": "chocolate shake",
+        "image": "images/menu/Full Menu/AI_Generated/fruit_shakes.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Pineapple Shake",
+        "normalized": "pineapple shake",
+        "image": "images/menu/Full Menu/AI_Generated/fruit_shakes.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Butterscotch Shake",
+        "normalized": "butterscotch shake",
+        "image": "images/menu/Full Menu/AI_Generated/fruit_shakes.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Cold Coffee",
+        "normalized": "cold coffee",
+        "image": "images/menu/Full Menu/AI_Generated/cold_coffee.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Buttermilk",
+        "normalized": "buttermilk",
+        "image": "images/menu/Full Menu/AI_Generated/punjabi_lassi.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Banana Shake",
+        "normalized": "banana shake",
+        "image": "images/menu/Full Menu/AI_Generated/fruit_shakes.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Oreo Shake",
+        "normalized": "oreo shake",
+        "image": "images/menu/Full Menu/AI_Generated/fruit_shakes.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Oreo Banana Shake",
+        "normalized": "oreo banana shake",
+        "image": "images/menu/Full Menu/AI_Generated/fruit_shakes.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Dahi",
+        "normalized": "dahi",
+        "image": "images/menu/Full Menu/AI_Generated/punjabi_lassi.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chakuli Pitha",
+        "normalized": "chakuli pitha",
+        "image": "images/menu/Full Menu/AI_Generated/chakuli_pitha.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Sabzi",
+        "normalized": "sabzi",
+        "image": "images/menu/Full Menu/AI_Generated/puri_sabzi.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Rice",
+        "normalized": "rice",
+        "image": "images/menu/Full Menu/AI_Generated/plain_rice.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Rajma Chawal",
+        "normalized": "rajma chawal",
+        "image": "images/menu/Full Menu/Littiwale Rice Bowl Combos/rajmachawal.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Chole Chawal",
+        "normalized": "chole chawal",
+        "image": "images/menu/Full Menu/Littiwale Rice Bowl Combos/cholechawal.webp",
+        "source": "imagemapping.xlsx"
+    },
+    {
+        "item": "Kadi Chawal",
+        "normalized": "kadi chawal",
+        "image": "images/menu/Full Menu/AI_Generated/kadi_chawal.webp",
         "source": "imagemapping.xlsx"
     }
 ]

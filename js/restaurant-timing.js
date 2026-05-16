@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div id="restaurant-closed-popup">
                 <div class="closed-popup-icon" id="closed-icon">😔</div>
                 <h2 class="closed-popup-title" id="closed-title">Sorry, we're currently closed</h2>
-                <p class="closed-popup-message" id="closed-message">We operate from 10:00 AM to 11:00 PM</p>
+                <p class="closed-popup-message" id="closed-message">We operate from 9:00 AM to 11:00 PM</p>
                 
                 <div class="closed-popup-buttons" id="closed-buttons">
                     <button class="btn btn-primary btn-block py-3" id="btn-wait" style="font-size: 1.1rem;">I'll Wait ⏳</button>
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <div class="closed-countdown-container" id="closed-countdown-box">
-                    <div class="closed-countdown-label" id="closed-countdown-msg">Thanks for waiting ❤️ We'll open at 10:00 AM</div>
+                    <div class="closed-countdown-label" id="closed-countdown-msg">Thanks for waiting ❤️ We'll open at 9:00 AM</div>
                     <div id="closed-countdown-timer">00:00:00</div>
                 </div>
             </div>
@@ -143,8 +143,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const istNow = getISTTime();
         const hours = istNow.getHours();
         
-        // Open between 10 AM (10) and 11 PM (23)
-        const isOpen = hours >= 10 && hours < 23;
+        const loc = sessionStorage.getItem('littiWaleLocation') || 'cloud';
+        const startHour = loc === 'outlet' ? 8 : 9;
+        const endHour = loc === 'outlet' ? 22 : 23;
+        
+        // Update popup message dynamically
+        if (closedMessage) {
+            closedMessage.textContent = loc === 'outlet' 
+                ? "We operate from 8:00 AM to 10:00 PM (Sunday Closed)" 
+                : "We operate from 9:00 AM to 11:00 PM";
+        }
+        const countdownMsg = document.getElementById('closed-countdown-msg');
+        if (countdownMsg) {
+            countdownMsg.textContent = loc === 'outlet'
+                ? "Thanks for waiting ❤️ We'll open at 8:00 AM"
+                : "Thanks for waiting ❤️ We'll open at 9:00 AM";
+        }
+
+        const isOpen = hours >= startHour && hours < endHour;
         
         if (isOpen) {
             // Auto-hide popup if it's currently open
@@ -187,7 +203,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Also passively check if we should auto-open
             const istNow = getISTTime();
             const h = istNow.getHours();
-            if (h >= 10 && h < 23) {
+            const loc = sessionStorage.getItem('littiWaleLocation') || 'cloud';
+            const startHour = loc === 'outlet' ? 8 : 9;
+            const endHour = loc === 'outlet' ? 22 : 23;
+            if (h >= startHour && h < endHour) {
                 hidePopup();
                 clearInterval(countdownInterval);
                 location.reload(); // Refresh the page to restore full open UX smoothly
@@ -197,16 +216,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateCountdown() {
         const istNow = getISTTime();
+        const loc = sessionStorage.getItem('littiWaleLocation') || 'cloud';
+        const startHour = loc === 'outlet' ? 8 : 9;
+        const endHour = loc === 'outlet' ? 22 : 23;
         
-        // Calculate next 10 AM IST
+        // Calculate next opening hour IST
         let target = new Date(istNow);
-        target.setHours(10, 0, 0, 0);
+        target.setHours(startHour, 0, 0, 0);
         
-        if (istNow.getHours() >= 23) {
-            // It's after 11 PM, target is 10 AM tomorrow
+        if (istNow.getHours() >= endHour) {
+            // It's after closing, target is opening time tomorrow
             target.setDate(target.getDate() + 1);
-        } else if (istNow.getHours() < 10) {
-            // It's before 10 AM, target is 10 AM today (already set)
+        } else if (istNow.getHours() < startHour) {
+            // It's before opening, target is opening time today (already set)
         }
         
         const diff = target.getTime() - istNow.getTime();

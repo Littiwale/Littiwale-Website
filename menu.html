@@ -6,15 +6,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- ✅ SEO TITLE -->
-    <title>Full Menu | Littiwale Barbil | Litti Chokha, Pizza, Biryani & More</title>
+    <title>Littiwale Menu | Best Restaurant in Barbil | Litti Chokha, Snacks & Beverages</title>
 
     <!-- ✅ SEO DESCRIPTION -->
-    <meta name="description"
-        content="Browse the full menu at Littiwale Barbil. From authentic Litti Chokha to Pizzas, Biryanis, and Thalis. High-quality food at affordable prices in Barbil.">
+    <meta name="description" content="Explore the full menu of Littiwale Barbil. Order authentic Litti Chokha, pure veg thalis, chole bhature, idli, dhokla, pizza, biryani, snacks, and beverages. Best food delivery and takeaway in Barbil!">
 
     <!-- ✅ SEO KEYWORDS -->
-    <meta name="keywords"
-        content="littiwale menu, litti chokha menu, pizza menu barbil, biryani price barbil, food menu barbil">
+    <meta name="keywords" content="littiwale menu, best restaurant in barbil menu, food menu barbil, snacks and beverages barbil, pure veg restaurant barbil menu, chole bhature barbil, idli dhokla near me, litti chokha near me barbil, top food delivery barbil odisha, online food order barbil, pizza menu barbil, biryani price barbil, budget friendly meals near me">
+
+    <!-- ✅ SOCIAL (OpenGraph / Google Preview) -->
+    <meta property="og:title" content="Littiwale Menu | Best Restaurant in Barbil">
+    <meta property="og:site_name" content="Littiwale Barbil">
+    <meta property="og:description" content="Explore the full menu of Littiwale Barbil for authentic Litti Chokha, Thalis, Chole Bhature, Pizza, Biryani & more!">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://littiwale.com/images/logo.png">
+
+    <!-- ✅ SCHEMA.ORG JSON-LD FOR LOCAL RESTAURANT SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://littiwale-barbil.vercel.app/#website",
+          "url": "https://littiwale-barbil.vercel.app/",
+          "name": "Littiwale Barbil",
+          "alternateName": ["Littiwale", "Litti Wale Barbil", "Littiwale Restaurant"],
+          "description": "Best Restaurant in Barbil offering authentic Litti Chokha, Pizza, Biryani, Snacks & Beverages."
+        }
+      ]
+    }
+    </script>
 
     <!-- ✅ FAVICON -->
     <link rel="icon" type="image/png" href="images/logo.png">
@@ -40,7 +62,7 @@
         ================================================================ */
         #lw-search-sticky-bar {
             position: sticky;
-            top: var(--lw-nav-h);
+            top: calc(var(--lw-nav-h) + var(--lw-outlet-bar-h, 0px));
             z-index: 500;
             background: rgba(13, 13, 13, 0.97);
             backdrop-filter: blur(12px);
@@ -298,6 +320,7 @@
             </a>
         </div>
     </nav>
+    <div id="lw-outlet-bar-placeholder"></div>
 
     <!-- MENU SECTION -->
     <section id="menu-section" class="menu-section" style="padding-top: 100px; min-height: 100vh;">
@@ -384,18 +407,29 @@
                     <li><a href="index.html#about" style="color:var(--text-secondary); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">About Littiwale</a></li>
                     <li><a href="index.html#reach" style="color:var(--text-secondary); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Reach Us</a></li>
                     <li><a href="index.html#faq" style="color:var(--text-secondary); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">FAQ</a></li>
-                    <li><a href="#" style="color:var(--text-secondary); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Track Order</a></li>
                 </ul>
             </div>
 
-            <div class="footer-contact" style="flex:1.5; min-width:250px;">
-                <h4 style="color:var(--primary-color); font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:20px;">Visit Us</h4>
-                <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:15px; line-height:1.6;">Ward No. 7, Punjabi Para<br>Barbil, Odisha 758035</p>
-                <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
-                    <a href="tel:+916370680744" style="color:var(--text-secondary); font-size:0.9rem; display:flex; align-items:center; gap:10px; text-decoration:none;"><i class="fas fa-phone-alt" style="color:#E1306C;"></i> +91 63706 80744</a>
-                    <span style="color:var(--text-secondary); font-size:0.9rem; display:flex; align-items:center; gap:10px;"><i class="far fa-clock" style="color:var(--text-secondary);"></i> 11 AM – 10:30 PM, Daily</span>
+            <div class="footer-contact" style="flex:2; min-width:300px; display:flex; flex-wrap:wrap; gap:30px;">
+                <div style="flex:1; min-width:140px;">
+                    <h4 style="color:var(--primary-color); font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:15px;">☁️ Cloud Kitchen</h4>
+                    <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:12px; line-height:1.5;">Ward No. 7, Punjabi Para<br>Barbil, Odisha 758035</p>
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;">
+                        <a href="tel:+916370680744" style="color:var(--text-secondary); font-size:0.85rem; display:flex; align-items:center; gap:8px; text-decoration:none;"><i class="fas fa-phone-alt" style="color:#E1306C;"></i> +91 63706 80744</a>
+                        <span style="color:var(--text-secondary); font-size:0.85rem; display:flex; align-items:center; gap:8px;"><i class="far fa-clock" style="color:var(--text-secondary);"></i> 9 AM – 11 PM, Daily</span>
+                    </div>
                 </div>
-                <button onclick="window.location.href='menu.html'" class="btn btn-primary" style="padding:10px 24px; font-size:0.9rem; border-radius:30px; border:none; color:#000; font-weight:800; cursor:pointer;">ORDER NOW <i class="fas fa-arrow-right"></i></button>
+                <div style="flex:1; min-width:140px;">
+                    <h4 style="color:#4ade80; font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:15px;">🏪 Physical Outlet</h4>
+                    <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:12px; line-height:1.5;">Near Barbil Court, Back Side of Rabisons Mall<br>Barbil, Odisha</p>
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;">
+                        <a href="tel:+916370680744" style="color:var(--text-secondary); font-size:0.85rem; display:flex; align-items:center; gap:8px; text-decoration:none;"><i class="fas fa-phone-alt" style="color:#4ade80;"></i> +91 63706 80744</a>
+                        <span style="color:var(--text-secondary); font-size:0.85rem; display:flex; align-items:center; gap:8px;"><i class="far fa-clock" style="color:var(--text-secondary);"></i> 8 AM – 10 PM (Sun Closed)</span>
+                    </div>
+                </div>
+                <div style="width:100%;">
+                    <button onclick="window.location.href='menu.html'" class="btn btn-primary" style="padding:10px 24px; font-size:0.9rem; border-radius:30px; border:none; color:#000; font-weight:800; cursor:pointer;">ORDER NOW <i class="fas fa-arrow-right"></i></button>
+                </div>
             </div>
         </div>
 
@@ -404,7 +438,7 @@
             <div style="display:flex; gap:20px; font-size:0.8rem;">
                 <a href="#" style="color:var(--text-secondary); transition:color 0.3s ease; text-decoration:none;">Privacy Policy</a>
                 <a href="#" style="color:var(--text-secondary); transition:color 0.3s ease; text-decoration:none;">Terms of Service</a>
-                <a href="https://brandnest.in" target="_blank" style="color:var(--text-primary); font-weight:600; transition:color 0.3s ease; text-decoration:none;">Developed by BrandNest <i class="fas fa-external-link-alt" style="font-size:0.7rem; margin-left:3px;"></i></a>
+                <a href="https://brandnestagency.vercel.app/" target="_blank" style="color:var(--text-primary); font-weight:600; transition:color 0.3s ease; text-decoration:none;">Developed by BrandNest <i class="fas fa-external-link-alt" style="font-size:0.7rem; margin-left:3px;"></i></a>
             </div>
         </div>
     </footer>
@@ -528,5 +562,6 @@
     <script src="js/main.js"></script>
     <script src="js/restaurant-timing.js"></script>
     <div id="cart-toast"></div>
+    <script src="js/location-picker.js?v=2"></script>
 </body>
 </html>

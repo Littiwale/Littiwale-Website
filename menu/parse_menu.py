@@ -1,8 +1,14 @@
 import json
 import re
 import os
+import sys
 import pandas as pd
 from PIL import Image
+
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+except Exception:
+    pass
 
 # ----------------------
 # CONFIG
@@ -156,6 +162,7 @@ for _, row in df_menu.iterrows():
     category = str(row.get("Category", "")).strip()
     veg_type = str(row.get("VegNonVeg", "")).strip()
     options = str(row.get("Options", "")).strip()
+    availability = str(row.get("Availability", "")).strip()
 
     if not name or name.lower() == "nan":
         continue
@@ -190,14 +197,23 @@ for _, row in df_menu.iterrows():
             "reason": "No match found in imagemapping.xlsx"
         })
 
+    stock_val = str(row.get("Stock", "yes")).strip()
+    in_stock = False if stock_val.lower() in ['no', 'false', '0', 'out of stock'] else True
+
     item = {
         "id": make_id(name),
         "name": name,
         "category": category,
         "price": price,
         "description": desc,
-        "veg": veg_type
+        "veg": veg_type,
+        "inStock": in_stock
     }
+
+    if availability and availability.lower() != "nan":
+        item["availability"] = availability
+    else:
+        item["availability"] = "cloud_only"
 
     if options and options.lower() != "nan":
         item["options"] = [opt.strip() for opt in options.split(",")]

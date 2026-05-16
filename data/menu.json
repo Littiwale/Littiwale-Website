@@ -5,7 +5,9 @@
         "category": "Star Special",
         "price": 49,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "both"
     },
     {
         "id": "authentic-bihari-litti-chokha",
@@ -14,6 +16,8 @@
         "price": 69,
         "description": "nan",
         "veg": "veg",
+        "inStock": true,
+        "availability": "both",
         "bestseller": true
     },
     {
@@ -22,7 +26,9 @@
         "category": "Star Special",
         "price": 129,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "a1-swag-combo---veg",
@@ -31,6 +37,8 @@
         "price": 189,
         "description": "Litti Chokha + Veg Sandwich + Vada Pav or Veg Burger",
         "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only",
         "options": [
             "sandwich",
             "burger"
@@ -42,7 +50,9 @@
         "category": "Star Special",
         "price": 209,
         "description": "Litti Chicken + Chicken Sandwich",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "veg-hot-n-sour-soup",
@@ -50,7 +60,9 @@
         "category": "Soup",
         "price": 89,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "veg-manchow-soup",
@@ -58,7 +70,9 @@
         "category": "Soup",
         "price": 109,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chicken-hot-n-sour-soup",
@@ -66,7 +80,9 @@
         "category": "Soup",
         "price": 109,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chicken-manchow-soup",
@@ -74,7 +90,9 @@
         "category": "Soup",
         "price": 129,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "littiwale-mega-feast---chilly-paneer-veg-fried-rice-lacha-paratha",
@@ -82,7 +100,9 @@
         "category": "Littiwale Mega Feast",
         "price": 189,
         "description": "Chilly Paneer (5 pcs) + Veg Fried Rice + 2 Lacha Paratha",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "littiwale-mega-feast---chilly-chicken-veg-fried-rice-lacha-paratha",
@@ -91,6 +111,8 @@
         "price": 189,
         "description": "Chilly Chicken (5 pcs) + Veg Fried Rice + 2 Lacha Paratha",
         "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -100,6 +122,8 @@
         "price": 209,
         "description": "Chilly Chicken (5 pcs) + Egg Fried Rice + 2 Lacha Paratha",
         "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -109,6 +133,8 @@
         "price": 219,
         "description": "Chilly Chicken (5 pcs) + Chicken Fried Rice + 2 Lacha Paratha",
         "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -117,7 +143,9 @@
         "category": "Littiwale Meal for One",
         "price": 139,
         "description": "Chilly Paneer (4 pcs) + Lacha Paratha",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "meals-for-one---veg-noodles-paneer-chilly",
@@ -126,6 +154,8 @@
         "price": 139,
         "description": "Chilly Paneer (4 pcs) + Veg Noodles",
         "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -134,7 +164,9 @@
         "category": "Littiwale Meal for One",
         "price": 139,
         "description": "Chilly Paneer (4 pcs) + Veg Fried Rice",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "meals-for-one---veg-fried-rice-chicken-chilly",
@@ -142,7 +174,9 @@
         "category": "Littiwale Meal for One",
         "price": 139,
         "description": "Chilly Chicken (4 pcs) + Veg Fried Rice",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "meals-for-one---lacha-paratha-chicken-chilly",
@@ -150,7 +184,9 @@
         "category": "Littiwale Meal for One",
         "price": 139,
         "description": "Chilly Chicken (4 pcs) + Lacha Paratha",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "meals-for-one---veg-noodles-chicken-chilly",
@@ -159,6 +195,8 @@
         "price": 139,
         "description": "Chilly Chicken (4 pcs) + Veg Noodles",
         "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -168,6 +206,8 @@
         "price": 149,
         "description": "Chilly Chicken (4 pcs) + Egg Fried Rice",
         "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -177,6 +217,8 @@
         "price": 149,
         "description": "Chilly Chicken (4 pcs) + Egg Noodles",
         "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -186,6 +228,8 @@
         "price": 159,
         "description": "Chilly Chicken (4 pcs) + Chicken Noodles",
         "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -195,6 +239,8 @@
         "price": 159,
         "description": "Chilly Chicken (4 pcs) + Chicken Fried Rice",
         "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -203,7 +249,9 @@
         "category": "Sandwiches",
         "price": 49,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "both"
     },
     {
         "id": "cheese-veg-grilled-sandwich",
@@ -211,7 +259,9 @@
         "category": "Sandwiches",
         "price": 59,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "both"
     },
     {
         "id": "veg-sandwich-clubbed-3-layered",
@@ -219,7 +269,9 @@
         "category": "Sandwiches",
         "price": 79,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "both"
     },
     {
         "id": "corn-cheese-sandwich-grilled",
@@ -227,7 +279,9 @@
         "category": "Sandwiches",
         "price": 79,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "both"
     },
     {
         "id": "cheese-chicken-sandwich",
@@ -235,7 +289,9 @@
         "category": "Sandwiches",
         "price": 89,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "corn-sandwich-clubbed-3-layered",
@@ -243,7 +299,9 @@
         "category": "Sandwiches",
         "price": 99,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "both"
     },
     {
         "id": "paneer-sandwich-clubbed-3-layered",
@@ -251,7 +309,9 @@
         "category": "Sandwiches",
         "price": 99,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "both"
     },
     {
         "id": "chicken-clubbed-sandwich-3-layered",
@@ -259,7 +319,9 @@
         "category": "Sandwiches",
         "price": 99,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "mix-veg-sandwich-clubbed-3-layered",
@@ -267,7 +329,9 @@
         "category": "Sandwiches",
         "price": 119,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "both"
     },
     {
         "id": "veg-noodles-half",
@@ -276,6 +340,8 @@
         "price": 49,
         "description": "nan",
         "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -285,6 +351,8 @@
         "price": 99,
         "description": "nan",
         "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -293,7 +361,9 @@
         "category": "Noodles/Rice",
         "price": 69,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "egg-noodles-full",
@@ -301,7 +371,9 @@
         "category": "Noodles/Rice",
         "price": 129,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chicken-noodles-half",
@@ -309,7 +381,9 @@
         "category": "Noodles/Rice",
         "price": 89,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chicken-noodles-full",
@@ -317,7 +391,9 @@
         "category": "Noodles/Rice",
         "price": 159,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "mix-veg-noodles-half",
@@ -326,6 +402,8 @@
         "price": 109,
         "description": "nan",
         "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -335,6 +413,8 @@
         "price": 209,
         "description": "nan",
         "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -344,6 +424,8 @@
         "price": 109,
         "description": "nan",
         "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -353,6 +435,8 @@
         "price": 209,
         "description": "nan",
         "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -361,7 +445,9 @@
         "category": "Noodles/Rice",
         "price": 89,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "veg-fried-rice-full",
@@ -369,7 +455,9 @@
         "category": "Noodles/Rice",
         "price": 159,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "egg-fried-rice-half",
@@ -377,7 +465,9 @@
         "category": "Noodles/Rice",
         "price": 109,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "egg-fried-rice-full",
@@ -385,7 +475,9 @@
         "category": "Noodles/Rice",
         "price": 229,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chicken-fried-rice-half",
@@ -394,6 +486,8 @@
         "price": 129,
         "description": "nan",
         "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -403,6 +497,8 @@
         "price": 239,
         "description": "nan",
         "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -411,7 +507,9 @@
         "category": "Starters",
         "price": 59,
         "description": "5 pc",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chilly-gobi-full",
@@ -419,7 +517,9 @@
         "category": "Starters",
         "price": 119,
         "description": "10 pc",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "veg-manchurian-half",
@@ -427,7 +527,9 @@
         "category": "Starters",
         "price": 69,
         "description": "5 pc",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "veg-manchurian-full",
@@ -435,7 +537,9 @@
         "category": "Starters",
         "price": 119,
         "description": "10 pc",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "mushroom-chilly-half",
@@ -443,7 +547,9 @@
         "category": "Starters",
         "price": 79,
         "description": "5 pc",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "mushroom-chilly-full",
@@ -451,7 +557,9 @@
         "category": "Starters",
         "price": 159,
         "description": "10 pc",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chilly-paneer-half",
@@ -459,7 +567,9 @@
         "category": "Starters",
         "price": 79,
         "description": "5 pc",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chilly-paneer-full",
@@ -467,7 +577,9 @@
         "category": "Starters",
         "price": 159,
         "description": "10 pc",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chilly-chicken-half",
@@ -476,6 +588,8 @@
         "price": 99,
         "description": "6 pc",
         "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -485,6 +599,8 @@
         "price": 199,
         "description": "12 pc",
         "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only",
         "variant": "12 pc",
         "bestseller": true
     },
@@ -495,6 +611,8 @@
         "price": 39,
         "description": "1 pc",
         "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only",
         "variant": "1 pc"
     },
     {
@@ -504,6 +622,8 @@
         "price": 9,
         "description": "1 pc",
         "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only",
         "variant": "1 pc"
     },
     {
@@ -513,6 +633,8 @@
         "price": 89,
         "description": "2 pcs",
         "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only",
         "variant": "2 pcs"
     },
     {
@@ -522,6 +644,8 @@
         "price": 89,
         "description": "2 pcs",
         "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only",
         "variant": "2 pcs"
     },
     {
@@ -531,6 +655,8 @@
         "price": 99,
         "description": "2 pcs",
         "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only",
         "variant": "2 pcs"
     },
     {
@@ -540,6 +666,8 @@
         "price": 109,
         "description": "2 pcs",
         "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only",
         "variant": "2 pcs"
     },
     {
@@ -549,6 +677,8 @@
         "price": 129,
         "description": "2 pcs",
         "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only",
         "variant": "2 pcs"
     },
     {
@@ -557,7 +687,9 @@
         "category": "Pizza",
         "price": 119,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "both"
     },
     {
         "id": "corn-pizza",
@@ -565,7 +697,9 @@
         "category": "Pizza",
         "price": 129,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "both"
     },
     {
         "id": "paneer-pizza",
@@ -574,6 +708,8 @@
         "price": 149,
         "description": "nan",
         "veg": "veg",
+        "inStock": true,
+        "availability": "both",
         "bestseller": true
     },
     {
@@ -582,7 +718,9 @@
         "category": "Pizza",
         "price": 199,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "red-sauce-pasta-half",
@@ -590,7 +728,9 @@
         "category": "Pasta",
         "price": 79,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "red-sauce-pasta-full",
@@ -598,7 +738,9 @@
         "category": "Pasta",
         "price": 159,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "white-sauce-pasta-half",
@@ -606,7 +748,9 @@
         "category": "Pasta",
         "price": 99,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "white-sauce-pasta-full",
@@ -614,7 +758,9 @@
         "category": "Pasta",
         "price": 199,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "veg-maggie-half",
@@ -622,7 +768,9 @@
         "category": "Maggi",
         "price": 39,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "veg-maggie-full",
@@ -630,7 +778,9 @@
         "category": "Maggi",
         "price": 79,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "cheese-maggie-half",
@@ -638,7 +788,9 @@
         "category": "Maggi",
         "price": 49,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "cheese-maggie-full",
@@ -646,7 +798,9 @@
         "category": "Maggi",
         "price": 99,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "dal-makhani-half",
@@ -654,7 +808,9 @@
         "category": "Main Course",
         "price": 99,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "dal-makhani-full",
@@ -662,7 +818,9 @@
         "category": "Main Course",
         "price": 189,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "dal-tadka-half",
@@ -670,7 +828,9 @@
         "category": "Main Course",
         "price": 89,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "dal-tadka-full",
@@ -678,7 +838,9 @@
         "category": "Main Course",
         "price": 179,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "mix-veg-half",
@@ -686,7 +848,9 @@
         "category": "Main Course",
         "price": 99,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "mix-veg-full",
@@ -694,7 +858,9 @@
         "category": "Main Course",
         "price": 189,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "paneer-butter-masala-half",
@@ -703,6 +869,8 @@
         "price": 129,
         "description": "nan",
         "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -712,6 +880,8 @@
         "price": 219,
         "description": "nan",
         "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only",
         "bestseller": true
     },
     {
@@ -720,7 +890,9 @@
         "category": "Main Course",
         "price": 99,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "paneer-masala-full",
@@ -728,7 +900,9 @@
         "category": "Main Course",
         "price": 189,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "egg-tadka-half",
@@ -736,7 +910,9 @@
         "category": "Main Course",
         "price": 109,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "egg-tadka-full",
@@ -744,7 +920,9 @@
         "category": "Main Course",
         "price": 199,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "mushroom-masala-half",
@@ -752,7 +930,9 @@
         "category": "Main Course",
         "price": 99,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "mushroom-masala-full",
@@ -760,7 +940,9 @@
         "category": "Main Course",
         "price": 189,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chicken-chatpata-half",
@@ -768,7 +950,9 @@
         "category": "Main Course",
         "price": 129,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chicken-chatpata-full",
@@ -776,7 +960,9 @@
         "category": "Main Course",
         "price": 219,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chicken-masala-half",
@@ -784,7 +970,9 @@
         "category": "Main Course",
         "price": 99,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chicken-masala-full",
@@ -792,7 +980,9 @@
         "category": "Main Course",
         "price": 189,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chicken-handi-half",
@@ -800,7 +990,9 @@
         "category": "Main Course",
         "price": 139,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chicken-handi-full",
@@ -808,7 +1000,9 @@
         "category": "Main Course",
         "price": 279,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chicken-champaran-half",
@@ -816,7 +1010,9 @@
         "category": "Main Course",
         "price": 289,
         "description": "half kg",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chicken-champaran-full",
@@ -824,7 +1020,9 @@
         "category": "Main Course",
         "price": 549,
         "description": "1 kg",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "fish-curry-half",
@@ -832,7 +1030,9 @@
         "category": "Main Course",
         "price": 49,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "fish-curry-full",
@@ -840,7 +1040,9 @@
         "category": "Main Course",
         "price": 99,
         "description": "nan",
-        "veg": "nonveg"
+        "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "veg-thali",
@@ -849,6 +1051,8 @@
         "price": 79,
         "description": "Roti(5pc) or (Rice+Dal)+1 type of Sabzi+ 1 type of Bhujia+Papad",
         "veg": "veg",
+        "inStock": true,
+        "availability": "both",
         "options": [
             "roti",
             "rice"
@@ -861,6 +1065,8 @@
         "price": 109,
         "description": "Roti(5pc) or (Rice+Dal)+1 type of Paneer Sabzi+ 1 type of Bhujia+Papad",
         "veg": "veg",
+        "inStock": true,
+        "availability": "both",
         "options": [
             "roti",
             "rice"
@@ -873,6 +1079,8 @@
         "price": 99,
         "description": "Roti(5pc) or (Rice+Dal)+Egg Curry (2 pcs)+ 1 type of Bhujia+Papad",
         "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only",
         "options": [
             "roti",
             "rice"
@@ -886,6 +1094,8 @@
         "price": 109,
         "description": "Roti(5pc) or (Rice+Dal)+Fish Curry(2 pcs )+ 1 type of Bhujia+Papad",
         "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only",
         "options": [
             "roti",
             "rice"
@@ -899,6 +1109,8 @@
         "price": 129,
         "description": "Roti(5pc) or (Rice+Dal)+Chicken Curry (4 pcs)+ 1 type of Bhujia+Papad",
         "veg": "nonveg",
+        "inStock": true,
+        "availability": "cloud_only",
         "options": [
             "roti",
             "rice"
@@ -910,7 +1122,9 @@
         "category": "Star Special",
         "price": 79,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "masterchef-special-thecha-chowmein-full",
@@ -918,7 +1132,9 @@
         "category": "Star Special",
         "price": 149,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "rajma-chawal",
@@ -926,7 +1142,9 @@
         "category": "Littiwale Rice Bowl Combos",
         "price": 79,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "chole-chawal",
@@ -934,7 +1152,9 @@
         "category": "Littiwale Rice Bowl Combos",
         "price": 79,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
     },
     {
         "id": "kadhi-chawal",
@@ -942,6 +1162,358 @@
         "category": "Littiwale Rice Bowl Combos",
         "price": 79,
         "description": "nan",
-        "veg": "veg"
+        "veg": "veg",
+        "inStock": true,
+        "availability": "cloud_only"
+    },
+    {
+        "id": "steam-veg-momo",
+        "name": "Steam Veg Momo",
+        "category": "Momos",
+        "price": 50,
+        "description": "Steamed vegetable dumplings",
+        "veg": "veg",
+        "inStock": false,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "steam-paneer-momo",
+        "name": "Steam Paneer Momo",
+        "category": "Momos",
+        "price": 60,
+        "description": "Steamed paneer dumplings",
+        "veg": "veg",
+        "inStock": false,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "kurkure-veg-momo",
+        "name": "Kurkure Veg Momo",
+        "category": "Momos",
+        "price": 80,
+        "description": "Crispy fried veg dumplings",
+        "veg": "veg",
+        "inStock": false,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "paneer-kurkure-momo",
+        "name": "Paneer Kurkure Momo",
+        "category": "Momos",
+        "price": 100,
+        "description": "Crispy fried paneer dumplings",
+        "veg": "veg",
+        "inStock": false,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "fried-veg-momo",
+        "name": "Fried Veg Momo",
+        "category": "Momos",
+        "price": 60,
+        "description": "Deep fried veg dumplings",
+        "veg": "veg",
+        "inStock": false,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "fried-paneer-momo",
+        "name": "Fried Paneer Momo",
+        "category": "Momos",
+        "price": 80,
+        "description": "Deep fried paneer dumplings",
+        "veg": "veg",
+        "inStock": false,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "pan-fried-veg-momo",
+        "name": "Pan Fried Veg Momo",
+        "category": "Momos",
+        "price": 80,
+        "description": "Pan fried crispy veg dumplings",
+        "veg": "veg",
+        "inStock": false,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "pan-fried-paneer-momo",
+        "name": "Pan Fried Paneer Momo",
+        "category": "Momos",
+        "price": 120,
+        "description": "Pan fried crispy paneer dumplings",
+        "veg": "veg",
+        "inStock": false,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "aloo-paratha-2-pc",
+        "name": "Aloo Paratha (2 Pc)",
+        "category": "Parathas",
+        "price": 50,
+        "description": "Served with dahi and achaar",
+        "veg": "veg",
+        "inStock": false,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "gobi-paratha-2-pc",
+        "name": "Gobi Paratha (2 Pc)",
+        "category": "Parathas",
+        "price": 50,
+        "description": "Served with dahi and achaar",
+        "veg": "veg",
+        "inStock": false,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "paneer-paratha-2-pc",
+        "name": "Paneer Paratha (2 Pc)",
+        "category": "Parathas",
+        "price": 60,
+        "description": "Served with dahi and achaar",
+        "veg": "veg",
+        "inStock": false,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "chakuli-pitha-with-sabzi",
+        "name": "Chakuli Pitha with Sabzi",
+        "category": "Tiffin Specials",
+        "price": 40,
+        "description": "Traditional Odia breakfast",
+        "veg": "veg",
+        "inStock": false,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "dahi-bara-aloo-dum",
+        "name": "Dahi Bara Aloo Dum",
+        "category": "Tiffin Specials",
+        "price": 30,
+        "description": "Soft vadas in spiced curd",
+        "veg": "veg",
+        "inStock": false,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "idli",
+        "name": "Idli",
+        "category": "Tiffin Specials",
+        "price": 30,
+        "description": "Served with sambar and chutney",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "both"
+    },
+    {
+        "id": "dhokla",
+        "name": "Dhokla",
+        "category": "Tiffin Specials",
+        "price": 30,
+        "description": "Soft and fluffy Gujarati snack",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "both"
+    },
+    {
+        "id": "puri-sabzi",
+        "name": "Puri Sabzi",
+        "category": "Tiffin Specials",
+        "price": 40,
+        "description": "Hot puris with spiced sabzi",
+        "veg": "veg",
+        "inStock": false,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "chole-bhature",
+        "name": "Chole Bhature",
+        "category": "Tiffin Specials",
+        "price": 50,
+        "description": "Classic North Indian breakfast",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "both"
+    },
+    {
+        "id": "upma",
+        "name": "Upma",
+        "category": "Tiffin Specials",
+        "price": 30,
+        "description": "South Indian semolina breakfast",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "both"
+    },
+    {
+        "id": "lassi-sweet-salted",
+        "name": "Lassi (Sweet / Salted)",
+        "category": "Drinks",
+        "price": 40,
+        "description": "Refreshing Indian yogurt drink",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "mango-shake",
+        "name": "Mango Shake",
+        "category": "Drinks",
+        "price": 60,
+        "description": "Fresh mango milkshake",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "chocolate-shake",
+        "name": "Chocolate Shake",
+        "category": "Drinks",
+        "price": 60,
+        "description": "Rich chocolate milkshake",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "pineapple-shake",
+        "name": "Pineapple Shake",
+        "category": "Drinks",
+        "price": 60,
+        "description": "Tropical pineapple milkshake",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "butterscotch-shake",
+        "name": "Butterscotch Shake",
+        "category": "Drinks",
+        "price": 60,
+        "description": "Sweet butterscotch milkshake",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "cold-coffee",
+        "name": "Cold Coffee",
+        "category": "Drinks",
+        "price": 50,
+        "description": "Chilled blended coffee",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "buttermilk",
+        "name": "Buttermilk",
+        "category": "Drinks",
+        "price": 30,
+        "description": "Spiced chaas",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "banana-shake",
+        "name": "Banana Shake",
+        "category": "Drinks",
+        "price": 50,
+        "description": "Creamy banana milkshake",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "oreo-shake",
+        "name": "Oreo Shake",
+        "category": "Drinks",
+        "price": 50,
+        "description": "Oreo cookie milkshake",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "oreo-banana-shake",
+        "name": "Oreo Banana Shake",
+        "category": "Drinks",
+        "price": 80,
+        "description": "Oreo and banana milkshake combo",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "dahi",
+        "name": "Dahi",
+        "category": "Extras",
+        "price": 10,
+        "description": "Fresh curd",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "chakuli-pitha",
+        "name": "Chakuli Pitha",
+        "category": "Extras",
+        "price": 10,
+        "description": "Extra Chakuli",
+        "veg": "veg",
+        "inStock": false,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "sabzi",
+        "name": "Sabzi",
+        "category": "Extras",
+        "price": 30,
+        "description": "Extra sabzi",
+        "veg": "veg",
+        "inStock": false,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "rice",
+        "name": "Rice",
+        "category": "Extras",
+        "price": 20,
+        "description": "Steamed rice",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "rajma-chawal",
+        "name": "Rajma Chawal",
+        "category": "Daily Meal Specials",
+        "price": 80,
+        "description": "Available Mon & Wed",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "chole-chawal",
+        "name": "Chole Chawal",
+        "category": "Daily Meal Specials",
+        "price": 80,
+        "description": "Available Tue & Fri",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "outlet_only"
+    },
+    {
+        "id": "kadi-chawal",
+        "name": "Kadi Chawal",
+        "category": "Daily Meal Specials",
+        "price": 80,
+        "description": "Available Thu & Sat",
+        "veg": "veg",
+        "inStock": true,
+        "availability": "outlet_only"
     }
 ]

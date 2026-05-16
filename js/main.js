@@ -75,11 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let initialBestsellers = [];
     let currentFilteredData = [];
     let currentDietaryFilter = 'all';
+    let currentLocationFilter = 'all'; // 'all' | 'cloud' | 'outlet'
 
     const CATEGORY_ORDER = [
-        "Star Special", "Soup", "Mega Combos", "Mini Combos", "Sandwiches", 
-        "Noodles & Rice", "Starters", "Parathas & Naan", "Pizza", "Pasta", 
-        "Tandoori/Kebabs", "Main Course", "Thali", "Pre Order Specials"
+        "Star Special", "Littiwale Mega Feast", "Littiwale Meal for One", "Littiwale Rice Bowl Combos",
+        "Tiffin Specials", "Momos", "Pizza", "Sandwiches", "Maggi", "Pasta",
+        "Soup", "Starters", "Noodles/Rice", "Main Course", "Breads", "Thali",
+        "Parathas", "Daily Meal Specials", "Drinks", "Extras"
     ];
 
     function initMenuDisplay() {
@@ -89,8 +91,24 @@ document.addEventListener('DOMContentLoaded', () => {
             isMenuExpanded = true;
             currentFilteredData = menuData;
             if (categoryFilters) categoryFilters.style.display = 'flex';
+
+            // Read location from sessionStorage directly (event already fired ho chuka hoga)
+            var savedLoc = sessionStorage.getItem('littiWaleLocation') || 'all';
+            currentLocationFilter = savedLoc;
+
+            // Outlet pe force veg filter
+            if (savedLoc === 'outlet') {
+                currentDietaryFilter = 'veg';
+            }
+
             setupFilters(menuData);
             renderMenu(menuData);
+
+            // Outlet pe non-veg button hide karo
+            if (savedLoc === 'outlet') {
+                var nonVegBtn = document.querySelector('[data-diet="non-veg"]');
+                if (nonVegBtn) nonVegBtn.style.display = 'none';
+            }
             
             // Hide the "View Full Menu" button on the dedicated menu page
             const toggleContainer = document.getElementById('menu-toggle-container');
@@ -260,11 +278,17 @@ document.addEventListener('DOMContentLoaded', () => {
         let btnHtml = '';
         const itemImg = group.image;
 
+        let allOutOfStock = true;
+
         // Case 1: Dual Variants (Half & Full)
         if (group.variants.half && group.variants.full) {
             const half = group.variants.half;
             const full = group.variants.full;
             
+            if (half.inStock !== false || full.inStock !== false) {
+                allOutOfStock = false;
+            }
+
             // Variants for descriptions
             const hDesc = (half.description && half.description !== 'nan' && half.description !== 'undefined') ? half.description : "";
             const fDesc = (full.description && full.description !== 'nan' && full.description !== 'undefined') ? full.description : "";
@@ -272,24 +296,32 @@ document.addEventListener('DOMContentLoaded', () => {
             // Base ID for the description container
             const baseId = group.variants.half.id.replace(/-half|_half/g, '');
 
+            const halfControls = half.inStock === false 
+                ? `<span style="color:#ef4444; font-weight:bold; font-size:0.85rem; padding:4px 0;">Out of stock</span>`
+                : `<button class="hf-btn minus" onclick="event.stopPropagation(); updateQuantity('${half.id}', -1)">-</button>
+                   <span class="hf-value" id="hf-val-${half.id}">0</span>
+                   <button class="hf-btn plus" onclick="event.stopPropagation(); addToCart('${half.id}', '${half.name.replace(/'/g, "\\'")}', ${half.price}, '${itemImg}'); if(document.getElementById('desc-${baseId}')) document.getElementById('desc-${baseId}').innerText = '${hDesc.replace(/'/g, "\\'")}';">+</button>`;
+
+            const fullControls = full.inStock === false 
+                ? `<span style="color:#ef4444; font-weight:bold; font-size:0.85rem; padding:4px 0;">Out of stock</span>`
+                : `<button class="hf-btn minus" onclick="event.stopPropagation(); updateQuantity('${full.id}', -1)">-</button>
+                   <span class="hf-value" id="hf-val-${full.id}">0</span>
+                   <button class="hf-btn plus" onclick="event.stopPropagation(); addToCart('${full.id}', '${full.name.replace(/'/g, "\\'")}', ${full.price}, '${itemImg}'); if(document.getElementById('desc-${baseId}')) document.getElementById('desc-${baseId}').innerText = '${fDesc.replace(/'/g, "\\'")}';">+</button>`;
+
             btnHtml = `
                 <div class="half-full-wrapper">
                     <div class="half-full-box">
                         <div class="hf-label">Half</div>
                         <div class="hf-price">₹${half.price}</div>
                         <div class="hf-controls">
-                            <button class="hf-btn minus" onclick="event.stopPropagation(); updateQuantity('${half.id}', -1)">-</button>
-                            <span class="hf-value" id="hf-val-${half.id}">0</span>
-                            <button class="hf-btn plus" onclick="event.stopPropagation(); addToCart('${half.id}', '${half.name.replace(/'/g, "\\'")}', ${half.price}, '${itemImg}'); if(document.getElementById('desc-${baseId}')) document.getElementById('desc-${baseId}').innerText = '${hDesc.replace(/'/g, "\\'")}';">+</button>
+                            ${halfControls}
                         </div>
                     </div>
                     <div class="half-full-box">
                         <div class="hf-label">Full</div>
                         <div class="hf-price">₹${full.price}</div>
                         <div class="hf-controls">
-                            <button class="hf-btn minus" onclick="event.stopPropagation(); updateQuantity('${full.id}', -1)">-</button>
-                            <span class="hf-value" id="hf-val-${full.id}">0</span>
-                            <button class="hf-btn plus" onclick="event.stopPropagation(); addToCart('${full.id}', '${full.name.replace(/'/g, "\\'")}', ${full.price}, '${itemImg}'); if(document.getElementById('desc-${baseId}')) document.getElementById('desc-${baseId}').innerText = '${fDesc.replace(/'/g, "\\'")}';">+</button>
+                            ${fullControls}
                         </div>
                     </div>
                 </div>
@@ -298,16 +330,28 @@ document.addEventListener('DOMContentLoaded', () => {
         // Case 2: Standard Single Item
         else {
             const item = group.variants.standard || group.variants.half || group.variants.full;
-            btnHtml = `
-                <div id="menu-btn-container-${item.id}" style="width:100%;">
-                    <button id="menu-add-btn-${item.id}" class="add-to-cart-btn add-to-cart" onclick="addToCart('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, '${itemImg}')">Add to Cart — ₹${item.price}</button>
-                    <div id="menu-qty-ctrl-${item.id}" style="display:none; align-items:center; justify-content:space-between; background:transparent; border: 1px solid #facc15; border-radius:999px; padding:4px; height: 48px;">
-                        <button style="background:transparent; border:none; width:40px; height:100%; font-weight:bold; color:#facc15; cursor:pointer;" onclick="updateQuantity('${item.id}', -1)">-</button>
-                        <span id="menu-qty-val-${item.id}" style="font-weight:bold; color:var(--text-primary); font-size:1.1rem;">0</span>
-                        <button style="background:#facc15; border:none; border-radius:999px; width:40px; height:36px; font-weight:bold; color:#0d0d0d; cursor:pointer;" onclick="updateQuantity('${item.id}', 1)">+</button>
+            if (item.inStock !== false) {
+                allOutOfStock = false;
+            }
+
+            if (item.inStock === false) {
+                btnHtml = `
+                    <div style="width:100%;">
+                        <button class="add-to-cart-btn" style="background:#333; color:#888; border:1px solid #444; cursor:not-allowed;" disabled>Out of stock</button>
                     </div>
-                </div>
-            `;
+                `;
+            } else {
+                btnHtml = `
+                    <div id="menu-btn-container-${item.id}" style="width:100%;">
+                        <button id="menu-add-btn-${item.id}" class="add-to-cart-btn add-to-cart" onclick="addToCart('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, '${itemImg}')">Add to Cart — ₹${item.price}</button>
+                        <div id="menu-qty-ctrl-${item.id}" style="display:none; align-items:center; justify-content:space-between; background:transparent; border: 1px solid #facc15; border-radius:999px; padding:4px; height: 48px;">
+                            <button style="background:transparent; border:none; width:40px; height:100%; font-weight:bold; color:#facc15; cursor:pointer;" onclick="updateQuantity('${item.id}', -1)">-</button>
+                            <span id="menu-qty-val-${item.id}" style="font-weight:bold; color:var(--text-primary); font-size:1.1rem;">0</span>
+                            <button style="background:#facc15; border:none; border-radius:999px; width:40px; height:36px; font-weight:bold; color:#0d0d0d; cursor:pointer;" onclick="updateQuantity('${item.id}', 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         // Determine Veg/Non-Veg (heuristic based on name)
@@ -316,6 +360,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const hasNonVegWords = /chicken|egg|fish|mutton|murgh|seekh|kebab|kabab|keema/.test(combinedText);
         const isNonVeg = !isEggless && hasNonVegWords;
         const foodTypeBadge = isNonVeg ? '<span class="food-tag non-veg">NON-VEG</span>' : '<span class="food-tag veg">VEG</span>';
+        
+        // Determine Availability Badge
+        const baseItem = group.variants.standard || group.variants.half || group.variants.full;
+        const avail = baseItem.availability || 'cloud_only';
+        let availabilityBadge = '';
+        if (avail === 'cloud_only') {
+            availabilityBadge = '<span class="food-tag cloud-tag" style="background:rgba(244,180,0,0.15); color:var(--primary-color); border:1px solid rgba(244,180,0,0.3);">☁️ CLOUD KITCHEN</span>';
+        } else if (avail === 'outlet_only') {
+            availabilityBadge = '<span class="food-tag outlet-tag" style="background:rgba(74,222,128,0.15); color:#4ade80; border:1px solid rgba(74,222,128,0.3);">🏪 PHYSICAL OUTLET</span>';
+        } else if (avail === 'both') {
+            availabilityBadge = '<span class="food-tag both-tag" style="background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3);">☁️ CLOUD + 🏪 OUTLET</span>';
+        }
+
+        const stockBadge = allOutOfStock ? '<span class="food-tag" style="background:#ef4444; color:#fff;">OUT OF STOCK</span>' : '';
 
         // Determine description and baseId for dynamic updates
         const hItem = group.variants.half;
@@ -333,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <img src="${itemImg}" class="menu-img" loading="lazy" onerror="this.src='images/logo.png'">
             </div>
             <div class="menu-details menu-card-content">
-                <div>${foodTypeBadge}</div>
+                <div style="display:flex; align-items:center; flex-wrap:wrap; gap:4px; margin-bottom:8px;">${foodTypeBadge}${availabilityBadge}${stockBadge}</div>
                 <div class="menu-title-row">
                     <h3 class="menu-title menu-card-title">${group.displayName}</h3>
                 </div>
@@ -402,14 +460,34 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let displayItems = items;
 
-        if (currentDietaryFilter !== 'all') {
-            displayItems = displayItems.filter(item => {
-                const combinedText = (item.name + " " + (item.description || "")).toLowerCase();
-                const isEggless = combinedText.includes("eggless");
-                const hasNonVegWords = /chicken|egg|fish|mutton|murgh|seekh|kebab|kabab|keema/.test(combinedText);
-                const isNonVeg = !isEggless && hasNonVegWords;
-                return currentDietaryFilter === 'veg' ? !isNonVeg : isNonVeg;
-            });
+        // Location filter — reads currentLocationFilter set by location-picker.js
+        const loc = (typeof currentLocationFilter !== 'undefined') ? currentLocationFilter : 'all';
+        if (loc === 'cloud') {
+          displayItems = displayItems.filter(item =>
+            !item.availability || item.availability === 'cloud_only' || item.availability === 'both'
+          );
+        } else if (loc === 'outlet') {
+          displayItems = displayItems.filter(item =>
+            item.availability === 'outlet_only' || item.availability === 'both'
+          );
+          // Outlet is pure veg — always force veg filter
+          displayItems = displayItems.filter(item => {
+            const combinedText = (item.name + ' ' + (item.description || '')).toLowerCase();
+            const isEggless = combinedText.includes('eggless');
+            const hasNonVegWords = /chicken|egg|fish|mutton|murgh|seekh|kebab|kabab|keema/.test(combinedText);
+            return !(!isEggless && hasNonVegWords);
+          });
+        }
+
+        // Dietary filter (only for cloud / all views)
+        if (loc !== 'outlet' && currentDietaryFilter !== 'all') {
+          displayItems = displayItems.filter(item => {
+            const combinedText = (item.name + ' ' + (item.description || '')).toLowerCase();
+            const isEggless = combinedText.includes('eggless');
+            const hasNonVegWords = /chicken|egg|fish|mutton|murgh|seekh|kebab|kabab|keema/.test(combinedText);
+            const isNonVeg = !isEggless && hasNonVegWords;
+            return currentDietaryFilter === 'veg' ? !isNonVeg : isNonVeg;
+          });
         }
         
         if (displayItems.length === 0) {
@@ -493,6 +571,18 @@ document.addEventListener('DOMContentLoaded', () => {
         
         categoryFilters.innerHTML = ''; // Fresh render
         
+        let filterItems = items;
+        const loc = (typeof currentLocationFilter !== 'undefined') ? currentLocationFilter : 'all';
+        if (loc === 'cloud') {
+          filterItems = filterItems.filter(item =>
+            !item.availability || item.availability === 'cloud_only' || item.availability === 'both'
+          );
+        } else if (loc === 'outlet') {
+          filterItems = filterItems.filter(item =>
+            item.availability === 'outlet_only' || item.availability === 'both'
+          );
+        }
+        
         const dietaryContainer = document.createElement('div');
         dietaryContainer.style.display = 'flex';
         dietaryContainer.style.justifyContent = 'center';
@@ -513,7 +603,7 @@ document.addEventListener('DOMContentLoaded', () => {
         catContainer.style.gap = '10px';
         categoryFilters.appendChild(catContainer);
 
-        const categories = ['all', ...new Set(items.map(item => item.category))];
+        const categories = ['all', ...new Set(filterItems.map(item => item.category))];
         catContainer.innerHTML = '<button class="filter-btn active" data-filter="all">All Categories</button>';
         
         categories.slice(1).forEach(category => {
@@ -615,8 +705,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Delivery Logic ---
     let deliveryCharge = 0;
     let deliveryStatus = 'UNKNOWN'; // 'AVAILABLE', 'UNAVAILABLE', 'UNKNOWN'
-    const RESTAURANT_LAT = 22.1152751;
-    const RESTAURANT_LNG = 85.3871145;
+    let activeLocForDelivery = sessionStorage.getItem('littiWaleLocation') || 'cloud';
+    let RESTAURANT_LAT = activeLocForDelivery === 'outlet' ? 22.099435 : 22.1152751;
+    let RESTAURANT_LNG = activeLocForDelivery === 'outlet' ? 85.386035 : 85.3871145;
+
+    document.addEventListener('littiWaleLocationSelected', function(e) {
+        let loc = e.detail;
+        RESTAURANT_LAT = loc === 'outlet' ? 22.099435 : 22.1152751;
+        RESTAURANT_LNG = loc === 'outlet' ? 85.386035 : 85.3871145;
+        if (deliveryStatus === 'AVAILABLE' || deliveryStatus === 'CALCULATING') {
+            getUserLocation();
+        }
+    });
 
     // --- IPL Dynamic Coupon Logic ---
     function generateIPLCoupons() {
@@ -2063,7 +2163,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 msg += `⚠️ IMPORTANT: Please attach your payment screenshot before sending this message.\n\n`;
             }
 
-            msg += `👋 Hello Littiwale!\n\n`;
+            const locLabel = window.littiWaleSelectedLocation === 'outlet'
+              ? '🏪 PHYSICAL OUTLET ORDER\n📍 Near Barbil Court, Rabisons Mall\n'
+              : '☁️ CLOUD KITCHEN ORDER\n';
+            msg += `👋 Hello Littiwale!\n${locLabel}\n`;
             msg += `🛒 Order Details:\n`;
             msg += `${itemsList}\n\n`;
             msg += `-----------------------\n\n`;
@@ -2876,6 +2979,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    document.addEventListener('littiWaleLocationSelected', function(e) {
+      currentLocationFilter = e.detail; // 'cloud' or 'outlet'
+      
+      // If already on menu page, re-render immediately
+      if (window.location.pathname.includes('menu.html')) {
+        renderMenu(menuData);
+        setupFilters(menuData);
+        
+        // If outlet chosen, hide non-veg filter
+        var dietaryContainer = document.querySelector('[data-diet]')?.closest('div');
+        if (dietaryContainer) {
+          var nonVegBtn = dietaryContainer.querySelector('[data-diet="non-veg"]');
+          if (nonVegBtn) {
+            nonVegBtn.style.display = currentLocationFilter === 'outlet' ? 'none' : '';
+          }
+        }
+        // Force veg filter when outlet is selected
+        if (currentLocationFilter === 'outlet') {
+          currentDietaryFilter = 'veg';
+        }
+      }
+    });
+
     try { initMenu(); } catch(e) { console.error("Menu failed", e); }
     try { initAnnouncementCarousel(); } catch(e) { console.error("Slider failed", e); }
     try { initReviewsCarousel(); } catch(e) { console.error("Reviews failed", e); }
@@ -3230,7 +3356,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             function lwSyncDimensions() {
                 var navH = navbar ? navbar.offsetHeight : 70;
+                var outletBar = document.getElementById('lw-outlet-bar');
+                var outletH = outletBar ? outletBar.offsetHeight : 0;
                 document.documentElement.style.setProperty('--lw-nav-h', navH + 'px');
+                document.documentElement.style.setProperty('--lw-outlet-bar-h', outletH + 'px');
                 spacer.style.height = stickyBar.offsetHeight + 'px';
             }
 
