@@ -18,7 +18,7 @@
   var OUTLET_OPEN_DAYS = [1, 2, 3, 4, 5, 6]; // Mon–Sat (0=Sun)
   var OUTLET_OPEN_HOUR = 8;
   var OUTLET_CLOSE_HOUR = 22; // 10 PM
-  var CLOUD_OPEN_HOUR = 10;
+  var CLOUD_OPEN_HOUR = 9;
   var CLOUD_CLOSE_HOUR = 23; // 11 PM
 
   // ─── Status helpers ───────────────────────────────────────────────────────
@@ -35,9 +35,8 @@
 
   function isCloudOpen() {
     var d = getISTDate();
-    var day = d.getDay();
     var h = d.getHours();
-    return OUTLET_OPEN_DAYS.includes(day) && h >= CLOUD_OPEN_HOUR && h < CLOUD_CLOSE_HOUR;
+    return h >= CLOUD_OPEN_HOUR && h < CLOUD_CLOSE_HOUR;
   }
 
   function isSunday() {
@@ -128,7 +127,7 @@
     var cloudOpen = isCloudOpen();
 
     var sundayHTML = sunday
-      ? '<div id="lw-loc-sunday">🚫 Today is Sunday — both locations are closed.<br>We are open Monday to Saturday!</div>'
+      ? '<div id="lw-loc-sunday">🚫 Today is Sunday — Barbil Outlet is closed.<br>Cloud Kitchen is Open for Delivery!</div>'
       : '';
 
     var outletStatus = outletOpen
@@ -155,7 +154,7 @@
           '<div class="lw-loc-card" id="lw-card-cloud" data-loc="cloud" tabindex="0" role="button" aria-pressed="false">',
             '<div class="lw-loc-icon">☁️</div>',
             '<div class="lw-loc-name">Cloud Kitchen</div>',
-            '<div class="lw-loc-info">Home Delivery<br>Mon–Sat, 10am – 11pm</div>',
+            '<div class="lw-loc-info">Home Delivery<br>Daily, 9am – 11pm</div>',
             cloudStatus,
           '</div>',
           '<div class="lw-loc-card" id="lw-card-outlet" data-loc="outlet" tabindex="0" role="button" aria-pressed="false">',

@@ -160,7 +160,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 : "Thanks for waiting ❤️ We'll open at 9:00 AM";
         }
 
-        const isOpen = hours >= startHour && hours < endHour;
+        const isSunday = istNow.getDay() === 0;
+        
+        let isOpen = false;
+        if (loc === 'outlet') {
+            isOpen = !isSunday && (hours >= startHour && hours < endHour);
+        } else {
+            isOpen = hours >= startHour && hours < endHour;
+        }
         
         if (isOpen) {
             // Auto-hide popup if it's currently open
@@ -203,10 +210,19 @@ document.addEventListener('DOMContentLoaded', () => {
             // Also passively check if we should auto-open
             const istNow = getISTTime();
             const h = istNow.getHours();
+            const isSunday = istNow.getDay() === 0;
             const loc = sessionStorage.getItem('littiWaleLocation') || 'cloud';
             const startHour = loc === 'outlet' ? 8 : 9;
             const endHour = loc === 'outlet' ? 22 : 23;
-            if (h >= startHour && h < endHour) {
+            
+            let isOpen = false;
+            if (loc === 'outlet') {
+                isOpen = !isSunday && (h >= startHour && h < endHour);
+            } else {
+                isOpen = h >= startHour && h < endHour;
+            }
+            
+            if (isOpen) {
                 hidePopup();
                 clearInterval(countdownInterval);
                 location.reload(); // Refresh the page to restore full open UX smoothly
@@ -220,13 +236,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const startHour = loc === 'outlet' ? 8 : 9;
         const endHour = loc === 'outlet' ? 22 : 23;
         
+        const isSunday = istNow.getDay() === 0;
+
         // Calculate next opening hour IST
         let target = new Date(istNow);
         target.setHours(startHour, 0, 0, 0);
         
-        if (istNow.getHours() >= endHour) {
+        if (loc === 'outlet' && isSunday) {
+            target.setDate(target.getDate() + 1);
+        } else if (istNow.getHours() >= endHour) {
             // It's after closing, target is opening time tomorrow
             target.setDate(target.getDate() + 1);
+            if (loc === 'outlet' && target.getDay() === 0) {
+                target.setDate(target.getDate() + 1);
+            }
         } else if (istNow.getHours() < startHour) {
             // It's before opening, target is opening time today (already set)
         }

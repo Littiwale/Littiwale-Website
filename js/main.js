@@ -354,15 +354,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Determine Veg/Non-Veg (heuristic based on name)
+        // Determine Veg/Non-Veg
+        const baseItem = group.variants.standard || group.variants.half || group.variants.full;
         const combinedText = (group.displayName + " " + (group.description || "")).toLowerCase();
         const isEggless = combinedText.includes("eggless");
         const hasNonVegWords = /chicken|egg|fish|mutton|murgh|seekh|kebab|kabab|keema/.test(combinedText);
-        const isNonVeg = !isEggless && hasNonVegWords;
+        const isNonVeg = baseItem.veg === 'nonveg' || (!isEggless && hasNonVegWords);
         const foodTypeBadge = isNonVeg ? '<span class="food-tag non-veg">NON-VEG</span>' : '<span class="food-tag veg">VEG</span>';
         
         // Determine Availability Badge
-        const baseItem = group.variants.standard || group.variants.half || group.variants.full;
         const avail = baseItem.availability || 'cloud_only';
         let availabilityBadge = '';
         if (avail === 'cloud_only') {
@@ -475,7 +475,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const combinedText = (item.name + ' ' + (item.description || '')).toLowerCase();
             const isEggless = combinedText.includes('eggless');
             const hasNonVegWords = /chicken|egg|fish|mutton|murgh|seekh|kebab|kabab|keema/.test(combinedText);
-            return !(!isEggless && hasNonVegWords);
+            const isNonVeg = item.veg === 'nonveg' || (!isEggless && hasNonVegWords);
+            return !isNonVeg;
           });
         }
 
@@ -485,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const combinedText = (item.name + ' ' + (item.description || '')).toLowerCase();
             const isEggless = combinedText.includes('eggless');
             const hasNonVegWords = /chicken|egg|fish|mutton|murgh|seekh|kebab|kabab|keema/.test(combinedText);
-            const isNonVeg = !isEggless && hasNonVegWords;
+            const isNonVeg = item.veg === 'nonveg' || (!isEggless && hasNonVegWords);
             return currentDietaryFilter === 'veg' ? !isNonVeg : isNonVeg;
           });
         }
@@ -718,56 +719,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- IPL Dynamic Coupon Logic ---
-    function generateIPLCoupons() {
-        if (typeof matches === 'undefined') return [];
-        const today = new Date().toISOString().split('T')[0];
-        const todayMatch = matches.find(m => m.date === today);
-        if (!todayMatch || !todayMatch.games) return [];
-
-        let iplCoupons = [];
-        let teamCounter = 0;
-        todayMatch.games.forEach(game => {
-            [game.team1, game.team2].forEach(team => {
-                const code = team.toUpperCase() + "20";
-                // Alternating logic: even index gets 20% OFF, odd gets Free Pepsi
-                if (teamCounter % 2 === 0) {
-                    iplCoupons.push({
-                        code: code,
-                        type: "DISCOUNT",
-                        discount: 20,
-                        maxDiscount: 30,
-                        minOrder: 500,
-                        active: true,
-                        isDynamic: true
-                    });
-                } else {
-                    iplCoupons.push({
-                        code: code,
-                        type: "PEPSI",
-                        discount: 0,
-                        maxDiscount: 0,
-                        minOrder: 300,
-                        active: true,
-                        isDynamic: true
-                    });
-                }
-                teamCounter++;
-            });
-        });
-        return iplCoupons;
-    }
-
+    // --- Static Coupon Logic ---
     function getMergedCoupons(staticCoupons) {
-        const iplCoupons = generateIPLCoupons();
-        const merged = [...staticCoupons];
-        iplCoupons.forEach(ipl => {
-            // Static coupons (coupon.json) take priority; don't overwrite if code exists
-            if (!merged.find(c => c.code === ipl.code)) {
-                merged.push(ipl);
-            }
-        });
-        return merged;
+        return [...staticCoupons];
     }
 
     function calculateDistance(lat1, lon1, lat2, lon2) {
