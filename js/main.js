@@ -279,13 +279,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const itemImg = group.image;
 
         let allOutOfStock = true;
+        const isOutletView = (typeof currentLocationFilter !== 'undefined' && currentLocationFilter === 'outlet');
 
         // Case 1: Dual Variants (Half & Full)
         if (group.variants.half && group.variants.full) {
             const half = group.variants.half;
             const full = group.variants.full;
             
-            if (half.inStock !== false || full.inStock !== false) {
+            const halfInStock = isOutletView ? false : half.inStock;
+            const fullInStock = isOutletView ? false : full.inStock;
+
+            if (halfInStock !== false || fullInStock !== false) {
                 allOutOfStock = false;
             }
 
@@ -296,17 +300,29 @@ document.addEventListener('DOMContentLoaded', () => {
             // Base ID for the description container
             const baseId = group.variants.half.id.replace(/-half|_half/g, '');
 
-            const halfControls = half.inStock === false 
-                ? `<span style="color:#ef4444; font-weight:bold; font-size:0.85rem; padding:4px 0;">Out of stock</span>`
+            const halfControls = halfInStock === false 
+                ? (isOutletView 
+                    ? `<span style="color:#ef4444; font-weight:bold; font-size:0.75rem; padding:4px 0; display:block; text-align:center;">Not at Outlet</span>`
+                    : `<span style="color:#ef4444; font-weight:bold; font-size:0.85rem; padding:4px 0;">Out of stock</span>`)
                 : `<button class="hf-btn minus" onclick="event.stopPropagation(); updateQuantity('${half.id}', -1)">-</button>
                    <span class="hf-value" id="hf-val-${half.id}">0</span>
                    <button class="hf-btn plus" onclick="event.stopPropagation(); addToCart('${half.id}', '${half.name.replace(/'/g, "\\'")}', ${half.price}, '${itemImg}'); if(document.getElementById('desc-${baseId}')) document.getElementById('desc-${baseId}').innerText = '${hDesc.replace(/'/g, "\\'")}';">+</button>`;
 
-            const fullControls = full.inStock === false 
-                ? `<span style="color:#ef4444; font-weight:bold; font-size:0.85rem; padding:4px 0;">Out of stock</span>`
+            const fullControls = fullInStock === false 
+                ? (isOutletView 
+                    ? `<span style="color:#ef4444; font-weight:bold; font-size:0.75rem; padding:4px 0; display:block; text-align:center;">Not at Outlet</span>`
+                    : `<span style="color:#ef4444; font-weight:bold; font-size:0.85rem; padding:4px 0;">Out of stock</span>`)
                 : `<button class="hf-btn minus" onclick="event.stopPropagation(); updateQuantity('${full.id}', -1)">-</button>
                    <span class="hf-value" id="hf-val-${full.id}">0</span>
                    <button class="hf-btn plus" onclick="event.stopPropagation(); addToCart('${full.id}', '${full.name.replace(/'/g, "\\'")}', ${full.price}, '${itemImg}'); if(document.getElementById('desc-${baseId}')) document.getElementById('desc-${baseId}').innerText = '${fDesc.replace(/'/g, "\\'")}';">+</button>`;
+
+            let switchBtn = isOutletView 
+                ? `<div style="margin-top: 12px; width: 100%;">
+                     <button class="add-to-cart-btn" style="background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%); color: #fff; border: none; font-weight: 600; box-shadow: 0 4px 15px rgba(124,58,237,0.3); width: 100%; padding: 8px; border-radius: 8px;" onclick="document.querySelector('[data-loc=\\'cloud\\']').click();">
+                         ☁️ Check Cloud Kitchen Menu
+                     </button>
+                   </div>`
+                : '';
 
             btnHtml = `
                 <div class="half-full-wrapper">
@@ -325,21 +341,35 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                 </div>
+                ${switchBtn}
             `;
         } 
         // Case 2: Standard Single Item
         else {
             const item = group.variants.standard || group.variants.half || group.variants.full;
-            if (item.inStock !== false) {
+            const effInStock = isOutletView ? false : item.inStock;
+
+            if (effInStock !== false) {
                 allOutOfStock = false;
             }
 
-            if (item.inStock === false) {
-                btnHtml = `
-                    <div style="width:100%;">
-                        <button class="add-to-cart-btn" style="background:#333; color:#888; border:1px solid #444; cursor:not-allowed;" disabled>Out of stock</button>
-                    </div>
-                `;
+            if (effInStock === false) {
+                if (isOutletView) {
+                    btnHtml = `
+                        <div style="width:100%; display: flex; flex-direction: column; gap: 8px;">
+                            <div style="color: #ef4444; font-size: 0.85rem; font-weight: bold; text-align: center;">Not available at Physical Outlet</div>
+                            <button class="add-to-cart-btn" style="background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%); color: #fff; border: none; font-weight: 600; box-shadow: 0 4px 15px rgba(124,58,237,0.3);" onclick="document.querySelector('[data-loc=\\'cloud\\']').click();">
+                                ☁️ Check Cloud Kitchen Menu
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    btnHtml = `
+                        <div style="width:100%;">
+                            <button class="add-to-cart-btn" style="background:#333; color:#888; border:1px solid #444; cursor:not-allowed;" disabled>Out of stock</button>
+                        </div>
+                    `;
+                }
             } else {
                 btnHtml = `
                     <div id="menu-btn-container-${item.id}" style="width:100%;">
@@ -672,7 +702,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     let originalCatName = '';
                     document.querySelectorAll('.filter-btn').forEach(el => {
                         const filterVal = el.getAttribute('data-filter');
-                        if (filterVal !== 'all' && 'cat-' + filterVal.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() === id) {
+                        if (filterVal && filterVal !== 'all' && 'cat-' + filterVal.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() === id) {
                             originalCatName = filterVal;
                         }
                     });
