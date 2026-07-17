@@ -40,8 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Fetch Menu Data and Image Map (with API integration)
         Promise.all([
             fetch(`${ADMIN_API_BASE_URL}/menu`).then(res => res.json()).catch(() => []),
-            fetch('./data/menu.json').then(res => res.json()).catch(() => []),
-            fetch('./data/imagemap.json').then(res => res.json()).catch(() => ({})),
+            fetch('/data/menu.json').then(res => res.json()).catch(() => []),
+            fetch('/data/imagemap.json').then(res => res.json()).catch(() => ({})),
             fetch(`${ADMIN_API_BASE_URL}/settings`).then(res => res.json()).catch(() => [])
         ])
         .then(([apiMenu, localMenu, map, apiSettings]) => {
@@ -954,7 +954,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Fetch coupons to validate stored coupon state
         Promise.all([
             fetch(`${ADMIN_API_BASE_URL}/coupons`).then(res => res.json()).catch(() => []),
-            fetch('data/coupon.json').then(res => res.json()).catch(() => [])
+            fetch('/data/coupon.json').then(res => res.json()).catch(() => [])
         ])
         .then(([apiCoupons, localCoupons]) => {
             let data = [];
@@ -1620,7 +1620,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             console.log("Applying coupon code:", code);
             
-            fetch('data/coupon.json')
+            fetch('/data/coupon.json')
                 .then(res => {
                     if (!res.ok) throw new Error("Could not load coupon data");
                     return res.json();
@@ -1683,7 +1683,7 @@ document.addEventListener('DOMContentLoaded', () => {
             couponsModal.classList.add('show');
             
             console.log("Fetching all coupons for modal...");
-            fetch('data/coupon.json')
+            fetch('/data/coupon.json')
                 .then(res => {
                     if (!res.ok) throw new Error("Failed to fetch coupons");
                     return res.json();
