@@ -31,16 +31,71 @@ document.addEventListener('DOMContentLoaded', () => {
     let menuImageMap = {};
     const menuGrid = document.getElementById('menu-grid');
     const categoryFilters = document.getElementById('category-filters');
+    
+    const ADMIN_API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+        ? 'http://localhost:5000/api' 
+        : 'https://littiwaleadmin.vercel.app/api';
 
     function initMenu() {
-        // Fetch Menu Data and Image Map
+        // Fetch Menu Data and Image Map (with API integration)
         Promise.all([
-            fetch('./data/menu.json').then(res => res.json()),
-            fetch('./data/imagemap.json').then(res => res.json())
+            fetch(`${ADMIN_API_BASE_URL}/menu`).then(res => res.json()).catch(() => []),
+            fetch('./data/menu.json').then(res => res.json()).catch(() => []),
+            fetch('./data/imagemap.json').then(res => res.json()).catch(() => ({})),
+            fetch(`${ADMIN_API_BASE_URL}/settings`).then(res => res.json()).catch(() => [])
         ])
-        .then(([menu, map]) => {
-            menuData = menu;
-            menuImageMap = map;
+        .then(([apiMenu, localMenu, map, apiSettings]) => {
+            // Process Settings for Offline Banner
+            if (apiSettings && Array.isArray(apiSettings)) {
+                const currentLoc = sessionStorage.getItem('littiWaleLocation') || 'all';
+                let isOffline = false;
+                let offlineReason = '';
+                
+                apiSettings.forEach(setting => {
+                    // Check if current view matches the store or if all stores are being checked
+                    if (currentLoc === setting.storeId || currentLoc === 'all') {
+                        if (setting.isOnline === false) {
+                            isOffline = true;
+                            offlineReason = setting.offlineReason || `The ${setting.storeName} is currently offline.`;
+                        }
+                    }
+                });
+
+                if (isOffline) {
+                    const banner = document.createElement('div');
+                    banner.style.cssText = 'background-color: #ef4444; color: white; text-align: center; padding: 12px; font-weight: bold; position: sticky; top: 0; z-index: 9999; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2);';
+                    banner.innerHTML = `⚠️ ${offlineReason}`;
+                    document.body.prepend(banner);
+                }
+            }
+
+            let finalMenu = [];
+            let finalMap = { ...map };
+            
+            if (apiMenu && Array.isArray(apiMenu) && apiMenu.length > 0) {
+                apiMenu.forEach(item => {
+                    const id = item._id;
+                    finalMenu.push({
+                        id: id,
+                        name: item.name,
+                        category: item.category,
+                        price: item.price,
+                        description: item.description || 'nan',
+                        veg: item.dietaryPreference === 'non-veg' ? 'nonveg' : 'veg',
+                        inStock: item.isAvailable !== false,
+                        availability: item.locationAvailability || 'both',
+                        isSpicy: item.isSpicy || false
+                    });
+                    if (item.image) {
+                        finalMap[getNormalizedName(item.name)] = item.image;
+                    }
+                });
+                menuData = finalMenu;
+            } else {
+                menuData = localMenu;
+            }
+            
+            menuImageMap = finalMap;
             console.log("Menu & Map loaded:", menuData, menuImageMap);
             initMenuDisplay();
         })
@@ -85,7 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     function initMenuDisplay() {
-        const isFullMenuPage = window.location.pathname.includes('menu.html') || window.location.pathname.endsWith('/menu');
+        const path = window.location.pathname;
+        const isFullMenuPage = path.includes('menu.html') || path.endsWith('/menu') || path.endsWith('/menu/');
         
         if (isFullMenuPage) {
             isMenuExpanded = true;
@@ -896,14 +952,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Fetch coupons to validate stored coupon state
-        fetch('data/coupon.json')
-            .then(res => res.json())
-            .then(data => {
-                availableCoupons = getMergedCoupons(data);
-                if (appliedCoupon) {
-                    const stillValid = availableCoupons.find(c => c.code === appliedCoupon.code && c.active === true);
-                    // Edge case: Clear if invalid or cart is empty
-                    if (!stillValid || cart.length === 0) {
+        Promise.all([
+            fetch(`${ADMIN_API_BASE_URL}/coupons`).then(res => res.json()).catch(() => []),
+            fetch('data/coupon.json').then(res => res.json()).catch(() => [])
+        ])
+        .then(([apiCoupons, localCoupons]) => {
+            let data = [];
+            if (apiCoupons && Array.isArray(apiCoupons) && apiCoupons.length > 0) {
+                data = apiCoupons.map(c => ({
+                    code: c.code,
+                    type: c.discountType === 'percentage' ? 'PERCENT' : 'FLAT',
+                    discount: c.discountValue,
+                    discountPercent: c.discountValue,
+                    maxDiscount: c.discountValue, 
+                    minOrder: c.minOrderValue,
+                    active: c.isActive !== false
+                }));
+            } else {
+                data = localCoupons;
+            }
+            availableCoupons = getMergedCoupons(data);
+            if (appliedCoupon) {
+                const stillValid = availableCoupons.find(c => c.code === appliedCoupon.code && c.active === true);
+                // Edge case: Clear if invalid or cart is empty
+                if (!stillValid || cart.length === 0) {
                         appliedCoupon = null;
                         discountAmount = 0;
                         localStorage.removeItem('littiWaleAppliedCoupon');
@@ -2651,28 +2723,61 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (!announcementSection || !carousel || !dotsContainer) return;
 
-        let maxChecks = 5;
-        let validImages = [];
-        let checksCompleted = 0;
-        
-        const checkDone = () => {
-            checksCompleted++;
-            if (checksCompleted === maxChecks) {
-                validImages.sort((a, b) => a.index - b.index);
-                const imageUrls = validImages.map(v => v.url);
-                if (imageUrls.length > 0) setupCarousel(imageUrls);
-            }
-        };
+        // Fetch from lightweight admin API (no image data — just metadata)
+        fetch(`${ADMIN_API_BASE_URL}/announcements/public`)
+            .then(res => res.json())
+            .then(announcements => {
+                const activeCount = (announcements || []).length;
+                if (activeCount > 0) {
+                    // We have active announcements — now fetch full images
+                    // Use the full endpoint but only image+isActive fields
+                    fetch(`${ADMIN_API_BASE_URL}/announcements`)
+                        .then(res => res.json())
+                        .then(full => {
+                            const activeImages = (full || [])
+                                .filter(a => a.isActive !== false && a.image)
+                                .map(a => a.image);
+                            if (activeImages.length > 0) {
+                                setupCarousel(activeImages);
+                            } else {
+                                loadLocalImages();
+                            }
+                        })
+                        .catch(() => loadLocalImages());
+                } else {
+                    // No active announcements from API
+                    loadLocalImages();
+                }
+            })
+            .catch(() => {
+                // API unavailable — fallback to local static images
+                loadLocalImages();
+            });
 
-        for (let i = 1; i <= maxChecks; i++) {
-            const img = new Image();
-            const url = `images/announcements/current-offer${i}.png`;
-            img.onload = () => {
-                validImages.push({ index: i, url: url });
-                checkDone();
+        function loadLocalImages() {
+            let maxChecks = 5;
+            let validImages = [];
+            let checksCompleted = 0;
+            
+            const checkDone = () => {
+                checksCompleted++;
+                if (checksCompleted === maxChecks) {
+                    validImages.sort((a, b) => a.index - b.index);
+                    const imageUrls = validImages.map(v => v.url);
+                    if (imageUrls.length > 0) setupCarousel(imageUrls);
+                }
             };
-            img.onerror = () => checkDone();
-            img.src = url;
+
+            for (let i = 1; i <= maxChecks; i++) {
+                const img = new Image();
+                const url = `images/announcements/current-offer${i}.png`;
+                img.onload = () => {
+                    validImages.push({ index: i, url: url });
+                    checkDone();
+                };
+                img.onerror = () => checkDone();
+                img.src = url;
+            }
         }
 
         function setupCarousel(imageUrls) {
