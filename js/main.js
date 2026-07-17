@@ -28,13 +28,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Menu Rendering & Filtering ---
     let menuData = [];
+    let isMenuDataLoaded = false;
     let menuImageMap = {};
     const menuGrid = document.getElementById('menu-grid');
     const categoryFilters = document.getElementById('category-filters');
     
-    const ADMIN_API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
-        ? 'http://localhost:5000/api' 
-        : 'https://littiwale-admin.vercel.app/api';
+    const ADMIN_API_BASE_URL = 'https://littiwale-admin.vercel.app/api';
 
     function initMenu() {
         // Fetch Menu Data and Image Map (with API integration)
@@ -96,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             menuImageMap = finalMap;
+            isMenuDataLoaded = true;
             console.log("Menu & Map loaded:", menuData, menuImageMap);
             initMenuDisplay();
         })
@@ -578,7 +578,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         if (displayItems.length === 0) {
-            menuGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center;">No items found.</div>';
+            if (!isMenuDataLoaded) {
+                menuGrid.innerHTML = '<div class="loading-spinner" style="grid-column: 1/-1; text-align: center; padding: 40px; font-size: 1.2rem; font-weight: 500; color: var(--text-secondary);">Loading deliciousness... <i class="fas fa-spinner fa-spin" style="margin-left: 10px; color: var(--primary-color);"></i></div>';
+            } else {
+                menuGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">No items found.</div>';
+            }
             return;
         }
 
