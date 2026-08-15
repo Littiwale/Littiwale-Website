@@ -3871,3 +3871,52 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Live Sync Hero & About Us from Admin Panel API
+async function initLiveSiteSettings() {
+    try {
+        const res = await fetch(`${ADMIN_API_BASE_URL}/settings`);
+        const settingsList = await res.json();
+        if (settingsList && settingsList.length > 0) {
+            const s = settingsList[0];
+            
+            // Hero Section Updates
+            if (s.heroTagline) {
+                const tagEl = document.querySelector('.hero-subtitle') || document.querySelector('.badge-text');
+                if (tagEl) tagEl.textContent = s.heroTagline;
+            }
+            if (s.heroTitle) {
+                const titleEl = document.querySelector('.hero-title');
+                if (titleEl) titleEl.textContent = s.heroTitle;
+            }
+            if (s.heroDesc) {
+                const descEl = document.querySelector('.hero-description');
+                if (descEl) descEl.textContent = s.heroDesc;
+            }
+
+            // About Us Section Updates
+            if (s.aboutHeading) {
+                const headingEl = document.querySelector('#about .section-title') || document.querySelector('#about h2');
+                if (headingEl) headingEl.textContent = s.aboutHeading;
+            }
+            if (s.aboutStoryTitle) {
+                const storyTitleEl = document.querySelector('.about-card-story h3') || document.querySelector('.about-card h3');
+                if (storyTitleEl) storyTitleEl.textContent = s.aboutStoryTitle;
+            }
+            if (s.statNum) {
+                const statNumEl = document.querySelector('.stat-number') || document.querySelector('#about .badge-text strong');
+                if (statNumEl) statNumEl.textContent = s.statNum;
+            }
+            if (s.statText) {
+                const statTextEl = document.querySelector('.stat-label') || document.querySelector('#about .badge-text span');
+                if (statTextEl) statTextEl.textContent = s.statText;
+            }
+            if (s.aboutImage) {
+                const aboutImgEl = document.querySelector('.about-card-image img') || document.querySelector('#about img');
+                if (aboutImgEl) aboutImgEl.src = s.aboutImage;
+            }
+        }
+    } catch(e) {
+        console.warn('Could not sync live site settings:', e);
+    }
+}
