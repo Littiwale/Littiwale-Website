@@ -35,45 +35,68 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const ADMIN_API_BASE_URL = 'https://littiwale-admin.vercel.app/api';
 
-    function initMenu() {
-        // Fetch Menu Data and Image Map (with API integration)
-        Promise.all([
-            fetch(`${ADMIN_API_BASE_URL}/menu`).then(res => res.json()).catch(() => []),
-            fetch('/data/menu.json').then(res => res.json()).catch(() => []),
-            fetch('/data/imagemap.json').then(res => res.json()).catch(() => ({})),
-            fetch(`${ADMIN_API_BASE_URL}/settings`).then(res => res.json()).catch(() => [])
-        ])
-        .then(([apiMenu, localMenu, map, apiSettings]) => {
-            // Process Settings for Offline Banner
-            if (apiSettings && Array.isArray(apiSettings)) {
-                const currentLoc = sessionStorage.getItem('littiWaleLocation') || 'all';
-                let isOffline = false;
-                let offlineReason = '';
-                
-                apiSettings.forEach(setting => {
-                    // Check if current view matches the store or if all stores are being checked
-                    if (currentLoc === setting.storeId || currentLoc === 'all') {
-                        if (setting.isOnline === false) {
-                            isOffline = true;
-                            offlineReason = setting.offlineReason || `The ${setting.storeName} is currently offline.`;
-                        }
-                    }
-                });
-
-                if (isOffline) {
-                    const banner = document.createElement('div');
-                    banner.style.cssText = 'background-color: #ef4444; color: white; text-align: center; padding: 12px; font-weight: bold; position: sticky; top: 0; z-index: 9999; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2);';
-                    banner.innerHTML = `⚠️ ${offlineReason}`;
-                    document.body.prepend(banner);
-                }
+    async function fetchWithTimeout(url, timeoutMs = 12000) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const response = await fetch(url, { signal: controller.signal });
+            if (!response.ok) {
+                clearTimeout(timeoutId);
+                return null;
             }
+            const data = await response.json();
+            clearTimeout(timeoutId);
+            return data;
+        } catch (e) {
+            clearTimeout(timeoutId);
+            return null;
+        }
+    }
+
+    async function initMenu() {
+        // Fast Cache-First Load for Instant UI Display (0ms delay)
+        const cachedMenuRaw = sessionStorage.getItem('littiWaleCachedMenu');
+        if (cachedMenuRaw) {
+            try {
+                menuData = JSON.parse(cachedMenuRaw);
+                isMenuDataLoaded = true;
+                initMenuDisplay();
+            } catch (e) {}
+        }
+
+        try {
+            // Fetch live API Menu
+            const apiMenu = await fetchWithTimeout(`${ADMIN_API_BASE_URL}/menu`, 12000);
+
+            // Fetch announcements, settings, coupons asynchronously in background without blocking menu display
+            Promise.all([
+                fetchWithTimeout(`${ADMIN_API_BASE_URL}/settings`, 5000),
+                fetchWithTimeout(`${ADMIN_API_BASE_URL}/announcements`, 5000),
+                fetchWithTimeout(`${ADMIN_API_BASE_URL}/coupons`, 5000)
+            ]).then(([apiSettings, apiAnnouncements, apiCoupons]) => {
+                window.liveAnnouncements = Array.isArray(apiAnnouncements) ? apiAnnouncements : [];
+                window.liveCoupons = Array.isArray(apiCoupons) ? apiCoupons : [];
+                if (window.liveAnnouncements.length > 0) initAnnouncements(window.liveAnnouncements);
+                if (apiSettings && Array.isArray(apiSettings)) processSettings(apiSettings);
+            }).catch(() => {});
 
             let finalMenu = [];
-            let finalMap = { ...map };
+            let finalMap = {};
             
             if (apiMenu && Array.isArray(apiMenu) && apiMenu.length > 0) {
+                console.log("✅ Menu loaded 100% Live from Admin Panel API!");
                 apiMenu.forEach(item => {
                     const id = item._id;
+                    let avail = item.locationAvailability || 'both';
+
+                    // Category Mappings:
+                    if (item.category === 'Tiffin Specials' || item.category === 'Daily Meal Specials' || (item.name && /upma|dhokla|idli|puri sabzi|chakuli/i.test(item.name))) {
+                        avail = 'outlet_only';
+                    }
+                    if (item.category === 'Littiwale Rice Bowl Combos') {
+                        avail = 'both';
+                    }
+
                     finalMenu.push({
                         id: id,
                         name: item.name,
@@ -82,8 +105,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         description: item.description || 'nan',
                         veg: item.dietaryPreference === 'non-veg' ? 'nonveg' : 'veg',
                         inStock: item.isAvailable !== false,
-                        availability: item.locationAvailability || 'both',
-                        isSpicy: item.isSpicy || false
+                        availability: avail,
+                        isSpicy: item.isSpicy || false,
+                        spicyLevel: item.spicyLevel || ((item.name && /thecha/i.test(item.name)) ? 3 : (item.isSpicy ? 1 : 0))
                     });
                     if (item.image) {
                         finalMap[getNormalizedName(item.name)] = item.image;
@@ -91,20 +115,76 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 menuData = finalMenu;
             } else {
-                menuData = localMenu;
+                console.warn("⚠️ Live Admin Panel API menu empty or unreachable.");
+                menuData = [];
             }
             
             menuImageMap = finalMap;
             isMenuDataLoaded = true;
-            console.log("Menu & Map loaded:", menuData, menuImageMap);
+            console.log("Admin API Menu ready:", menuData.length, "items loaded.");
             initMenuDisplay();
-        })
-        .catch(error => {
-            console.error('Error loading menu/map:', error);
-            if(menuGrid) {
-                menuGrid.innerHTML = '<div class="error" style="grid-column: 1/-1; text-align: center; color: red;">Failed to load menu items.</div>';
+        } catch (error) {
+            console.error('Error loading menu from Admin API:', error);
+            if (menuGrid) {
+                menuGrid.innerHTML = '<div class="error" style="grid-column: 1/-1; text-align: center; color: red; padding: 20px;">Failed to load menu items from Admin API. Please refresh or check connection.</div>';
+            }
+        }
+    }
+
+    function processSettings(apiSettings) {
+        if (!apiSettings || !Array.isArray(apiSettings)) return;
+        const currentLoc = sessionStorage.getItem('littiWaleLocation') || 'all';
+        let isOffline = false;
+        let offlineReason = '';
+        
+        apiSettings.forEach(setting => {
+            if (currentLoc === setting.storeId || currentLoc === 'all') {
+                if (setting.isOnline === false) {
+                    isOffline = true;
+                    offlineReason = setting.offlineReason || `The ${setting.storeName} is currently offline.`;
+                }
             }
         });
+
+        if (isOffline && !document.getElementById('store-offline-banner')) {
+            const banner = document.createElement('div');
+            banner.id = 'store-offline-banner';
+            banner.style.cssText = 'background-color: #ef4444; color: white; text-align: center; padding: 12px; font-weight: bold; position: sticky; top: 0; z-index: 9999; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2);';
+            banner.innerHTML = `⚠️ ${offlineReason}`;
+            document.body.prepend(banner);
+        }
+    }
+
+    // Dynamic Instagram Reels Renderer (Syncs 100% Live with Admin CMS)
+    async function initReels(reelsData) {
+        const grid = document.querySelector('.reels-grid');
+        if (!grid) return;
+
+        const defaultReels = [
+            { badge: 'Popular', badgeClass: 'popular', image: 'images/instagram/reel1.png', link: 'https://www.instagram.com/reel/DM0OaRuTorz/' },
+            { badge: 'Loved', badgeClass: 'loved', image: 'images/instagram/reel2.png', link: 'https://www.instagram.com/reel/DVOCmnIk-Yt/' },
+            { badge: 'Popular', badgeClass: 'popular', image: 'images/instagram/reel3.png', link: 'https://www.instagram.com/reel/DUsneR7E1Vh/' },
+            { badge: 'Popular', badgeClass: 'popular', image: 'images/instagram/reel4.png', link: 'https://www.instagram.com/reel/DU20uoDE9vY/' },
+            { badge: 'Loved', badgeClass: 'loved', image: 'images/instagram/reel5.png', link: 'https://www.instagram.com/reel/DUVd2y6k_bG/' },
+            { badge: 'Popular', badgeClass: 'popular', image: 'images/instagram/reel6.png', link: 'https://www.instagram.com/reel/DTcsHKbE2C7/' }
+        ];
+
+        let list = reelsData;
+        if (!list || !Array.isArray(list) || list.length === 0) {
+            try {
+                const res = await fetchWithTimeout(`${ADMIN_API_BASE_URL}/reels`, 4000);
+                if (res && Array.isArray(res) && res.length > 0) list = res;
+            } catch(e) {}
+        }
+
+        if (!list || !Array.isArray(list) || list.length === 0) list = defaultReels;
+
+        grid.innerHTML = list.map(item => `
+            <a href="${item.link || item.url || '#'}" target="_blank" class="reel-card" title="Watch on Instagram">
+                <span class="reel-badge ${item.badgeClass || (item.badge === 'Loved' ? 'loved' : 'popular')}">${item.badge || 'Popular'}</span>
+                <img src="${item.image || item.thumbnail || 'images/logo.png'}" alt="Littiwale Customer Review Reel" onerror="this.src='images/logo.png'">
+            </a>
+        `).join('');
     }
 
     // Helper: Normalize item name for image lookup
@@ -126,6 +206,92 @@ document.addEventListener('DOMContentLoaded', () => {
         return `images/menu/Craziest Deal Menu/${slug}.png`;
     }
 
+    // Helper: Determine Smart 3-Tier Spicy Chilli Icon (Clean Emoji Badge, No Text!)
+    function getSpicyChilliBadge(item, combinedText) {
+        const text = (combinedText || "").toLowerCase();
+        const category = (item.category || "").toLowerCase();
+
+        // 1. NON-SPICY EXCLUSIONS (Drinks, Desserts, Shakes, Lassi, Plain Rice, Breads, Mild Sweets)
+        const isNonSpicyCategory = /drink|beverage|shake|coffee|tea|lassi|dessert|sweet|bread|paratha|naan|roti/i.test(category);
+        const isNonSpicyItem = /shake|coffee|tea|lassi|buttermilk|mojito|soda|water|ice cream|crush|smoothie|juice|sweet|dessert|gulab jamun|rasgulla|kheer|butter masala|shahi|korma|malai|dal makhani|plain|rice|jeera|bread|roti|naan|litti/i.test(text);
+
+        if (isNonSpicyCategory || isNonSpicyItem) {
+            // Exception: Only show if explicitly named 'chilly', 'schezwan', 'thecha', or 'naga'
+            if (!/thecha|chilly|chilli|schezwan|naga/i.test(text)) {
+                return '';
+            }
+        }
+
+        // 2. LEVEL 3 (Triple Chilli 🌶️🌶️🌶️): Thecha items or explicit spicyLevel === 3
+        if (item.spicyLevel === 3 || text.includes('thecha')) {
+            return '<span class="spicy-chilli-badge" title="Extreme Spicy Level 3">🌶️🌶️🌶️</span>';
+        }
+
+        // 3. LEVEL 2 (Double Chilli 🌶️🌶️): Chilly, Schezwan, Naga, Volcano, Peri Peri, or explicit spicyLevel === 2
+        if (item.spicyLevel === 2 || /chilly|chilli|schezwan|naga|volcano|fire/i.test(text)) {
+            return '<span class="spicy-chilli-badge" title="Medium Spicy Level 2">🌶️🌶️</span>';
+        }
+
+        // 4. LEVEL 1 (Single Chilli 🌶️): Explicitly spicy items, Kadai, Vindaloo, Kolhapuri, Tikka Masala, Chatpata, or item.spicyLevel === 1
+        if (item.spicyLevel === 1 || /\b(spicy|chatpata|peri peri|kolhapuri|vindaloo|kadai|tandoori tikka)\b/i.test(text)) {
+            return '<span class="spicy-chilli-badge" title="Spicy Level 1">🌶️</span>';
+        }
+
+        return '';
+    }
+
+    // Initialize Live Admin Announcements
+    function initAnnouncements(announcements) {
+        const section = document.getElementById('announcement');
+        const carousel = document.getElementById('announcement-carousel');
+        const dotsContainer = document.getElementById('announcement-dots');
+        if (!section || !carousel) return;
+
+        if (!announcements || !Array.isArray(announcements) || announcements.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+
+        const active = announcements.filter(a => a.isActive !== false);
+        if (active.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+
+        let slidesHtml = '';
+        let dotsHtml = '';
+
+        active.forEach((item, index) => {
+            const imgUrl = item.image || item.imageUrl || 'images/logo.png';
+            slidesHtml += `
+                <div class="announcement-slide" style="min-width: 100%; box-sizing: border-box; text-align: center; padding: 0 4px;">
+                    <div style="width: 100%; aspect-ratio: 16 / 9; border-radius: 18px; overflow: hidden; border: 1.5px solid rgba(249, 115, 22, 0.3); box-shadow: 0 15px 35px rgba(0,0,0,0.6); background: #0c0c0e;">
+                        <img src="${imgUrl}" alt="Announcement" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                </div>
+            `;
+            dotsHtml += `<span class="dot ${index === 0 ? 'active' : ''}" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${index === 0 ? '#f97316' : 'rgba(255,255,255,0.3)'}; margin:0 5px; cursor:pointer;"></span>`;
+        });
+
+        carousel.innerHTML = slidesHtml;
+        if (dotsContainer) dotsContainer.innerHTML = dotsHtml;
+        section.style.display = 'block';
+
+        if (active.length > 1) {
+            let currentIndex = 0;
+            setInterval(() => {
+                currentIndex = (currentIndex + 1) % active.length;
+                carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
+                if (dotsContainer) {
+                    const dots = dotsContainer.querySelectorAll('.dot');
+                    dots.forEach((d, i) => {
+                        d.style.background = (i === currentIndex) ? 'var(--amber-gold)' : 'rgba(255,255,255,0.3)';
+                    });
+                }
+            }, 4000);
+        }
+    }
+
     let isMenuExpanded = false;
     let initialBestsellers = [];
     let currentFilteredData = [];
@@ -142,36 +308,39 @@ document.addEventListener('DOMContentLoaded', () => {
     function initMenuDisplay() {
         const path = window.location.pathname;
         const isFullMenuPage = path.includes('menu.html') || path.endsWith('/menu') || path.endsWith('/menu/');
-        
+        const isOutletMenuPage = path.includes('outlet-menu');
+
+        if (isOutletMenuPage) {
+            renderOutletMenuPage(menuData);
+            return;
+        }
+
         if (isFullMenuPage) {
             isMenuExpanded = true;
-            currentFilteredData = menuData;
+            // Filter menuData to include only items available for Cloud Kitchen delivery
+            const cloudOnlyMenu = menuData.filter(item => {
+                const avail = (item.availability || item.locationAvailability || 'both').toLowerCase();
+                return avail === 'both' || avail.includes('cloud');
+            });
+            currentFilteredData = cloudOnlyMenu;
             if (categoryFilters) categoryFilters.style.display = 'flex';
 
-            // Read location from sessionStorage directly (event already fired ho chuka hoga)
-            var savedLoc = sessionStorage.getItem('littiWaleLocation') || 'all';
-            currentLocationFilter = savedLoc;
-
-            // Outlet pe force veg filter
-            if (savedLoc === 'outlet') {
-                currentDietaryFilter = 'veg';
-            }
-
-            setupFilters(menuData);
-            renderMenu(menuData);
-
-            // Outlet pe non-veg button hide karo
-            if (savedLoc === 'outlet') {
-                var nonVegBtn = document.querySelector('[data-diet="non-veg"]');
-                if (nonVegBtn) nonVegBtn.style.display = 'none';
-            }
+            setupFilters(cloudOnlyMenu);
+            renderMenu(cloudOnlyMenu);
             
             // Hide the "View Full Menu" button on the dedicated menu page
             const toggleContainer = document.getElementById('menu-toggle-container');
             if (toggleContainer) toggleContainer.style.display = 'none';
         } else {
-            // Pick 6 random items for the Best Seller section
-            const shuffled = [...menuData].sort(() => 0.5 - Math.random());
+            // Pick 6 in-stock, cloud-available items for the Best Seller section
+            const availableCloudItems = menuData.filter(item => {
+                const isInStock = item.inStock !== false && item.inStock !== 'false';
+                const avail = (item.availability || item.locationAvailability || 'both').toLowerCase();
+                const isCloudAvailable = avail === 'both' || avail.includes('cloud');
+                return isInStock && isCloudAvailable;
+            });
+
+            const shuffled = [...availableCloudItems].sort(() => 0.5 - Math.random());
             
             // Filter unique by base name to avoid showing Half/Full as separate items in the 6 picks
             const uniqueBases = [];
@@ -440,26 +609,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Determine Veg/Non-Veg
+        // Determine Veg/Non-Veg FSSAI Icon
         const baseItem = group.variants.standard || group.variants.half || group.variants.full;
         const combinedText = (group.displayName + " " + (group.description || "")).toLowerCase();
         const isEggless = combinedText.includes("eggless");
         const hasNonVegWords = /chicken|egg|fish|mutton|murgh|seekh|kebab|kabab|keema/.test(combinedText);
         const isNonVeg = baseItem.veg === 'nonveg' || (!isEggless && hasNonVegWords);
-        const foodTypeBadge = isNonVeg ? '<span class="food-tag non-veg">NON-VEG</span>' : '<span class="food-tag veg">VEG</span>';
         
-        // Determine Availability Badge
-        const avail = baseItem.availability || 'cloud_only';
-        let availabilityBadge = '';
-        if (avail === 'cloud_only') {
-            availabilityBadge = '<span class="food-tag cloud-tag" style="background:rgba(244,180,0,0.15); color:var(--primary-color); border:1px solid rgba(244,180,0,0.3);">☁️ CLOUD KITCHEN</span>';
-        } else if (avail === 'outlet_only') {
-            availabilityBadge = '<span class="food-tag outlet-tag" style="background:rgba(74,222,128,0.15); color:#4ade80; border:1px solid rgba(74,222,128,0.3);">🏪 PHYSICAL OUTLET</span>';
-        } else if (avail === 'both') {
-            availabilityBadge = '<span class="food-tag both-tag" style="background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3);">☁️ CLOUD + 🏪 OUTLET</span>';
-        }
+        const fssaiIcon = isNonVeg 
+            ? '<span class="fssai-icon nonveg-icon" title="Non-Veg"><span class="fssai-dot"></span></span>' 
+            : '<span class="fssai-icon veg-icon" title="Pure Veg"><span class="fssai-dot"></span></span>';
+        
+        // Determine 3-Tier Spicy Chilli Icons (Clean Emoji Badge, No Text!)
+        const spicyBadge = getSpicyChilliBadge(baseItem, combinedText);
 
-        const stockBadge = allOutOfStock ? '<span class="food-tag" style="background:#ef4444; color:#fff;">OUT OF STOCK</span>' : '';
+        // Stock Badge
+        const stockBadge = allOutOfStock ? '<span class="food-tag out-of-stock-tag">Out of Stock</span>' : '';
 
         // Determine description and baseId for dynamic updates
         const hItem = group.variants.half;
@@ -476,18 +641,133 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="menu-img-container image-wrapper">
                 <img src="${itemImg}" class="menu-img" loading="lazy" onerror="this.src='images/logo.png'">
             </div>
-            <div class="menu-details menu-card-content">
-                <div style="display:flex; align-items:center; flex-wrap:wrap; gap:4px; margin-bottom:8px;">${foodTypeBadge}${availabilityBadge}${stockBadge}</div>
-                <div class="menu-title-row">
-                    <h3 class="menu-title menu-card-title">${group.displayName}</h3>
+            <div class="menu-details menu-card-content" style="padding: 16px 14px; display: flex; flex-direction: column; justify-content: space-between; flex-grow: 1;">
+                <div>
+                    <div class="food-tag-container" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">${fssaiIcon}${spicyBadge}${stockBadge}</div>
+                    <div class="menu-title-row">
+                        <h3 class="menu-title menu-card-title" style="font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; color: #ffffff;">${group.displayName}</h3>
+                    </div>
+                    <p class="menu-desc" id="desc-${baseId}" style="font-size: 0.85rem; color: #94a3b8; line-height: 1.4; margin-bottom: 16px; min-height: 18px;">${currentDesc}</p>
                 </div>
-                <p class="menu-desc" id="desc-${baseId}">${currentDesc}</p>
-                <div class="button-wrapper">
+                <div class="button-wrapper" style="margin-top: auto;">
                     ${btnHtml}
                 </div>
             </div>
         `;
         return card;
+    }
+
+    function renderOutletMenuPage(data) {
+        const outletGrid = document.getElementById('outlet-menu-grid');
+        if (!outletGrid) return;
+        
+        // Strict Filter for 100% Pure Veg items available at Physical Outlet (Exclude cloud_only items)
+        const outletItems = data.filter(item => {
+            const isVeg = item.dietaryPreference !== 'non-veg' && item.veg !== 'nonveg';
+            const combinedText = ((item.name || '') + ' ' + (item.category || '')).toLowerCase();
+            const isNonVeg = /chicken|egg|fish|mutton|murgh|seekh|kebab|kabab|keema/.test(combinedText);
+            
+            const avail = (item.availability || item.locationAvailability || 'both').toLowerCase();
+            const isOutletAllowed = avail === 'both' || avail.includes('outlet');
+
+            return isVeg && !isNonVeg && isOutletAllowed;
+        });
+
+        if (!outletItems || outletItems.length === 0) {
+            outletGrid.innerHTML = '<div style="color:#aaa; text-align:center; grid-column:1/-1;">Loading Physical Outlet items...</div>';
+            return;
+        }
+
+        // Group items by category
+        const categoriesMap = {};
+        
+        outletItems.forEach(item => {
+            const cat = item.category || 'Specialties';
+            if (!categoriesMap[cat]) {
+                categoriesMap[cat] = [];
+            }
+            
+            // Deduplicate variants into base items
+            const baseName = getNormalizedName(item.name);
+            if (!categoriesMap[cat].some(i => getNormalizedName(i.name) === baseName)) {
+                categoriesMap[cat].push(item);
+            }
+        });
+
+        // Order categories using CATEGORY_ORDER plus any extras
+        const presentCategories = Object.keys(categoriesMap);
+        const orderedCategories = CATEGORY_ORDER.filter(c => presentCategories.includes(c));
+        presentCategories.forEach(c => {
+            if (!orderedCategories.includes(c)) orderedCategories.push(c);
+        });
+
+        let html = '';
+
+        orderedCategories.forEach(catName => {
+            const items = categoriesMap[catName];
+            if (!items || items.length === 0) return;
+
+            const iconMap = {
+                "Star Special": "⭐",
+                "Momos": "🥟",
+                "Pizza": "🍕",
+                "Sandwiches": "🥪",
+                "Maggi": "🍜",
+                "Pasta": "🍝",
+                "Soup": "🍲",
+                "Starters": "🍢",
+                "Noodles/Rice": "🍚",
+                "Main Course": "🍲",
+                "Breads": "🫓",
+                "Thali": "🍛",
+                "Parathas": "🫓",
+                "Daily Meal Specials": "🍱",
+                "Drinks": "🥤",
+                "Extras": "🍟"
+            };
+
+            const catIcon = iconMap[catName] || "🥗";
+
+            html += `
+                <div style="grid-column: 1 / -1; margin-top: 35px; margin-bottom: 15px; border-bottom: 2px solid rgba(244, 180, 0, 0.35); padding-bottom: 10px;">
+                    <h3 style="font-family: var(--font-heading); font-size: 1.6rem; color: #ffffff; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.8rem;">${catIcon}</span> ${catName}
+                        <span style="font-size: 0.85rem; color: var(--amber-gold); font-weight: normal; margin-left: auto;">(${items.length} items)</span>
+                    </h3>
+                </div>
+            `;
+
+            items.forEach(item => {
+                const itemImg = getItemImage(item.name);
+                const price = item.price || item.full || item.half || 50;
+                const displayName = item.name.replace(/\((Half|Full|half|full)\)/g, "").trim();
+                const desc = (item.description && item.description !== 'nan' && item.description !== 'undefined') ? item.description : 'Freshly prepared at Barbil Physical Outlet.';
+
+                html += `
+                    <div class="menu-card" style="background: rgba(26, 22, 18, 0.75); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div class="menu-img-container image-wrapper" style="height: 180px; margin: -20px -20px 16px -20px; border-radius: 20px 20px 0 0;">
+                                <img src="${itemImg}" class="menu-img" loading="lazy" onerror="this.src='images/logo.png'">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span class="fssai-icon veg-icon" title="100% Pure Veg"><span class="fssai-dot"></span></span>
+                                <span style="font-size: 0.72rem; font-weight: 800; color: #4ade80;">100% PURE VEG</span>
+                            </div>
+                            <h3 style="font-size: 1.15rem; color: #ffffff; margin-bottom: 6px; font-weight: 700;">${displayName}</h3>
+                            <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 14px; min-height: 20px;">${desc}</p>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
+                            <div style="color: var(--amber-gold); font-weight: 800; font-size: 1.15rem;">₹${price}</div>
+                            <a href="tel:+916370680744" class="btn btn-outline" style="padding: 6px 14px; font-size: 0.8rem; border-radius: 20px; border-color: rgba(244,180,0,0.4); color: var(--amber-gold);">
+                                <i class="fas fa-phone-alt" style="margin-right: 4px;"></i> Call Outlet
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+
+        outletGrid.innerHTML = html;
     }
 
     function renderBestSellers(items) {
@@ -579,7 +859,23 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (displayItems.length === 0) {
             if (!isMenuDataLoaded) {
-                menuGrid.innerHTML = '<div class="loading-spinner" style="grid-column: 1/-1; text-align: center; padding: 40px; font-size: 1.2rem; font-weight: 500; color: var(--text-secondary);">Loading deliciousness... <i class="fas fa-spinner fa-spin" style="margin-left: 10px; color: var(--primary-color);"></i></div>';
+                menuGrid.innerHTML = `
+                    <div class="food-loader-wrapper">
+                        <div class="food-icons-orbit">
+                            <div class="food-center-glow">🔥</div>
+                            <div class="food-icon-item item-1">🍛</div>
+                            <div class="food-icon-item item-2">🍕</div>
+                            <div class="food-icon-item item-3">🍔</div>
+                            <div class="food-icon-item item-4">🧋</div>
+                        </div>
+                        <div class="loader-text-glow">Cooking Up Fresh Flavors...</div>
+                        <div class="skeleton-cards-container">
+                            <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line title"></div><div class="skeleton-line price"></div><div class="skeleton-btn"></div></div>
+                            <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line title"></div><div class="skeleton-line price"></div><div class="skeleton-btn"></div></div>
+                            <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line title"></div><div class="skeleton-line price"></div><div class="skeleton-btn"></div></div>
+                            <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line title"></div><div class="skeleton-line price"></div><div class="skeleton-btn"></div></div>
+                        </div>
+                    </div>`;
             } else {
                 menuGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">No items found.</div>';
             }
@@ -1145,10 +1441,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!container || !summary || !totalEl) return;
 
         if (cart.length === 0) {
-            container.innerHTML = '<div class="empty-cart">Your cart is empty</div>';
+            container.innerHTML = '<div class="empty-cart-msg" style="text-align:center; padding:40px 20px; color:#9ca3af; font-size:1.05rem;">Your cart is empty</div>';
             summary.style.display = 'none';
             const couponSection = document.getElementById('coupon-section');
             if (couponSection) couponSection.style.display = 'none';
+            const freeDeliveryCard = document.getElementById('free-delivery-card');
+            if (freeDeliveryCard) freeDeliveryCard.style.display = 'none';
+            const footerCta = document.getElementById('cart-footer-cta');
+            if (footerCta) footerCta.style.display = 'none';
             
             // Sync checkout.html specific elements for empty state
             const chkContainer = document.getElementById('checkout-items-container');
@@ -1169,44 +1469,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 const itemTotal = priceNum * qtyNum;
                 subtotalAmount += itemTotal;
 
-                const cartItem = document.createElement('div');
-                cartItem.className = 'cart-item';
-                cartItem.innerHTML = `
+                const spicyTag = getSpicyChilliBadge(item, item.name);
+
+                const cartItemCard = document.createElement('div');
+                cartItemCard.className = 'cart-item-card';
+                cartItemCard.innerHTML = `
+                    <img src="${item.image || 'images/logo.png'}" alt="${item.name}" class="cart-item-img" onerror="this.src='images/logo.png'">
                     <div class="cart-item-info">
-                        <img src="${item.image}" alt="${item.name}" class="cart-item-img" onerror="this.remove()">
-                        <div>
-                            <div class="cart-item-title">${item.name}</div>
-                            ${item.isCombo && item.note ? `<div style="font-size: 0.8rem; color: #f4b400; margin-bottom: 5px;">${item.note}</div>` : ''}
-                            <div class="cart-item-price">₹${item.price} x ${item.quantity} = ₹${itemTotal}</div>
+                        <div class="cart-item-title">${spicyTag ? spicyTag + ' ' : ''}${item.name}</div>
+                        ${item.isCombo && item.note ? `<div style="font-size: 0.78rem; color: #f97316; margin-bottom: 6px;">${item.note}</div>` : ''}
+                        <div class="cart-item-qty-pill">
+                            <button class="cart-item-qty-btn" onclick="updateQuantity('${item.id}', -1)">−</button>
+                            <span class="cart-item-qty-num">${item.quantity}</span>
+                            <button class="cart-item-qty-btn" onclick="updateQuantity('${item.id}', 1)">+</button>
                         </div>
                     </div>
-                    <div class="cart-controls">
-                        <div class="qty-control">
-                            <button class="qty-btn" onclick="updateQuantity('${item.id}', -1)">-</button>
-                            <span class="qty-val">${item.quantity}</span>
-                            <button class="qty-btn" onclick="updateQuantity('${item.id}', 1)">+</button>
-                        </div>
-                        <button class="remove-btn" onclick="removeFromCart('${item.id}')" aria-label="Remove item"><i class="fas fa-trash"></i></button>
+                    <div class="cart-item-right">
+                        <div class="cart-item-price">₹${itemTotal}</div>
+                        <button class="cart-item-remove" onclick="removeFromCart('${item.id}')" title="Remove item"><i class="far fa-trash-alt"></i></button>
                     </div>
                 `;
-                container.appendChild(cartItem);
+                container.appendChild(cartItemCard);
             });
 
             if (appliedCoupon && appliedCoupon.type === 'PEPSI') {
-                const cartItem = document.createElement('div');
-                cartItem.className = 'cart-item';
-                cartItem.innerHTML = `
+                const cartItemCard = document.createElement('div');
+                cartItemCard.className = 'cart-item-card';
+                cartItemCard.innerHTML = `
+                    <div style="width: 50px; height: 50px; background: rgba(74, 222, 128, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 1px dashed #4ade80;">🥤</div>
                     <div class="cart-item-info">
-                        <div style="width: 50px; height: 50px; background: rgba(74, 222, 128, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 1px dashed #4ade80;">🥤</div>
-                        <div>
-                            <div class="cart-item-title">Pepsi ×1 — FREE 🎁</div>
-                            <div class="cart-item-price" style="color: #4ade80; font-weight: bold;">₹0 (Free)</div>
-                        </div>
+                        <div class="cart-item-title">Pepsi ×1 — FREE 🎁</div>
+                        <div class="cart-item-price" style="color: #4ade80; font-size: 0.9rem;">₹0 (Free)</div>
                     </div>
-                    <div class="cart-controls"></div>
                 `;
-                container.appendChild(cartItem);
+                container.appendChild(cartItemCard);
             }
+
 
 
             // Update UI Details dynamically considering location logic
@@ -1218,8 +1516,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const isDelivery = orderTypeDelivery ? orderTypeDelivery.checked : true;
 
             if (!isDelivery) {
-                deliveryText = 'Pickup Order (Takeaway)';
-                finalTotal = subtotalAmount; // no delivery charge for takeaway
+                deliveryText = 'Pickup (Free)';
+                finalTotal = subtotalAmount;
             } else if (deliveryStatus === 'AVAILABLE') {
                 const distanceVal = Math.round(deliveryCharge / 30);
                 deliveryText = `₹${deliveryCharge} (${distanceVal} km)`;
@@ -1231,7 +1529,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noteHtml = `<div style="font-size: 0.8rem; color: var(--primary-color); margin-top: 4px; text-align: right;">Fetching location...</div>`;
             } else {
                 deliveryText = `Not calculated`;
-                noteHtml = `<div style="font-size: 0.8rem; color: #dc3545; margin-top: 4px; text-align: right;">*Delivery charges will be extra charged based on distance</div>`;
+                noteHtml = `<div style="font-size: 0.8rem; color: #dc3545; margin-top: 4px; text-align: right;">*Delivery calculated at checkout</div>`;
             }
 
             // Apply Coupon Logic
@@ -1250,7 +1548,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (appliedCoupon.type === 'PEPSI') {
                     discountAmount = 0;
                 } else {
-                    // Standard discount coupons
                     const pct = appliedCoupon.discount || appliedCoupon.discountPercent || 0;
                     discountAmount = Math.min((baseTotalAmount * pct) / 100, appliedCoupon.maxDiscount || 0);
                     discountAmount = Math.round(discountAmount);
@@ -1278,7 +1575,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 if (couponInfoContainer) {
-                    couponInfoContainer.style.display = 'block';
+                    couponInfoContainer.style.display = 'flex';
                     document.getElementById('cart-coupon-code-text').textContent = appliedCoupon.code;
                     if (appliedCoupon.type === 'PEPSI') {
                         document.getElementById('cart-discount-amount').textContent = `-₹${discountAmount} (Free Pepsi)`;
@@ -1289,7 +1586,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (baseTotalRow) baseTotalRow.style.display = 'flex';
                 if (cartBaseTotalAmount) cartBaseTotalAmount.textContent = `₹${baseTotalAmount}`;
-                if (finalTotalLabel) finalTotalLabel.textContent = 'Final Total:';
+                if (finalTotalLabel) finalTotalLabel.textContent = 'Final Total';
                 
             } else {
                 if (couponContainer) couponContainer.style.display = 'block';
@@ -1297,7 +1594,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (couponInfoContainer) couponInfoContainer.style.display = 'none';
                 if (baseTotalRow) baseTotalRow.style.display = 'none';
-                if (finalTotalLabel) finalTotalLabel.textContent = 'Total:';
+                if (finalTotalLabel) finalTotalLabel.textContent = 'Total';
             }
 
             if (subtotalEl && deliveryEl) {
@@ -1308,6 +1605,12 @@ document.addEventListener('DOMContentLoaded', () => {
             totalEl.textContent = `₹${finalTotal}`;
             
             summary.style.display = 'block';
+            
+            // Sync Sticky Bottom Action Bar Buttons
+            const footerCta = document.getElementById('cart-footer-cta');
+            const checkoutBtnTotal = document.getElementById('checkout-btn-total');
+            if (footerCta) footerCta.style.display = 'flex';
+            if (checkoutBtnTotal) checkoutBtnTotal.textContent = `₹${finalTotal}`;
             
             // Sync checkout.html specific elements
             const chkContainer = document.getElementById('checkout-items-container');
@@ -1417,15 +1720,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div id="cart-overlay" class="cart-overlay"></div>
                 <div class="cart-panel">
                     <div class="cart-header">
-                        <h2><i class="fas fa-shopping-bag"></i> Your Cart</h2>
+                        <h2>Your Cart</h2>
                         <button id="close-cart-btn" class="close-btn">&times;</button>
                     </div>
                     <div class="cart-body" id="cart-drawer-body">
                         <div id="cart-items-container" class="cart-items">
-                            <div class="empty-cart">Your cart is empty</div>
+                            <div class="empty-cart-msg">Your cart is empty</div>
                         </div>
                         
-                        <div id="restaurant-note-section" style="display: none; margin-bottom: 15px;">
+                        <div id="restaurant-note-section" style="display: none; margin-top: 15px; margin-bottom: 15px;">
                             <div id="restaurant-note-preview" style="display: none; background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 10px; font-size: 0.9rem; color: var(--text-secondary);">
                                 <strong>📝 Note:</strong> <span id="restaurant-note-text"></span>
                             </div>
@@ -1454,51 +1757,54 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
 
-                        <div class="cart-summary" id="cart-summary" style="display: none;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: var(--text-secondary);">
-                                <span>Subtotal:</span>
+
+
+                        <div class="cart-summary-box" id="cart-summary" style="display: none;">
+                            <div class="cart-summary-row">
+                                <span>Subtotal</span>
                                 <span id="cart-subtotal-amount">₹0</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; color: var(--text-secondary); border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 15px;" id="cart-delivery-row">
-                                <span>Delivery:</span>
-                                <div id="cart-delivery-amount" style="display: flex; flex-direction: column; align-items: flex-end;">Not calculated</div>
+                            <div class="cart-summary-row" id="cart-delivery-row">
+                                <span>Delivery Fee</span>
+                                <div id="cart-delivery-amount">Not calculated</div>
                             </div>
-                            <div id="cart-base-total-row" style="display: none; justify-content: space-between; margin-bottom: 15px; font-weight: bold; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 15px;">
-                                <span>Total:</span>
+                            <div id="cart-base-total-row" class="cart-summary-row" style="display: none;">
+                                <span>Subtotal</span>
                                 <span id="cart-base-total-amount">₹0</span>
                             </div>
-                            <div id="coupon-applied-info-container" style="display: none; margin-bottom: 15px; color: #4ade80; font-weight: bold; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 15px;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                     <span>Coupon Applied:</span>
-                                     <span id="cart-coupon-code-text"></span>
-                                </div>
-                                <div style="display: flex; justify-content: space-between;">
-                                     <span>Discount:</span>
-                                     <span id="cart-discount-amount">-₹0</span>
-                                </div>
+                            <div id="coupon-applied-info-container" class="cart-summary-row discount-row" style="display: none;">
+                                <span>Discount (<span id="cart-coupon-code-text"></span>)</span>
+                                <span id="cart-discount-amount">-₹0</span>
                             </div>
-                            <div class="cart-total-row">
-                                <span id="cart-final-total-label">Total:</span>
-                                <span id="cart-total-amount">₹0</span>
+                            <div class="cart-summary-row total-row">
+                                <span id="cart-final-total-label">Total</span>
+                                <span id="cart-total-amount" class="total-amount">₹0</span>
                             </div>
                             
-                            <div class="order-type-selection mt-3" style="margin-bottom: 20px;">
-                                <label style="display:block; font-weight:bold; margin-bottom:10px;">Select Order Type:</label>
+                            <div class="order-type-selection" style="margin-top: 15px; margin-bottom: 10px;">
+                                <label style="display:block; font-weight:600; font-size:0.85rem; color:#9ca3af; margin-bottom:8px;">Order Type:</label>
                                 <div style="display:flex; gap:10px;">
-                                    <label style="flex:1; background:#1c1c1c; color:#ffffff; padding:10px; border-radius:8px; border:1px solid #444; text-align:center; cursor:pointer;" class="order-type-label">
-                                        <input type="radio" name="orderType" id="order-type-delivery" value="delivery" checked style="margin-right:5px; accent-color: var(--primary-color);"> Delivery
+                                    <label style="flex:1; background:rgba(255,255,255,0.06); color:#ffffff; padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.1); text-align:center; cursor:pointer; font-size:0.85rem;" class="order-type-label">
+                                        <input type="radio" name="orderType" id="order-type-delivery" value="delivery" checked style="margin-right:5px; accent-color: #f97316;"> Delivery
                                     </label>
-                                    <label style="flex:1; background:#1c1c1c; color:#ffffff; padding:10px; border-radius:8px; border:1px solid #444; text-align:center; cursor:pointer;" class="order-type-label">
-                                        <input type="radio" name="orderType" id="order-type-takeaway" value="takeaway" style="margin-right:5px; accent-color: var(--primary-color);"> Takeaway
+                                    <label style="flex:1; background:rgba(255,255,255,0.06); color:#ffffff; padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.1); text-align:center; cursor:pointer; font-size:0.85rem;" class="order-type-label">
+                                        <input type="radio" name="orderType" id="order-type-takeaway" value="takeaway" style="margin-right:5px; accent-color: #f97316;"> Takeaway
                                     </label>
                                 </div>
                             </div>
-
-                            <button id="checkout-btn" class="btn btn-primary btn-block mt-3" style="font-size: 1.1rem; padding: 12px; border-radius: 8px;">
-                                Proceed to Checkout <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
-                            </button>
-                            <button id="clear-cart-btn" class="btn btn-outline btn-block mt-2">Clear Cart</button>
+                            
+                            <div style="text-align: right; margin-top: 10px;">
+                                <button id="clear-cart-btn" style="background: none; border: none; color: #9ca3af; font-size: 0.8rem; cursor: pointer; text-decoration: underline;">Clear Cart</button>
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- Sticky Bottom Action Bar matching reference layout -->
+                    <div class="cart-footer-cta" id="cart-footer-cta" style="display: none;">
+                        <button type="button" class="btn-view-menu" id="cart-btn-view-menu" onclick="document.getElementById('close-cart-btn')?.click(); if(!window.location.pathname.includes('/menu')) window.location.href='/menu';">View Menu</button>
+                        <button type="button" id="checkout-btn" class="btn-checkout-primary">
+                            Checkout • <span id="checkout-btn-total">₹0</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -2727,36 +3033,19 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (!announcementSection || !carousel || !dotsContainer) return;
 
-        // Fetch from lightweight admin API (no image data — just metadata)
-        fetch(`${ADMIN_API_BASE_URL}/announcements/public`)
+        fetch(`${ADMIN_API_BASE_URL}/announcements`)
             .then(res => res.json())
-            .then(announcements => {
-                const activeCount = (announcements || []).length;
-                if (activeCount > 0) {
-                    // We have active announcements — now fetch full images
-                    // Use the full endpoint but only image+isActive fields
-                    fetch(`${ADMIN_API_BASE_URL}/announcements`)
-                        .then(res => res.json())
-                        .then(full => {
-                            const activeImages = (full || [])
-                                .filter(a => a.isActive !== false && a.image)
-                                .map(a => a.image);
-                            if (activeImages.length > 0) {
-                                setupCarousel(activeImages);
-                            } else {
-                                loadLocalImages();
-                            }
-                        })
-                        .catch(() => loadLocalImages());
+            .then(full => {
+                const activeImages = (full && Array.isArray(full) ? full : [])
+                    .filter(a => a.isActive !== false && a.image)
+                    .map(a => a.image);
+                if (activeImages.length > 0) {
+                    setupCarousel(activeImages);
                 } else {
-                    // No active announcements from API
                     loadLocalImages();
                 }
             })
-            .catch(() => {
-                // API unavailable — fallback to local static images
-                loadLocalImages();
-            });
+            .catch(() => loadLocalImages());
 
         function loadLocalImages() {
             let maxChecks = 5;
@@ -3096,8 +3385,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     try { initMenu(); } catch(e) { console.error("Menu failed", e); }
-    try { initAnnouncementCarousel(); } catch(e) { console.error("Slider failed", e); }
+    // try { initAnnouncementCarousel(); } catch(e) { console.error("Slider failed", e); }
     try { initReviewsCarousel(); } catch(e) { console.error("Reviews failed", e); }
+    try { initReels(); } catch(e) { console.error("Reels failed", e); }
     try { setupCartDrawer(); initCart(); } catch(e) { console.error("Cart init failed", e); }
     
     // Checkout specific initialization

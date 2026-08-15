@@ -1144,7 +1144,8 @@
         "description": "nan",
         "veg": "veg",
         "inStock": true,
-        "availability": "cloud_only"
+        "availability": "both",
+        "locationAvailability": "both"
     },
     {
         "id": "chole-chawal",
@@ -1154,7 +1155,8 @@
         "description": "nan",
         "veg": "veg",
         "inStock": true,
-        "availability": "cloud_only"
+        "availability": "both",
+        "locationAvailability": "both"
     },
     {
         "id": "kadhi-chawal",
@@ -1164,7 +1166,8 @@
         "description": "nan",
         "veg": "veg",
         "inStock": true,
-        "availability": "cloud_only"
+        "availability": "both",
+        "locationAvailability": "both"
     },
     {
         "id": "steam-veg-momo",
@@ -1284,7 +1287,8 @@
         "description": "Traditional Odia breakfast",
         "veg": "veg",
         "inStock": false,
-        "availability": "outlet_only"
+        "availability": "outlet_only",
+        "locationAvailability": "outlet"
     },
     {
         "id": "dahi-bara-aloo-dum",
@@ -1294,7 +1298,8 @@
         "description": "Soft vadas in spiced curd",
         "veg": "veg",
         "inStock": false,
-        "availability": "outlet_only"
+        "availability": "outlet_only",
+        "locationAvailability": "outlet"
     },
     {
         "id": "idli",
@@ -1304,7 +1309,8 @@
         "description": "Served with sambar and chutney",
         "veg": "veg",
         "inStock": true,
-        "availability": "both"
+        "availability": "outlet_only",
+        "locationAvailability": "outlet"
     },
     {
         "id": "dhokla",
@@ -1314,7 +1320,8 @@
         "description": "Soft and fluffy Gujarati snack",
         "veg": "veg",
         "inStock": true,
-        "availability": "both"
+        "availability": "outlet_only",
+        "locationAvailability": "outlet"
     },
     {
         "id": "puri-sabzi",
@@ -1324,7 +1331,8 @@
         "description": "Hot puris with spiced sabzi",
         "veg": "veg",
         "inStock": false,
-        "availability": "outlet_only"
+        "availability": "outlet_only",
+        "locationAvailability": "outlet"
     },
     {
         "id": "chole-bhature",
@@ -1334,7 +1342,8 @@
         "description": "Classic North Indian breakfast",
         "veg": "veg",
         "inStock": true,
-        "availability": "both"
+        "availability": "outlet_only",
+        "locationAvailability": "outlet"
     },
     {
         "id": "upma",
@@ -1344,7 +1353,8 @@
         "description": "South Indian semolina breakfast",
         "veg": "veg",
         "inStock": true,
-        "availability": "both"
+        "availability": "outlet_only",
+        "locationAvailability": "outlet"
     },
     {
         "id": "lassi-sweet-salted",
@@ -1494,7 +1504,8 @@
         "description": "Available Mon & Wed",
         "veg": "veg",
         "inStock": true,
-        "availability": "outlet_only"
+        "availability": "both",
+        "locationAvailability": "both"
     },
     {
         "id": "chole-chawal",
@@ -1504,7 +1515,8 @@
         "description": "Available Tue & Fri",
         "veg": "veg",
         "inStock": true,
-        "availability": "outlet_only"
+        "availability": "both",
+        "locationAvailability": "both"
     },
     {
         "id": "kadi-chawal",
