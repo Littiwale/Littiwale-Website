@@ -1,25 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
+  <!-- Homepage -->
   <url>
     <loc>https://littiwale-barbil.vercel.app/</loc>
-    <lastmod>2026-05-16</lastmod>
+    <lastmod>2026-08-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
+  <!-- Full Digital Food Menu -->
   <url>
     <loc>https://littiwale-barbil.vercel.app/menu</loc>
-    <lastmod>2026-05-16</lastmod>
+    <lastmod>2026-08-16</lastmod>
     <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <priority>0.95</priority>
   </url>
 
+  <!-- Physical Outlet Menu -->
+  <url>
+    <loc>https://littiwale-barbil.vercel.app/outlet-menu</loc>
+    <lastmod>2026-08-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- Customer My Orders & Account -->
+  <url>
+    <loc>https://littiwale-barbil.vercel.app/orders.html</loc>
+    <lastmod>2026-08-16</lastmod>
+    <changefreq>always</changefreq>
+    <priority>0.80</priority>
+  </url>
+
+  <!-- Live Order Tracking -->
+  <url>
+    <loc>https://littiwale-barbil.vercel.app/track.html</loc>
+    <lastmod>2026-08-16</lastmod>
+    <changefreq>always</changefreq>
+    <priority>0.80</priority>
+  </url>
+
+  <!-- Secure Checkout -->
   <url>
     <loc>https://littiwale-barbil.vercel.app/checkout</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2026-08-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
   </url>
 
 </urlset>

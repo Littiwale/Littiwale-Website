@@ -20,28 +20,73 @@
     <meta property="og:site_name" content="Littiwale Barbil">
     <meta property="og:description" content="Explore the full menu of Littiwale Barbil for authentic Litti Chokha, Thalis, Chole Bhature, Pizza, Biryani & more!">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="https://littiwale.com/images/logo.png">
+    <meta property="og:url" content="https://littiwale-barbil.vercel.app/menu">
+    <meta property="og:image" content="https://littiwale-barbil.vercel.app/images/logo.png">
 
-    <!-- ✅ SCHEMA.ORG JSON-LD FOR LOCAL RESTAURANT SEO -->
+    <!-- ✅ CANONICAL & GEO TAGS -->
+    <link rel="canonical" href="https://littiwale-barbil.vercel.app/menu">
+    <meta name="geo.region" content="IN-OR">
+    <meta name="geo.placename" content="Barbil">
+    <meta name="geo.position" content="22.1152751;85.3871145">
+    <meta name="ICBM" content="22.1152751, 85.3871145">
+
+    <!-- ✅ SCHEMA.ORG JSON-LD FOR LOCAL RESTAURANT & MENU SEO -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@graph": [
         {
-          "@type": "WebSite",
-          "@id": "https://littiwale-barbil.vercel.app/#website",
-          "url": "https://littiwale-barbil.vercel.app/",
+          "@type": "Restaurant",
+          "@id": "https://littiwale-barbil.vercel.app/#restaurant",
           "name": "Littiwale Barbil",
-          "alternateName": ["Littiwale", "Litti Wale Barbil", "Littiwale Restaurant"],
-          "description": "Best Restaurant in Barbil offering authentic Litti Chokha, Pizza, Biryani, Snacks & Beverages."
+          "image": "https://littiwale-barbil.vercel.app/images/logo.png",
+          "url": "https://littiwale-barbil.vercel.app/menu",
+          "telephone": "+916370680744",
+          "priceRange": "₹50 - ₹500",
+          "servesCuisine": ["Bihari", "North Indian", "Pure Veg", "South Indian", "Fast Food", "Snacks & Beverages"],
+          "hasMenu": "https://littiwale-barbil.vercel.app/menu",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Ward No. 7, Punjabi Para",
+            "addressLocality": "Barbil",
+            "addressRegion": "Odisha",
+            "postalCode": "758035",
+            "addressCountry": "IN"
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 22.1152751,
+            "longitude": 85.3871145
+          },
+          "openingHoursSpecification": [
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+              "opens": "09:00",
+              "closes": "23:00"
+            }
+          ]
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://littiwale-barbil.vercel.app/menu#webpage",
+          "url": "https://littiwale-barbil.vercel.app/menu",
+          "name": "Littiwale Full Food Menu | Barbil",
+          "description": "Explore the complete digital food menu of Littiwale Barbil. Order authentic Litti Chokha, Thalis, Combos, Pizza, Biryani & Beverages."
         }
       ]
     }
     </script>
 
-    <!-- ✅ FAVICON -->
+    <!-- ✅ FAVICON & PWA SUPPORT -->
+    <meta name="theme-color" content="#f97316">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Littiwale">
     <link rel="icon" type="image/png" href="images/logo.png">
     <link rel="apple-touch-icon" href="images/logo.png">
+    <link rel="manifest" href="manifest.json">
 
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/animations.css">
