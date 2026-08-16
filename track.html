@@ -906,6 +906,8 @@
         let activeOrderId = null;
         let pollTimer = null;
         let prevStatus = null;
+        let _fetchErrorCount = 0;   // consecutive error counter
+        let _orderRendered = false; // have we successfully rendered once?
 
         function getTargetOrderId() {
             const params = new URLSearchParams(window.location.search);
@@ -924,29 +926,128 @@
         }
 
         async function fetchLiveOrder() {
+            // No order ID at all — show phone lookup so customer can find their order
             if (!activeOrderId) {
-                renderNotFound();
+                renderPhoneLookup();
                 return;
             }
 
             try {
-                const res = await fetch(`${ADMIN_API_BASE}/orders/${activeOrderId}`);
+                const res = await fetch(`${ADMIN_API_BASE}/orders/${activeOrderId}`, { cache: 'no-store' });
                 if (res.ok) {
                     const order = await res.json();
-                    if (order) {
+                    if (order && order._id) {
+                        _fetchErrorCount = 0;
                         if (prevStatus === 'pending' && (order.status === 'accepted' || order.status === 'confirmed')) {
                             playCelebrationSound();
                         }
                         prevStatus = order.status;
+                        _orderRendered = true;
                         renderOrderView(order);
                     } else {
-                        renderNotFound();
+                        // Malformed response — retry silently
+                        _fetchErrorCount++;
+                        if (_fetchErrorCount >= 3 && !_orderRendered) renderNotFound();
                     }
+                } else if (res.status === 404) {
+                    // Order not found in DB — only show Not Found if we've never successfully rendered
+                    // (gives time for newly created orders to propagate)
+                    _fetchErrorCount++;
+                    if (_fetchErrorCount >= 2 && !_orderRendered) renderNotFound();
                 } else {
-                    renderNotFound();
+                    // Server error — retry silently, don't flip to Not Found
+                    _fetchErrorCount++;
+                    console.warn('Track API error:', res.status);
                 }
             } catch(e) {
+                // Network error — retry silently
+                _fetchErrorCount++;
                 console.warn('Live poll error:', e);
+            }
+        }
+
+        // Phone lookup form — shown when no order ID is available
+        function renderPhoneLookup() {
+            if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+            const container = document.getElementById('tracking-main-container');
+            container.innerHTML = `
+                <div class="order-card" style="text-align:center; padding:40px 20px; max-width:480px; margin:0 auto;">
+                    <div style="font-size:40px; margin-bottom:12px;">📱</div>
+                    <h3 style="font-size:1.25rem; margin-bottom:8px; font-weight:800;">Find Your Order</h3>
+                    <p style="color:var(--text-dim); font-size:13.5px; margin-bottom:24px; line-height:1.6;">Enter your WhatsApp / mobile number to look up your active order status.</p>
+                    <div style="display:flex; gap:10px; max-width:360px; margin:0 auto 16px;">
+                        <div style="position:relative; flex:1;">
+                            <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:13px;">+91</span>
+                            <input type="tel" id="track-phone-input" placeholder="10-digit mobile number"
+                                style="width:100%; padding:13px 14px 13px 42px; background:var(--bg-surface); border:1.5px solid var(--border-hover); border-radius:12px; color:#fff; font-size:14px; font-weight:600; outline:none; box-sizing:border-box;"
+                                maxlength="10" inputmode="numeric"
+                                onkeydown="if(event.key==='Enter') findOrderByPhone()"
+                            >
+                        </div>
+                        <button onclick="findOrderByPhone()" style="padding:13px 20px; background:var(--primary, #f97316); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; white-space:nowrap; transition:background 0.2s;" onmouseover="this.style.background='#ea580c'" onmouseout="this.style.background='var(--primary, #f97316)'">
+                            🔍 Track
+                        </button>
+                    </div>
+                    <div id="track-phone-result" style="min-height:24px; font-size:13px;"></div>
+                    <div style="margin-top:24px; padding-top:20px; border-top:1px solid var(--border);">
+                        <a href="index.html#menu" class="btn-action btn-order-more" style="display:inline-flex; width:auto; padding:11px 24px; font-size:13px;">
+                            <i class="fas fa-utensils"></i> Browse Menu & Order
+                        </a>
+                    </div>
+                </div>
+            `;
+            // Auto-fill if phone exists in localStorage
+            try {
+                const ph = localStorage.getItem('littiwale_customer_phone');
+                if (ph) {
+                    const inp = document.getElementById('track-phone-input');
+                    if (inp) { inp.value = ph; findOrderByPhone(); }
+                }
+            } catch(e) {}
+        }
+
+        async function findOrderByPhone() {
+            const input = document.getElementById('track-phone-input');
+            const result = document.getElementById('track-phone-result');
+            if (!input || !result) return;
+            const rawPhone = input.value.replace(/\D/g, '').slice(-10);
+            if (rawPhone.length < 10) {
+                result.innerHTML = '<span style="color:#ef4444;">⚠️ Please enter a valid 10-digit mobile number.</span>';
+                return;
+            }
+            result.innerHTML = '<span style="color:#94a3b8;">🔍 Looking up orders...</span>';
+            try {
+                const res = await fetch(`${ADMIN_API_BASE}/orders/customer/${rawPhone}`, { cache: 'no-store' });
+                const data = await res.json();
+                if (!data.success || !data.hasOrders || !data.orders.length) {
+                    result.innerHTML = '<span style="color:#94a3b8;">No orders found for this number. Please check the number or place a new order.</span>';
+                    return;
+                }
+                // Find active order (pending/accepted/dispatched)
+                const active = data.orders.find(o => ['pending','accepted','confirmed','dispatched'].includes((o.status||'').toLowerCase()));
+                if (active) {
+                    // Save and redirect to track with ID
+                    try { localStorage.setItem('littiWaleActiveOrder', JSON.stringify({ id: active._id })); } catch(e) {}
+                    try { localStorage.setItem('littiwale_customer_phone', rawPhone); } catch(e) {}
+                    activeOrderId = active._id;
+                    _fetchErrorCount = 0;
+                    // Show loading and start polling
+                    document.getElementById('tracking-main-container').innerHTML = `
+                        <div class="loading-wrap">
+                            <div class="spinner"></div>
+                            <h3 style="font-size:1.1rem; margin-bottom:4px; font-weight:700;">Connecting to Kitchen...</h3>
+                            <p style="font-size:13px; color:var(--text-muted);">Fetching live order status</p>
+                        </div>`;
+                    fetchLiveOrder();
+                    if (!pollTimer) pollTimer = setInterval(fetchLiveOrder, 3000);
+                } else {
+                    // Only past/delivered/cancelled orders
+                    const latest = data.orders[0];
+                    const shortId = String(latest._id).slice(-6).toUpperCase();
+                    result.innerHTML = `<span style="color:#94a3b8;">Your last order <strong style="color:#fff;">#${shortId}</strong> was <strong style="color:#4ade80;">${(latest.status||'delivered').toUpperCase()}</strong>. No active orders right now.</span>`;
+                }
+            } catch(e) {
+                result.innerHTML = '<span style="color:#ef4444;">⚠️ Could not connect. Check your internet and try again.</span>';
             }
         }
 
@@ -1364,7 +1465,10 @@
         // Initialize Live Poller
         activeOrderId = getTargetOrderId();
         fetchLiveOrder();
-        pollTimer = setInterval(fetchLiveOrder, 3000);
+        // Only start continuous polling when we have an order ID
+        if (activeOrderId) {
+            pollTimer = setInterval(fetchLiveOrder, 3000);
+        }
 
         // Mobile Nav Toggle
         const mobileToggle = document.querySelector('.mobile-toggle');
