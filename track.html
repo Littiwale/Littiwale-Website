@@ -313,6 +313,12 @@
             border: 1px solid rgba(16, 185, 129, 0.4);
         }
 
+        .status-badge.cancelled {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.35);
+        }
+
         .pulse-dot {
             width: 7px;
             height: 7px;
@@ -324,6 +330,25 @@
         .pulse-dot.yellow { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
         .pulse-dot.green { background: var(--green); box-shadow: 0 0 8px var(--green); }
         .pulse-dot.blue { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
+        .pulse-dot.red { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+
+        /* Cancelled Stage: Cross pulse animation */
+        .anim-cancelled-cross {
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: crossPulseReveal 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, idleCrossPulse 2s ease-in-out infinite alternate 1s;
+        }
+
+        @keyframes crossPulseReveal {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.25); opacity: 1; filter: drop-shadow(0 0 20px #ef4444); }
+            100% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 14px rgba(239, 68, 68, 0.7)); }
+        }
+
+        @keyframes idleCrossPulse {
+            0% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5)); }
+            100% { transform: scale(1.08); filter: drop-shadow(0 0 24px rgba(239, 68, 68, 0.85)); }
+        }
 
         @keyframes dotGlow {
             0%, 100% { opacity: 1; transform: scale(1); }
@@ -1068,9 +1093,28 @@
             } catch(e) {}
         }
 
-        // Clean & High-End Visual Stage Generator for all 4 states
+        // Clean & High-End Visual Stage Generator for all states
         function getStageSceneSVG(status) {
-            if (status === 'pending') {
+            if (status === 'cancelled') {
+                return `
+                    <svg class="scene-svg" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <ellipse cx="190" cy="96" rx="140" ry="7" fill="rgba(239,68,68,0.15)" />
+                        <line x1="20" y1="96" x2="360" y2="96" stroke="#27272a" stroke-width="2" stroke-linecap="round" />
+
+                        <!-- Background Warning Glow -->
+                        <g transform="translate(190, 48)">
+                            <circle cx="0" cy="0" r="38" stroke="#ef4444" stroke-width="1.5" opacity="0.4" class="anim-delivered-pulse-ring" />
+                        </g>
+
+                        <!-- Animated Red Cross Centerpiece -->
+                        <g transform="translate(190, 48)" class="anim-cancelled-cross">
+                            <circle cx="0" cy="0" r="28" fill="#ef4444" stroke="#f87171" stroke-width="3" />
+                            <circle cx="0" cy="0" r="23" fill="#b91c1c" />
+                            <path d="M -8 -8 L 8 8 M 8 -8 L -8 8" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+                        </g>
+                    </svg>
+                `;
+            } else if (status === 'pending') {
                 return `
                     <svg class="scene-svg" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <!-- Elegant Ground Platform -->
@@ -1104,18 +1148,12 @@
             } else if (status === 'accepted' || status === 'confirmed') {
                 return `
                     <svg class="scene-svg" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Culinary Base Table -->
                         <ellipse cx="190" cy="96" rx="140" ry="7" fill="rgba(249,115,22,0.15)" />
-                        <rect x="90" y="80" width="200" height="12" rx="4" fill="#27272a" stroke="#3f3f46" stroke-width="1.5" />
                         
-                        <!-- Gas Burner Grate -->
-                        <rect x="145" y="68" width="90" height="12" rx="3" fill="#3f3f46" stroke="#52525b" stroke-width="1.5" />
-                        <circle cx="165" cy="74" r="2.5" fill="#f97316" />
-                        <circle cx="215" cy="74" r="2.5" fill="#f97316" />
-
-                        <!-- Dancing Stove Flame -->
-                        <g class="anim-flame" style="transform-origin: 190px 68px;">
-                            <path d="M 168 68 Q 176 48 184 68 Q 192 42 200 68 Q 208 48 214 68 Z" fill="url(#flameGrad)" />
+                        <!-- Glowing Stove Gas Flame -->
+                        <g transform="translate(160, 70)">
+                            <ellipse cx="30" cy="6" rx="28" ry="4" fill="#18181b" stroke="#3f3f46" stroke-width="1.5" />
+                            <path class="anim-fire-flame" d="M 10 4 Q 15 -14 20 2 Q 25 -22 30 -6 Q 35 -24 40 2 Q 45 -12 50 4 Z" fill="url(#flameGrad)" />
                         </g>
 
                         <!-- Sleek Modern Cooking Wok -->
@@ -1193,14 +1231,12 @@
                     </svg>
                 `;
             } else {
-                // Delivered Stage: Truck arrives, transforms/collides, and big verified Tick Mark stays centered
+                // Delivered Stage
                 return `
                     <svg class="scene-svg" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Ground / Road Base -->
                         <ellipse cx="190" cy="96" rx="150" ry="7" fill="rgba(16,185,129,0.2)" />
                         <line x1="20" y1="96" x2="360" y2="96" stroke="#27272a" stroke-width="2" stroke-linecap="round" />
 
-                        <!-- Arriving Delivery Van (Drives from left to center and transforms into checkmark) -->
                         <g class="anim-delivered-truck">
                             <path d="M 10 16 C 10 12, 14 10, 18 10 L 95 10 C 99 10, 103 13, 107 18 L 120 32 C 122 34, 123 38, 123 42 L 123 54 C 123 56, 121 58, 119 58 L 10 58 C 8 58, 6 56, 6 54 L 6 20 C 6 18, 8 16, 10 16 Z" fill="#10b981" stroke="#059669" stroke-width="1.5" />
                             <rect x="14" y="16" width="55" height="30" rx="3" fill="#064e3b" />
@@ -1212,7 +1248,6 @@
                             <circle cx="98" cy="56" r="4" fill="#e4e4e7" />
                         </g>
 
-                        <!-- Celebration Shockwave Radiance (Bursts upon arrival) -->
                         <g transform="translate(190, 48)">
                             <g class="anim-delivered-pulse-ring">
                                 <circle cx="0" cy="0" r="32" stroke="#10b981" stroke-width="2" fill="none" opacity="0.8" />
@@ -1220,7 +1255,6 @@
                             </g>
                         </g>
 
-                        <!-- Permanent Bold Green Verified Tick Mark in the Center -->
                         <g transform="translate(190, 48)">
                             <g class="anim-delivered-final-check">
                                 <circle cx="0" cy="0" r="28" fill="#10b981" stroke="#34d399" stroke-width="3" />
@@ -1273,11 +1307,11 @@
                 statusTitle = 'Order Delivered';
                 statusDesc = 'Your meal was successfully delivered. Enjoy your delicious hot food!';
             } else if (status === 'cancelled') {
-                statusBadgeClass = 'pending';
-                dotClass = 'yellow';
+                statusBadgeClass = 'cancelled';
+                dotClass = 'red';
                 statusBadgeText = 'Order Cancelled';
-                statusTitle = 'Order Cancelled';
-                statusDesc = 'This order was cancelled by the restaurant.';
+                statusTitle = 'Order Cancelled by Kitchen';
+                statusDesc = order.cancelReason ? `Reason: ${order.cancelReason}` : 'This order was cancelled by the restaurant. If you have completed payment, your refund will be processed.';
             }
 
             const timeStr = order.createdAt ? new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
@@ -1290,6 +1324,44 @@
                     <span class="slip-item-price">₹${it.subtotal || (it.price * it.quantity)}</span>
                 </div>
             `).join('') || '<div style="color:#64748b; font-size:12px; text-align:center;">Items list unavailable</div>';
+
+            // Stepper HTML
+            let stepperHtml = '';
+            if (status === 'cancelled') {
+                stepperHtml = `
+                    <div class="stepper-wrap">
+                        <div class="step-item completed">
+                            <div class="step-circle" style="background:#22c55e; border-color:#22c55e; color:#000;">✓</div>
+                            <span class="step-label">Placed</span>
+                        </div>
+                        <div class="step-item active">
+                            <div class="step-circle" style="background:#ef4444; border-color:#ef4444; color:#fff; font-weight:900;">✕</div>
+                            <span class="step-label" style="color:#ef4444; font-weight:700;">Cancelled</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                stepperHtml = `
+                    <div class="stepper-wrap">
+                        <div class="step-item ${isStep1 ? (isStep2 ? 'completed' : 'active') : ''}">
+                            <div class="step-circle">${isStep2 ? '✓' : '1'}</div>
+                            <span class="step-label">Placed</span>
+                        </div>
+                        <div class="step-item ${isStep2 ? (isStep3 ? 'completed' : 'active') : ''}">
+                            <div class="step-circle">${isStep3 ? '✓' : '2'}</div>
+                            <span class="step-label">Kitchen</span>
+                        </div>
+                        <div class="step-item ${isStep3 ? (isStep4 ? 'completed' : 'active') : ''}">
+                            <div class="step-circle">${isStep4 ? '✓' : '3'}</div>
+                            <span class="step-label">On Way</span>
+                        </div>
+                        <div class="step-item ${isStep4 ? 'completed' : ''}">
+                            <div class="step-circle">${isStep4 ? '✓' : '4'}</div>
+                            <span class="step-label">Delivered</span>
+                        </div>
+                    </div>
+                `;
+            }
 
             container.innerHTML = `
                 <div class="track-grid-layout">
@@ -1324,64 +1396,47 @@
                                 ` : '')}
                             </div>
 
-                            <!-- 4-Stage Visual Progress Bar -->
-                            <div class="stepper-wrap">
-                                <div class="step-item ${isStep1 ? (isStep2 ? 'completed' : 'active') : ''}">
-                                    <div class="step-circle">${isStep2 ? '✓' : '1'}</div>
-                                    <span class="step-label">Placed</span>
-                                </div>
-                                <div class="step-item ${isStep2 ? (isStep3 ? 'completed' : 'active') : ''}">
-                                    <div class="step-circle">${isStep3 ? '✓' : '2'}</div>
-                                    <span class="step-label">Kitchen</span>
-                                </div>
-                                <div class="step-item ${isStep3 ? (isStep4 ? 'completed' : 'active') : ''}">
-                                    <div class="step-circle">${isStep4 ? '✓' : '3'}</div>
-                                    <span class="step-label">On Way</span>
-                                </div>
-                                <div class="step-item ${isStep4 ? 'completed' : ''}">
-                                    <div class="step-circle">${isStep4 ? '✓' : '4'}</div>
-                                    <span class="step-label">Delivered</span>
-                                </div>
-                            </div>
+                            <!-- Visual Progress Bar -->
+                            ${stepperHtml}
                         </div>
                     </div>
 
-                    <!-- Right Column: Awaiting Kitchen Confirmation when Pending, or Thermal Printer when Accepted -->
+                    <!-- Right Column: State Dependent View (Pending Notice, Cancelled Card, or Live Thermal POS Printer) -->
                     <div class="track-col-right">
-                        ${status === 'pending' ? `
-                        <div class="order-card" style="background:var(--bg-card); border:1px solid rgba(245,158,11,0.25); border-radius:20px; padding:26px 20px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-                            <div style="width:56px; height:56px; border-radius:50%; background:rgba(245,158,11,0.12); display:flex; align-items:center; justify-content:center; font-size:26px; margin:0 auto 14px; border:1px solid rgba(245,158,11,0.3);">
+                        ${status === 'cancelled' ? `
+                        <div class="order-card" style="background:var(--bg-card); border:1px solid rgba(239,68,68,0.25); border-radius:20px; padding:30px 22px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+                            <div style="width:60px; height:60px; border-radius:50%; background:rgba(239,68,68,0.15); display:flex; align-items:center; justify-content:center; font-size:28px; margin:0 auto 16px; border:1px solid rgba(239,68,68,0.3);">
+                                ❌
+                            </div>
+                            <h3 style="color:#fff; font-size:1.25rem; font-weight:800; margin-bottom:6px;">Order Cancelled</h3>
+                            <div style="padding:10px 14px; background:rgba(239,68,68,0.08); border-radius:10px; border:1px solid rgba(239,68,68,0.2); margin-bottom:16px;">
+                                <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:#fca5a5; margin-bottom:2px;">Cancellation Reason</div>
+                                <div style="font-size:13px; color:#fecaca; font-weight:600;">${order.cancelReason || 'Kitchen temporarily overloaded / Item out of stock'}</div>
+                            </div>
+                            <p style="color:var(--text-dim); font-size:12.5px; margin-bottom:22px; line-height:1.5;">
+                                We sincerely apologize for the inconvenience. If you have already completed an online payment, our team will initiate your refund.
+                            </p>
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                <a href="index.html#menu" class="btn-action btn-order-more" style="width:100%; padding:12px; font-size:13px; font-weight:800; border-radius:10px;">
+                                    🍴 Browse Menu & Reorder
+                                </a>
+                                <a href="https://wa.me/916370680744?text=Hi%20Littiwale,%20regarding%20my%20cancelled%20Order%20%23${shortId}" target="_blank" class="btn-action btn-whatsapp" style="width:100%; padding:12px; font-size:13px; font-weight:800; border-radius:10px;">
+                                    <i class="fab fa-whatsapp"></i> Chat with Restaurant Support
+                                </a>
+                            </div>
+                        </div>
+                        ` : (status === 'pending' ? `
+                        <div class="order-card" style="background:var(--bg-card); border:1px solid rgba(245,158,11,0.25); border-radius:20px; padding:32px 22px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+                            <div style="width:64px; height:64px; border-radius:50%; background:rgba(245,158,11,0.12); display:flex; align-items:center; justify-content:center; font-size:30px; margin:0 auto 16px; border:1px solid rgba(245,158,11,0.3);">
                                 ⏳
                             </div>
-                            <h3 style="color:#fff; font-size:1.2rem; font-weight:800; margin-bottom:6px;">Order Sent to Kitchen</h3>
-                            <p style="color:var(--text-dim); font-size:13px; margin-bottom:18px; line-height:1.5;">
-                                The kitchen is currently reviewing your order. The official POS printed receipt & final invoice will generate automatically once accepted.
+                            <h3 style="color:#fff; font-size:1.25rem; font-weight:800; margin-bottom:8px;">Order Sent to Kitchen</h3>
+                            <p style="color:var(--text-dim); font-size:13.5px; margin-bottom:20px; line-height:1.6;">
+                                The kitchen is reviewing your order details. Your live verified bill will generate automatically on the next step (<strong style="color:#fbbf24;">Kitchen Preparing</strong>).
                             </p>
-
-                            <!-- Order Summary Box -->
-                            <div style="background:var(--bg-surface); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:14px 16px; text-align:left; margin-bottom:16px;">
-                                <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#fbbf24; margin-bottom:10px; display:flex; justify-content:space-between;">
-                                    <span>ORDER ITEMS</span>
-                                    <span>#${shortId}</span>
-                                </div>
-                                <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;">
-                                    ${(order.items || []).map(it => `
-                                        <div style="display:flex; justify-content:space-between; font-size:13px; color:#f1f5f9;">
-                                            <span>${it.quantity}x ${it.name}</span>
-                                            <span style="font-weight:700; font-family:var(--font-mono);">₹${it.subtotal || (it.price * it.quantity)}</span>
-                                        </div>
-                                    `).join('') || '<div style="color:#64748b; font-size:12px;">Items list loading...</div>'}
-                                </div>
-                                <div style="border-top:1px dashed rgba(255,255,255,0.1); padding-top:10px; display:flex; justify-content:space-between; align-items:center;">
-                                    <span style="font-size:13px; font-weight:700; color:#fff;">Estimated Total:</span>
-                                    <strong style="color:#4ade80; font-size:1.15rem; font-family:var(--font-mono);">₹${finalTotal}</strong>
-                                </div>
-                            </div>
-
-                            <!-- Bill Locked Notice -->
-                            <div style="padding:10px 14px; background:rgba(255,255,255,0.03); border:1px dashed rgba(255,255,255,0.1); border-radius:10px; font-size:11.5px; color:#94a3b8; display:flex; align-items:center; justify-content:center; gap:8px;">
+                            <div style="padding:10px 16px; background:rgba(255,255,255,0.03); border:1px dashed rgba(255,255,255,0.12); border-radius:10px; font-size:12px; color:#cbd5e1; display:inline-flex; align-items:center; gap:8px;">
                                 <span>🔒</span>
-                                <span>Official POS Receipt unlocks on Kitchen Acceptance</span>
+                                <span>Live POS Bill unlocks on Kitchen Acceptance</span>
                             </div>
                         </div>
                         ` : `
@@ -1467,7 +1522,7 @@
                                 </div>
                             </div>
                         </div>
-                        `}
+                        `)}
                     </div>
 
                     <!-- Full Width Quick Action Buttons across Desktop -->
