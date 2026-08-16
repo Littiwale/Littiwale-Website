@@ -5151,3 +5151,41 @@ function autoFillCheckoutFromSavedProfile(profile) {
 document.addEventListener('DOMContentLoaded', () => {
     autoFillCheckoutFromSavedProfile();
 });
+
+// ==========================================================================
+// FRONTEND PROGRESSIVE WEB APP (PWA) REGISTRATION & INSTALL CONTROLLER
+// ==========================================================================
+let deferredClientPwaPrompt = null;
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('✅ Littiwale Web App Service Worker Registered:', reg.scope))
+            .catch(err => console.warn('Frontend PWA SW Register notice:', err));
+    });
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredClientPwaPrompt = e;
+    const installBtn = document.getElementById('pwa-install-app-btn');
+    if (installBtn) {
+        installBtn.style.display = 'inline-flex';
+        installBtn.onclick = async () => {
+            if (deferredClientPwaPrompt) {
+                deferredClientPwaPrompt.prompt();
+                const { outcome } = await deferredClientPwaPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installBtn.style.display = 'none';
+                }
+                deferredClientPwaPrompt = null;
+            }
+        };
+    }
+});
+
+window.addEventListener('appinstalled', () => {
+    console.log('✅ Littiwale Web App Installed Successfully');
+    const installBtn = document.getElementById('pwa-install-app-btn');
+    if (installBtn) installBtn.style.display = 'none';
+});

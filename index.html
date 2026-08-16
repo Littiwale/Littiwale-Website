@@ -100,9 +100,15 @@
     }
     </script>
 
-    <!-- ✅ FAVICON -->
+    <!-- ✅ FAVICON & PWA APP SUPPORT -->
+    <meta name="theme-color" content="#f97316">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Littiwale">
     <link rel="icon" type="image/png" href="images/logo.png">
     <link rel="apple-touch-icon" href="images/logo.png">
+    <link rel="manifest" href="manifest.json">
 
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/animations.css">
@@ -140,6 +146,11 @@
             </ul>
 
             <div style="display:flex; align-items:center; gap:8px;">
+                <button type="button" id="pwa-install-app-btn" class="nav-install-app-btn" style="display:none; align-items:center; gap:6px; background:linear-gradient(135deg, rgba(249,115,22,0.2), rgba(234,88,12,0.1)); border:1.5px solid #f97316; border-radius:999px; padding:6px 14px; color:#f97316; font-size:12.5px; font-weight:800; cursor:pointer;" title="Install Littiwale App on your phone">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>App</span>
+                </button>
+
                 <button type="button" class="nav-my-orders-btn" onclick="openCustomerOrdersDrawer()" title="View past orders & saved address">
                     <i class="fas fa-user-circle"></i>
                     <span>My Orders</span>
