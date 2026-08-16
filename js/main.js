@@ -1922,6 +1922,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Global add to cart function accessible from inline HTML onclick
     window.addToCart = function(id, name, price, image, selectedOption = null) {
+        // Block adding to cart when restaurant is closed (manual or outside operating hours)
+        if (window.isRestaurantCurrentlyOpen === false) {
+            const reason = window.restaurantClosedReason || 'Outside Operating Hours';
+            if (typeof window.showAlert === 'function') {
+                window.showAlert(`We are currently closed (${reason}). Online ordering is paused. You can view our menu items!`, { title: 'Ordering Paused (View Only)', icon: '🔒', type: 'warning' });
+            } else {
+                alert(`We are currently closed (${reason}). Online ordering is paused.`);
+            }
+            return false;
+        }
+
         if (!selectedOption) {
             const baseId = String(id).replace('_half', '').replace('_full', '');
             const menuItem = (typeof menuData !== 'undefined' && Array.isArray(menuData)) ? menuData.find(i => String(i.id) === String(baseId) || String(i._id) === String(baseId)) : null;

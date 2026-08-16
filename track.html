@@ -334,8 +334,7 @@
 
         /* Cancelled Stage: Cross pulse animation */
         .anim-cancelled-cross {
-            transform-box: fill-box;
-            transform-origin: center;
+            transform-origin: 0px 0px;
             animation: crossPulseReveal 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, idleCrossPulse 2s ease-in-out infinite alternate 1s;
         }
 
@@ -1101,16 +1100,14 @@
                         <ellipse cx="190" cy="96" rx="140" ry="7" fill="rgba(239,68,68,0.15)" />
                         <line x1="20" y1="96" x2="360" y2="96" stroke="#27272a" stroke-width="2" stroke-linecap="round" />
 
-                        <!-- Background Warning Glow -->
+                        <!-- Perfectly Centered Warning Shield -->
                         <g transform="translate(190, 48)">
                             <circle cx="0" cy="0" r="38" stroke="#ef4444" stroke-width="1.5" opacity="0.4" class="anim-delivered-pulse-ring" />
-                        </g>
-
-                        <!-- Animated Red Cross Centerpiece -->
-                        <g transform="translate(190, 48)" class="anim-cancelled-cross">
-                            <circle cx="0" cy="0" r="28" fill="#ef4444" stroke="#f87171" stroke-width="3" />
-                            <circle cx="0" cy="0" r="23" fill="#b91c1c" />
-                            <path d="M -8 -8 L 8 8 M 8 -8 L -8 8" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+                            <g class="anim-cancelled-cross">
+                                <circle cx="0" cy="0" r="28" fill="#ef4444" stroke="#f87171" stroke-width="3" />
+                                <circle cx="0" cy="0" r="23" fill="#b91c1c" />
+                                <path d="M -8 -8 L 8 8 M 8 -8 L -8 8" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+                            </g>
                         </g>
                     </svg>
                 `;

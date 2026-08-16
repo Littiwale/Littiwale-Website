@@ -163,10 +163,26 @@ document.addEventListener('DOMContentLoaded', () => {
             display: none; align-items: center; justify-content: center; gap: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
+        /* View Only locked menu when restaurant is closed */
+        body.restaurant-closed-mode .add-to-cart,
+        body.restaurant-closed-mode .add-to-cart-btn,
+        body.restaurant-closed-mode .btn-add-cart,
+        body.restaurant-closed-mode .hf-btn {
+            opacity: 0.65 !important;
+            cursor: not-allowed !important;
+        }
+        body.restaurant-closed-mode .add-to-cart-btn,
+        body.restaurant-closed-mode .btn-add-cart {
+            background: rgba(255,255,255,0.06) !important;
+            color: #94a3b8 !important;
+            border-color: rgba(255,255,255,0.12) !important;
+            box-shadow: none !important;
+        }
     `;
 
     const styleEl = document.createElement('style');
-    styleEl.innerHTML = timingStyles;
+    styleEl.id = 'restaurant-timing-styles';
+    styleEl.textContent = timingStyles;
     document.head.appendChild(styleEl);
 
     // Inject HTML
@@ -406,12 +422,15 @@ document.addEventListener('DOMContentLoaded', () => {
         window.restaurantClosedReason    = status.reason;
 
         if (status.isOpen) {
+            document.body.classList.remove('restaurant-closed-mode');
             if (overlay)          overlay.classList.remove('show');
             if (closedBanner)     closedBanner.style.display = 'none';
             if (countdownInterval){ clearInterval(countdownInterval); countdownInterval = null; }
             if (countdownWrapper) countdownWrapper.classList.remove('visible');
             return;
         }
+
+        document.body.classList.add('restaurant-closed-mode');
 
         // Populate reason
         if (closedReasonText) closedReasonText.textContent = status.reason;
