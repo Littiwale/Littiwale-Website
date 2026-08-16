@@ -5168,15 +5168,14 @@ if ('serviceWorker' in navigator) {
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredClientPwaPrompt = e;
-    const installBtn = document.getElementById('pwa-install-app-btn');
-    if (installBtn) {
-        installBtn.style.display = 'inline-flex';
-        installBtn.onclick = async () => {
+    const heroBtn = document.getElementById('pwa-hero-install-btn');
+    if (heroBtn) {
+        heroBtn.onclick = async () => {
             if (deferredClientPwaPrompt) {
                 deferredClientPwaPrompt.prompt();
                 const { outcome } = await deferredClientPwaPrompt.userChoice;
                 if (outcome === 'accepted') {
-                    installBtn.style.display = 'none';
+                    if (typeof showToast === 'function') showToast('App Installed on Device! 📲', 'success');
                 }
                 deferredClientPwaPrompt = null;
             }
@@ -5184,8 +5183,29 @@ window.addEventListener('beforeinstallprompt', (e) => {
     }
 });
 
+// Setup click handler even before prompt fires (gives nice user feedback)
+document.addEventListener('DOMContentLoaded', () => {
+    const heroBtn = document.getElementById('pwa-hero-install-btn');
+    if (heroBtn) {
+        heroBtn.addEventListener('click', async () => {
+            if (deferredClientPwaPrompt) {
+                deferredClientPwaPrompt.prompt();
+                const { outcome } = await deferredClientPwaPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    if (typeof showToast === 'function') showToast('App Installed on Device! 📲', 'success');
+                }
+                deferredClientPwaPrompt = null;
+            } else {
+                if (typeof showToast === 'function') {
+                    showToast('Tap Menu (⋮) in Chrome and select "Install App" or "Add to Home Screen"', 'info');
+                } else {
+                    alert('Tap Menu (⋮) in Chrome and select "Install App" or "Add to Home Screen"');
+                }
+            }
+        });
+    }
+});
+
 window.addEventListener('appinstalled', () => {
     console.log('✅ Littiwale Web App Installed Successfully');
-    const installBtn = document.getElementById('pwa-install-app-btn');
-    if (installBtn) installBtn.style.display = 'none';
 });
