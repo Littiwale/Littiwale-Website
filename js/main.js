@@ -5007,26 +5007,43 @@ window.fetchCustomerOrders = async function(phone) {
             const dateStr = ord.createdAt ? new Date(ord.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent';
             const total = ord.finalTotal || ord.subtotal || 0;
             const itemsStr = (ord.items || []).map(i => `${i.quantity}x ${i.name}`).join(', ');
-            const status = (ord.status || 'delivered').toUpperCase();
-            const statusColor = status === 'DELIVERED' ? '#22c55e' : (status === 'CANCELLED' ? '#ef4444' : '#f59e0b');
+            const rawStatus = (ord.status || 'pending').toLowerCase();
+            const isLive = rawStatus === 'pending' || rawStatus === 'accepted' || rawStatus === 'confirmed' || rawStatus === 'dispatched';
+            const statusColor = rawStatus === 'delivered' ? '#22c55e' : (rawStatus === 'cancelled' ? '#ef4444' : '#f59e0b');
+            const statusText = rawStatus.toUpperCase();
+
+            // If order is not delivered/cancelled yet (live/pending in kitchen/on the way), show "Track Order" button!
+            // If order is delivered or cancelled (completed), show "View Details" & "Reorder"!
+            let actionButtons = '';
+            if (isLive) {
+                actionButtons = `
+                    <a href="track.html?id=${ord._id}" class="cust-live-order-btn" style="padding:7px 14px; font-size:12px; font-weight:800; border-radius:8px; text-decoration:none;">
+                        <span>📍 Track Order →</span>
+                    </a>
+                `;
+            } else {
+                actionButtons = `
+                    <button type="button" class="cust-view-order-btn" onclick="window.viewPastOrderDetails('${ord._id}')" title="View Order Details & Bill">
+                        <span>👁️ View Details</span>
+                    </button>
+                    <button type="button" class="cust-reorder-btn" onclick="window.reorderPastOrder('${ord._id}')" title="Add all items to cart">
+                        <span>Reorder</span>
+                    </button>
+                `;
+            }
 
             return `
                 <div class="cust-past-order-card">
                     <div class="cust-order-top-row">
                         <span class="cust-order-id">#${shortId}</span>
-                        <span style="font-size:10.5px; font-weight:800; color:${statusColor}; background:rgba(255,255,255,0.06); padding:2px 8px; border-radius:12px;">${status}</span>
+                        <span style="font-size:10.5px; font-weight:800; color:${statusColor}; background:rgba(255,255,255,0.06); padding:2px 8px; border-radius:12px;">${statusText}</span>
                     </div>
                     <div class="cust-order-date">${dateStr}</div>
                     <div class="cust-order-items">${itemsStr}</div>
                     <div class="cust-order-footer-row">
                         <span class="cust-order-total">₹${total}</span>
                         <div style="display:flex; gap:8px; align-items:center;">
-                            <button type="button" class="cust-view-order-btn" onclick="window.viewPastOrderDetails('${ord._id}')" title="View Order Details & Bill">
-                                <span>View Details</span>
-                            </button>
-                            <button type="button" class="cust-reorder-btn" onclick="window.reorderPastOrder('${ord._id}')" title="Add all items to cart">
-                                <span>Reorder</span>
-                            </button>
+                            ${actionButtons}
                         </div>
                     </div>
                 </div>

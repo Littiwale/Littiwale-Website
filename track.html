@@ -1346,8 +1346,45 @@
                         </div>
                     </div>
 
-                    <!-- Right Column: 3D Thermal Printer Dispenser Unit & Actions -->
+                    <!-- Right Column: Awaiting Kitchen Confirmation when Pending, or Thermal Printer when Accepted -->
                     <div class="track-col-right">
+                        ${status === 'pending' ? `
+                        <div class="order-card" style="background:var(--bg-card); border:1px solid rgba(245,158,11,0.25); border-radius:20px; padding:26px 20px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+                            <div style="width:56px; height:56px; border-radius:50%; background:rgba(245,158,11,0.12); display:flex; align-items:center; justify-content:center; font-size:26px; margin:0 auto 14px; border:1px solid rgba(245,158,11,0.3);">
+                                ⏳
+                            </div>
+                            <h3 style="color:#fff; font-size:1.2rem; font-weight:800; margin-bottom:6px;">Order Sent to Kitchen</h3>
+                            <p style="color:var(--text-dim); font-size:13px; margin-bottom:18px; line-height:1.5;">
+                                The kitchen is currently reviewing your order. The official POS printed receipt & final invoice will generate automatically once accepted.
+                            </p>
+
+                            <!-- Order Summary Box -->
+                            <div style="background:var(--bg-surface); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:14px 16px; text-align:left; margin-bottom:16px;">
+                                <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#fbbf24; margin-bottom:10px; display:flex; justify-content:space-between;">
+                                    <span>ORDER ITEMS</span>
+                                    <span>#${shortId}</span>
+                                </div>
+                                <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;">
+                                    ${(order.items || []).map(it => `
+                                        <div style="display:flex; justify-content:space-between; font-size:13px; color:#f1f5f9;">
+                                            <span>${it.quantity}x ${it.name}</span>
+                                            <span style="font-weight:700; font-family:var(--font-mono);">₹${it.subtotal || (it.price * it.quantity)}</span>
+                                        </div>
+                                    `).join('') || '<div style="color:#64748b; font-size:12px;">Items list loading...</div>'}
+                                </div>
+                                <div style="border-top:1px dashed rgba(255,255,255,0.1); padding-top:10px; display:flex; justify-content:space-between; align-items:center;">
+                                    <span style="font-size:13px; font-weight:700; color:#fff;">Estimated Total:</span>
+                                    <strong style="color:#4ade80; font-size:1.15rem; font-family:var(--font-mono);">₹${finalTotal}</strong>
+                                </div>
+                            </div>
+
+                            <!-- Bill Locked Notice -->
+                            <div style="padding:10px 14px; background:rgba(255,255,255,0.03); border:1px dashed rgba(255,255,255,0.1); border-radius:10px; font-size:11.5px; color:#94a3b8; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                <span>🔒</span>
+                                <span>Official POS Receipt unlocks on Kitchen Acceptance</span>
+                            </div>
+                        </div>
+                        ` : `
                         <div class="embedded-printer-stage">
                             <!-- 3D POS Printer Head Dispenser -->
                             <div class="embedded-printer-head">
@@ -1430,6 +1467,7 @@
                                 </div>
                             </div>
                         </div>
+                        `}
                     </div>
 
                     <!-- Full Width Quick Action Buttons across Desktop -->
