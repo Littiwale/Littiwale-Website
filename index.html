@@ -139,11 +139,18 @@
                 <li><a href="javascript:void(0)" class="nav-get-deals-btn">🔥 Get Deals</a></li>
             </ul>
 
-            <a href="javascript:void(0)" class="cart-link nav-cart-btn">
-                <i class="fas fa-shopping-cart"></i>
-                Cart
-                <span id="cart-count" class="cart-badge">0</span>
-            </a>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <button type="button" class="nav-my-orders-btn" onclick="openCustomerOrdersDrawer()" title="View past orders & saved address">
+                    <i class="fas fa-user-circle"></i>
+                    <span>My Orders</span>
+                </button>
+
+                <a href="javascript:void(0)" class="cart-link nav-cart-btn">
+                    <i class="fas fa-shopping-cart"></i>
+                    Cart
+                    <span id="cart-count" class="cart-badge">0</span>
+                </a>
+            </div>
         </div>
     </nav>
 
@@ -192,9 +199,9 @@
                         <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> WhatsApp Order
                     </a>
 
-                    <button onclick="openPartnerModal()" class="btn btn-outline" style="border-radius: 30px;">
-                        Zomato Partner
-                    </button>
+                    <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" class="btn btn-outline hero-btn-zomato" style="border-radius: 30px; text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
+                        <i class="fas fa-utensils"></i> Zomato Partner
+                    </a>
                 </div>
 
                 <!-- Trust Badges Bar -->
@@ -952,6 +959,7 @@
             <div class="footer-links" style="flex:1; min-width:150px;">
                 <h4 style="color:var(--primary-color); font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:20px;">Explore</h4>
                 <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px;">
+                    <li><a href="javascript:void(0)" onclick="openCustomerOrdersDrawer()" style="color:var(--text-secondary); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">My Orders</a></li>
                     <li><a href="/menu" style="color:var(--text-secondary); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Cloud Kitchen Menu</a></li>
                     <li><a href="/outlet-menu/" style="color:#f4b400; font-size:0.9rem; transition:color 0.3s ease; text-decoration:none; font-weight:700;"><i class="fas fa-store" style="margin-right:6px;"></i> Physical Outlet Menu (View Only)</a></li>
                     <li><a href="#membership-section" style="color:var(--text-secondary); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Membership Plans</a></li>
@@ -1233,7 +1241,7 @@
             }
         });
 
-        // Plan Data & Toggle Logic
+        // Plan Data & Toggle Logic (Dynamic via Admin CMS)
         const planData = {
             veg: {
                 icon: "🥗",
@@ -1316,6 +1324,33 @@
         let currentDuration = 'weekly';
         let currentType = 'veg';
 
+        window.updatePlanDataFromCms = function(setting) {
+            if (!setting) return;
+            if (setting.dabbaVegTitle) planData.veg.title = setting.dabbaVegTitle;
+            if (setting.dabbaVegSubtitle) planData.veg.subtitle = setting.dabbaVegSubtitle;
+            if (setting.dabbaVegWeeklyOldPrice) planData.veg.weekly.oldPrice = setting.dabbaVegWeeklyOldPrice;
+            if (setting.dabbaVegWeeklyNewPrice) planData.veg.weekly.newPrice = setting.dabbaVegWeeklyNewPrice;
+            if (setting.dabbaVegMonthlyOldPrice) planData.veg.monthly.oldPrice = setting.dabbaVegMonthlyOldPrice;
+            if (setting.dabbaVegMonthlyNewPrice) planData.veg.monthly.newPrice = setting.dabbaVegMonthlyNewPrice;
+
+            if (setting.dabbaNonvegTitle) planData.nonveg.title = setting.dabbaNonvegTitle;
+            if (setting.dabbaNonvegSubtitle) planData.nonveg.subtitle = setting.dabbaNonvegSubtitle;
+            if (setting.dabbaNonvegWeeklyOldPrice) planData.nonveg.weekly.oldPrice = setting.dabbaNonvegWeeklyOldPrice;
+            if (setting.dabbaNonvegWeeklyNewPrice) planData.nonveg.weekly.newPrice = setting.dabbaNonvegWeeklyNewPrice;
+            if (setting.dabbaNonvegMonthlyOldPrice) planData.nonveg.monthly.oldPrice = setting.dabbaNonvegMonthlyOldPrice;
+            if (setting.dabbaNonvegMonthlyNewPrice) planData.nonveg.monthly.newPrice = setting.dabbaNonvegMonthlyNewPrice;
+
+            renderPlan();
+        };
+
+        document.addEventListener('littiWaleSettingsLoaded', function(e) {
+            const settings = e.detail;
+            const cloudSetting = (Array.isArray(settings) ? settings.find(s => s.storeId === 'cloud') : null) || (Array.isArray(settings) ? settings[0] : null);
+            if (cloudSetting) {
+                window.updatePlanDataFromCms(cloudSetting);
+            }
+        });
+
         function toggleDuration(duration) {
             currentDuration = duration;
             document.getElementById('btn-weekly').classList.toggle('active', duration === 'weekly');
@@ -1391,7 +1426,6 @@
     <script src="js/restaurant-timing.js"></script>
 
     <div id="cart-toast"></div>
-    <script src="js/location-picker.js?v=2"></script>
 </body>
 
 </html>

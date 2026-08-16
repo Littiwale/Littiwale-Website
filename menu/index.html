@@ -315,11 +315,18 @@
                 <li><a href="javascript:void(0)" class="nav-get-deals-btn">🔥 Get Deals</a></li>
             </ul>
 
-            <a href="javascript:void(0)" class="cart-link nav-cart-btn">
-                <i class="fas fa-shopping-cart"></i>
-                Cart
-                <span id="cart-count" class="cart-badge">0</span>
-            </a>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <button type="button" class="nav-my-orders-btn" onclick="openCustomerOrdersDrawer()" title="View past orders & saved address">
+                    <i class="fas fa-user-circle"></i>
+                    <span>My Orders</span>
+                </button>
+
+                <a href="javascript:void(0)" class="cart-link nav-cart-btn">
+                    <i class="fas fa-shopping-cart"></i>
+                    Cart
+                    <span id="cart-count" class="cart-badge">0</span>
+                </a>
+            </div>
         </div>
     </nav>
     <div id="lw-outlet-bar-placeholder"></div>
@@ -407,6 +414,7 @@
             <div class="footer-links" style="flex:1; min-width:150px;">
                 <h4 style="color:var(--primary-color); font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:20px;">Explore</h4>
                 <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px;">
+                    <li><a href="javascript:void(0)" onclick="openCustomerOrdersDrawer()" style="color:var(--text-secondary); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">My Orders</a></li>
                     <li><a href="/#why-us" style="color:var(--text-secondary); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Why Littiwale</a></li>
                     <li><a href="/#how-it-works" style="color:var(--text-secondary); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">How It Works</a></li>
                     <li><a href="/#membership-section" style="color:var(--text-secondary); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Membership Plans</a></li>

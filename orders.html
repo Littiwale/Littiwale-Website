@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders | Littiwale Barbil</title>
+    <meta name="description" content="View past orders, track live orders, and 1-tap reorder delicious authentic food from Littiwale Barbil.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Base Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/restaurant-status.css">
+    <link rel="stylesheet" href="css/custom-alert.css">
+
+    <style>
+        :root {
+            --bg-base: #0a0a0c;
+            --bg-card: #121216;
+            --bg-surface: #18181f;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.16);
+            --primary: #f97316;
+            --primary-hover: #ea580c;
+            --green: #22c55e;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Top Navbar */
+        .orders-navbar {
+            background: rgba(10, 10, 12, 0.92);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .orders-nav-inner {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .orders-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .orders-logo img {
+            width: 38px;
+            height: 38px;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .orders-logo span {
+            font-weight: 800;
+            font-size: 1.15rem;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+
+        .orders-nav-links {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .orders-nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .orders-nav-btn-home {
+            background: rgba(255, 255, 255, 0.06);
+            color: #cbd5e1;
+            border: 1px solid var(--border);
+        }
+
+        .orders-nav-btn-home:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+        }
+
+        .orders-nav-btn-menu {
+            background: var(--primary);
+            color: #fff;
+            border: 1px solid transparent;
+        }
+
+        .orders-nav-btn-menu:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        /* Main Orders Container */
+        .orders-main-wrapper {
+            flex: 1;
+            max-width: 760px;
+            width: 100%;
+            margin: 32px auto 60px;
+            padding: 0 18px;
+        }
+
+        .orders-page-header {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .orders-page-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+            color: #ffffff;
+        }
+
+        .orders-page-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* Customer Cards and Lookup Box */
+        .orders-content-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            margin-bottom: 20px;
+        }
+
+        .cust-lookup-box {
+            text-align: center;
+            padding: 30px 10px;
+        }
+
+        .cust-lookup-input-group {
+            display: flex;
+            align-items: center;
+            background: var(--bg-surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            max-width: 380px;
+            margin: 18px auto;
+            transition: border-color 0.2s ease;
+        }
+
+        .cust-lookup-input-group:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+        }
+
+        .cust-lookup-input-prefix {
+            padding: 12px 14px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.03);
+            border-right: 1px solid var(--border);
+        }
+
+        .cust-lookup-input {
+            flex: 1;
+            padding: 12px 14px;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            outline: none;
+        }
+
+        .cust-lookup-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+            color: #fff;
+            border: none;
+            padding: 13px 32px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 24px rgba(249, 115, 22, 0.35);
+        }
+
+        .cust-lookup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(249, 115, 22, 0.5);
+        }
+
+        /* Profile Header */
+        .cust-profile-header-card {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.12) 0%, rgba(234, 88, 12, 0.03) 100%);
+            border: 1px solid rgba(249, 115, 22, 0.25);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .cust-profile-greeting {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 3px;
+        }
+
+        .cust-profile-phone {
+            font-size: 13px;
+            color: #fbbf24;
+            font-weight: 700;
+            font-family: var(--font-mono);
+        }
+
+        .cust-switch-account-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #cbd5e1;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .cust-switch-account-btn:hover {
+            background: rgba(255, 255, 255, 0.16);
+            color: #fff;
+        }
+
+        /* Live Active Order Banner */
+        .cust-live-order-banner {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border: 1.5px solid #22c55e;
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            animation: pulseGlow 2.5s infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.4); }
+        }
+
+        .cust-live-order-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .cust-live-order-icon {
+            width: 40px;
+            height: 40px;
+            background: #22c55e;
+            color: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .cust-live-order-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .cust-live-order-sub {
+            font-size: 12px;
+            color: #86efac;
+            font-weight: 600;
+        }
+
+        .cust-live-order-btn {
+            background: #22c55e;
+            color: #052e16;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 12.5px;
+            font-weight: 800;
+            white-space: nowrap;
+            transition: transform 0.2s ease;
+        }
+
+        .cust-live-order-btn:hover {
+            transform: translateY(-1px);
+            background: #16a34a;
+            color: #fff;
+        }
+
+        /* Past Order Cards */
+        .cust-past-order-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .cust-past-order-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .cust-order-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .cust-order-id {
+            font-size: 14.5px;
+            font-weight: 900;
+            color: #f97316;
+            font-family: var(--font-mono);
+        }
+
+        .cust-order-date {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .cust-order-items {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .cust-order-footer-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 12px;
+        }
+
+        .cust-order-total {
+            font-size: 16px;
+            font-weight: 900;
+            color: #fff;
+            font-family: var(--font-mono);
+        }
+
+        .cust-reorder-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .cust-reorder-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(249, 115, 22, 0.35);
+        }
+
+        .cust-view-order-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #cbd5e1;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .cust-view-order-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Footer */
+        .orders-footer {
+            border-top: 1px solid var(--border);
+            padding: 24px 20px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: auto;
+        }
+
+        @media (max-width: 600px) {
+            .orders-main-wrapper {
+                margin: 20px auto 40px;
+                padding: 0 14px;
+            }
+            .orders-page-title {
+                font-size: 1.5rem;
+            }
+            .cust-profile-header-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .cust-switch-account-btn {
+                align-self: flex-start;
+            }
+            .cust-live-order-banner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .cust-live-order-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Top Navbar -->
+    <header class="orders-navbar">
+        <div class="orders-nav-inner">
+            <a href="index.html" class="orders-logo">
+                <img src="images/logo.png" alt="Littiwale Logo">
+                <span>LITTIWALE</span>
+            </a>
+            <div class="orders-nav-links">
+                <a href="index.html" class="orders-nav-btn orders-nav-btn-home">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <a href="menu/index.html" class="orders-nav-btn orders-nav-btn-menu">
+                    <i class="fas fa-utensils"></i> Browse Menu
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="orders-main-wrapper">
+        <div class="orders-page-header">
+            <h1 class="orders-page-title">My Orders & Live Tracking</h1>
+            <p class="orders-page-subtitle">Track your active orders, view thermal bills & 1-tap reorder your favorites.</p>
+        </div>
+
+        <div id="customer-orders-container" class="orders-content-card">
+            <!-- Dynamic Content Injected by JavaScript -->
+            <div style="text-align:center; padding:50px 20px;">
+                <div class="spinner" style="width:36px; height:36px; border:3px solid rgba(255,255,255,0.1); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 14px;"></div>
+                <p style="color:var(--text-muted); font-size:13.5px;">Loading your orders...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Floating Action Buttons -->
+    <div class="fab-container">
+        <button onclick="openPartnerModal()" class="fab-btn" style="background:#ffbc00; color:#000; border:none; outline:none;" title="Delivery Partner & Orders">
+            <i class="fas fa-motorcycle"></i>
+        </button>
+        <a href="menu/index.html" class="fab-btn cart-fab" style="background:#333;color:white;" title="Cart">
+            <i class="fas fa-shopping-cart"></i>
+            <span id="fab-cart-badge">0</span>
+        </a>
+        <a href="tel:+916370680744" class="fab-btn" style="background:#007bff;color:white;" title="Call Us">
+            <i class="fas fa-phone"></i>
+        </a>
+        <a href="https://wa.me/916370680744" target="_blank" class="fab-btn" style="background:#25d366;color:white;" title="WhatsApp Us">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+    </div>
+
+    <!-- Partner Modal -->
+    <div id="partner-popup" class="payment-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
+        <div class="payment-modal-content" style="max-width:400px; width:90%; background:#18181b; border:1px solid rgba(255,255,255,0.15); border-radius:16px; padding:24px; text-align:center; position:relative; color:#fff;">
+            <button id="close-partner-popup" class="close-btn" style="position:absolute; right:16px; top:12px; font-size:24px; background:none; border:none; color:#fff; cursor:pointer;" onclick="closePartnerModal()">&times;</button>
+            <div style="font-size:3rem; margin-bottom:10px; line-height:1;">🛵</div>
+            <h3 style="color:#f97316; margin-bottom:15px; font-size:1.2rem; font-weight:800;">Choose Your Preferred Ordering Option</h3>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <a href="menu/index.html" class="btn btn-primary" style="background:#f97316; color:#fff; font-size:1rem; padding:12px; font-weight:bold; border-radius:8px; text-decoration:none; display:block;">
+                    Order Directly from Website
+                </a>
+                <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" class="btn" style="background:#e23744; color:#fff; font-size:1rem; padding:12px; border-radius:8px; font-weight:bold; text-decoration:none; display:block;">
+                    Zomato
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="orders-footer">
+        <p>© 2026 Littiwale Barbil. All rights reserved. • Taste of Desi Swag</p>
+    </footer>
+
+    <div id="cart-toast"></div>
+    <script src="js/main.js"></script>
+    <script src="js/restaurant-timing.js"></script>
+    <script src="js/receipt-printer.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Auto initialize orders on page load
+            const container = document.getElementById('customer-orders-container');
+            if (container && typeof window.renderCustomerOrdersUI === 'function') {
+                window.renderCustomerOrdersUI();
+            }
+        });
+    </script>
+</body>
+
+</html>

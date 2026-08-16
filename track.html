@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Order Tracking | Littiwale Barbil</title>
+    <meta name="description" content="Track your live food order status from Littiwale Barbil. Real-time kitchen preparation, delivery progress, and rider updates.">
+    <link rel="icon" type="image/png" href="images/logo.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Global Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/receipt-printer.css">
+
+    <style>
+        :root {
+            --primary: #f97316;
+            --primary-hover: #ea580c;
+            --gold: #fbbf24;
+            --green: #10b981;
+            --blue: #3b82f6;
+            --bg-dark: #09090b;
+            --bg-card: #141417;
+            --bg-surface: #1e1e24;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.16);
+            --text-main: #ffffff;
+            --text-dim: #cbd5e1;
+            --text-muted: #71717a;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 10px;
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-display: 'Outfit', sans-serif;
+            --font-mono: 'Space Grotesk', monospace;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Main Container & Desktop 2-Column Grid */
+        .track-container {
+            max-width: 1060px;
+            width: 100%;
+            margin: 36px auto 60px;
+            padding: 0 20px;
+            flex: 1;
+        }
+
+        .track-grid-layout {
+            display: grid;
+            grid-template-columns: 1.15fr 1fr;
+            gap: 28px;
+            align-items: start;
+        }
+
+        .track-col-left,
+        .track-col-right {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        @media (max-width: 899px) {
+            .track-grid-layout {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .track-container {
+                max-width: 540px;
+                margin: 20px auto 40px;
+                padding: 0 16px;
+            }
+        }
+
+        /* Delivery Animation Hero Card */
+        .delivery-anim-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+        }
+
+        .anim-scene-stage {
+            background: linear-gradient(180deg, #09090b 0%, #17171c 100%);
+            padding: 24px 16px 16px;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .scene-svg {
+            width: 100%;
+            height: 125px;
+            display: block;
+        }
+
+        /* Keyframe Animations */
+        .anim-road-line {
+            stroke-dasharray: 12 8;
+            animation: roadMove 0.45s linear infinite;
+        }
+
+        @keyframes roadMove {
+            from { stroke-dashoffset: 0; }
+            to { stroke-dashoffset: -40; }
+        }
+
+        .anim-vehicle-group {
+            animation: truckDriveMotion 4.2s ease-in-out infinite;
+        }
+
+        @keyframes truckDriveMotion {
+            0% { transform: translate(-80px, 14px); }
+            30% { transform: translate(45px, 14px); }
+            70% { transform: translate(120px, 13.5px); }
+            100% { transform: translate(360px, 14px); }
+        }
+
+        .anim-wheel {
+            transform-origin: center;
+            animation: spinWheel 0.35s linear infinite;
+        }
+
+        @keyframes spinWheel {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .anim-headlight-beam {
+            animation: headlightPulse 1.2s ease-in-out infinite alternate;
+        }
+
+        @keyframes headlightPulse {
+            0% { opacity: 0.5; }
+            100% { opacity: 0.9; }
+        }
+
+        .anim-flame {
+            transform-origin: bottom center;
+            animation: flameFlicker 0.6s ease-in-out infinite alternate;
+        }
+
+        @keyframes flameFlicker {
+            0% { transform: scaleY(0.92) scaleX(0.96); opacity: 0.85; }
+            100% { transform: scaleY(1.18) scaleX(1.04); opacity: 1; filter: drop-shadow(0 0 10px #f97316); }
+        }
+
+        .anim-steam {
+            animation: steamRise 1.8s ease-out infinite;
+        }
+
+        @keyframes steamRise {
+            0% { transform: translateY(0) scaleX(1); opacity: 0; }
+            30% { opacity: 0.8; }
+            100% { transform: translateY(-20px) scaleX(1.3); opacity: 0; }
+        }
+
+        .anim-radar-wave {
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: radarPulse 2s ease-out infinite;
+        }
+
+        @keyframes radarPulse {
+            0% { transform: scale(0.6); opacity: 0.9; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        /* Delivered Stage: Truck arrives from left -> hits target -> transforms into glowing permanent Checkmark */
+        .anim-delivered-truck {
+            animation: truckArriveAndVanish 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        @keyframes truckArriveAndVanish {
+            0% {
+                transform: translate(-140px, 34px);
+                opacity: 1;
+            }
+            55% {
+                transform: translate(90px, 34px);
+                opacity: 1;
+            }
+            72% {
+                transform: translate(130px, 34px) scale(0.85);
+                opacity: 0.6;
+            }
+            82%, 100% {
+                transform: translate(145px, 34px) scale(0.2);
+                opacity: 0;
+                pointer-events: none;
+            }
+        }
+
+        .anim-delivered-final-check {
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: checkmarkBurstReveal 1.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, idleTickPulse 2.4s ease-in-out infinite alternate 1.6s;
+        }
+
+        @keyframes checkmarkBurstReveal {
+            0%, 65% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            78% {
+                transform: scale(1.3);
+                opacity: 1;
+                filter: drop-shadow(0 0 28px #10b981);
+            }
+            88% {
+                transform: scale(0.94);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+                filter: drop-shadow(0 0 16px rgba(16, 185, 129, 0.7));
+            }
+        }
+
+        @keyframes idleTickPulse {
+            0% { transform: scale(1); filter: drop-shadow(0 0 14px rgba(16, 185, 129, 0.5)); }
+            100% { transform: scale(1.06); filter: drop-shadow(0 0 28px rgba(16, 185, 129, 0.85)); }
+        }
+
+        .anim-delivered-pulse-ring {
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: pulseRingBurst 1.6s ease-out forwards;
+        }
+
+        @keyframes pulseRingBurst {
+            0%, 68% {
+                transform: scale(0.4);
+                opacity: 0;
+            }
+            78% {
+                transform: scale(1);
+                opacity: 0.9;
+            }
+            100% {
+                transform: scale(1.7);
+                opacity: 0;
+            }
+        }
+
+        /* Status Banner Box */
+        .status-banner {
+            padding: 22px 24px;
+            text-align: center;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 12px;
+        }
+
+        .status-badge.pending {
+            background: rgba(245, 158, 11, 0.14);
+            color: var(--gold);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-badge.confirmed {
+            background: rgba(16, 185, 129, 0.14);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-badge.dispatched {
+            background: rgba(59, 130, 246, 0.14);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .status-badge.delivered {
+            background: rgba(16, 185, 129, 0.18);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            display: inline-block;
+            animation: dotGlow 1.5s infinite;
+        }
+
+        .pulse-dot.yellow { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+        .pulse-dot.green { background: var(--green); box-shadow: 0 0 8px var(--green); }
+        .pulse-dot.blue { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
+
+        @keyframes dotGlow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(1.3); }
+        }
+
+        .status-title {
+            font-family: var(--font-display);
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+
+        .status-subtitle {
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.55;
+            max-width: 440px;
+            margin: 0 auto;
+        }
+
+        /* 4-Stage Stepper */
+        .stepper-wrap {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            padding: 20px 24px 24px;
+            background: rgba(0, 0, 0, 0.25);
+            border-top: 1px solid var(--border);
+        }
+
+        .stepper-wrap::before {
+            content: '';
+            position: absolute;
+            top: 35px;
+            left: 45px;
+            right: 45px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 1;
+        }
+
+        .step-item {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+        }
+
+        .step-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #27272a;
+            border: 2px solid #52525b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+            color: #a1a1aa;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .step-item.active .step-circle {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 0 16px var(--primary-glow);
+        }
+
+        .step-item.completed .step-circle {
+            background: var(--green);
+            border-color: var(--green);
+            color: #ffffff;
+            box-shadow: 0 0 14px rgba(16, 185, 129, 0.4);
+        }
+
+        .step-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .step-item.active .step-label {
+            color: var(--primary);
+        }
+
+        .step-item.completed .step-label {
+            color: var(--green);
+        }
+
+        /* Order Details Card */
+        /* 3D Thermal Printer Dispenser Stage */
+        .embedded-printer-stage {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .embedded-printer-head {
+            width: 100%;
+            position: relative;
+            z-index: 20;
+            filter: drop-shadow(0 10px 22px rgba(0,0,0,0.6));
+        }
+
+        .embedded-hood-top {
+            width: 100%;
+            height: 48px;
+            border-radius: 16px 16px 3px 3px;
+            background: linear-gradient(180deg, #2d3748 0%, #1a202c 45%, #0f172a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.2), inset 0 -2px 4px rgba(0,0,0,0.8);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+        }
+
+        .embedded-hood-highlight {
+            position: absolute;
+            top: 2px;
+            left: 5%;
+            width: 90%;
+            height: 5px;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+            border-radius: 999px;
+        }
+
+        .embedded-hood-status {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .embedded-led-dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #22c55e;
+            animation: statusPulse 1.8s infinite;
+        }
+
+        .embedded-led-text {
+            font-size: 11px;
+            font-weight: 800;
+            color: #cbd5e1;
+            letter-spacing: 1px;
+            font-family: var(--font-mono);
+        }
+
+        .embedded-printer-slit {
+            width: 92%;
+            margin: -6px auto 0;
+            height: 12px;
+            background: #000000;
+            border-radius: 2px;
+            box-shadow: inset 0 5px 10px rgba(0,0,0,0.95), inset 0 -1px 2px rgba(255,255,255,0.15);
+            position: relative;
+            z-index: 5;
+        }
+
+        .embedded-hood-bottom {
+            width: 100%;
+            height: 12px;
+            margin-top: -4px;
+            border-radius: 0 0 14px 14px;
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 70%, #334155 100%);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .embedded-paper-viewport {
+            position: relative;
+            width: 100%;
+            margin-top: -6px;
+            z-index: 8;
+            clip-path: inset(0px -40px -2000px -40px);
+            perspective: 1200px;
+            perspective-origin: 50% 0%;
+        }
+
+        /* Realistic Live Thermal POS Receipt Slip */
+        .order-card.thermal-receipt-slip {
+            background: #ffffff;
+            color: #18181b;
+            border-radius: 0 0 8px 8px;
+            padding: 24px 22px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5), 0 2px 10px rgba(0, 0, 0, 0.25);
+            position: relative;
+            animation: rollOutFromPrinter 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transform-origin: top center;
+        }
+
+        @keyframes rollOutFromPrinter {
+            0% {
+                transform: translateY(-90%) rotateX(-16deg) translateZ(-30px);
+                opacity: 0.3;
+            }
+            30% {
+                transform: translateY(-55%) rotateX(-10deg) translateZ(15px);
+                opacity: 0.9;
+            }
+            70% {
+                transform: translateY(-15%) rotateX(-3deg) translateZ(5px);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(0%) rotateX(0deg) translateZ(0px);
+                opacity: 1;
+            }
+        }
+
+        .slip-header {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .slip-logo-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .slip-logo-img {
+            width: 38px;
+            height: 38px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .slip-brand-title {
+            font-size: 19px;
+            font-weight: 900;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+            line-height: 1.1;
+        }
+
+        .slip-brand-tag {
+            font-size: 10px;
+            font-weight: 800;
+            color: #d97706;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .slip-meta-info {
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.4;
+            margin-top: 4px;
+        }
+
+        .slip-order-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #334155;
+            font-family: var(--font-mono);
+            padding: 4px 0;
+        }
+
+        .slip-dashed-divider {
+            height: 1px;
+            border-bottom: 1.5px dashed #cbd5e1;
+            margin: 10px 0;
+        }
+
+        .slip-double-divider {
+            height: 3px;
+            border-top: 1.5px dashed #0f172a;
+            border-bottom: 1.5px dashed #0f172a;
+            margin: 10px 0;
+        }
+
+        .slip-items-table {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .slip-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            font-size: 13px;
+            color: #1e293b;
+        }
+
+        .slip-item-left {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            max-width: 78%;
+        }
+
+        .slip-item-qty {
+            font-weight: 800;
+            font-family: var(--font-mono);
+            color: #d97706;
+            background: #fef3c7;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-size: 11.5px;
+        }
+
+        .slip-item-name {
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .slip-item-price {
+            font-weight: 800;
+            font-family: var(--font-mono);
+            color: #0f172a;
+            font-size: 13.5px;
+        }
+
+        .slip-bill-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12.5px;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        .slip-bill-row.discount {
+            color: #059669;
+            font-weight: 700;
+        }
+
+        .slip-total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 900;
+            color: #0f172a;
+            padding: 4px 0;
+        }
+
+        .slip-customer-info {
+            font-size: 11.5px;
+            color: #475569;
+            line-height: 1.5;
+            background: #f8fafc;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .slip-barcode-wrap {
+            text-align: center;
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px dashed #cbd5e1;
+        }
+
+        .slip-barcode-lines {
+            height: 24px;
+            margin: 0 auto 4px;
+            max-width: 190px;
+            background: repeating-linear-gradient(
+                90deg,
+                #000 0px,
+                #000 2px,
+                transparent 2px,
+                transparent 4px,
+                #000 4px,
+                #000 7px,
+                transparent 7px,
+                transparent 9px,
+                #000 9px,
+                #000 10px,
+                transparent 10px,
+                transparent 13px,
+                #000 13px,
+                #000 16px,
+                transparent 16px,
+                transparent 17px
+            );
+        }
+
+        .slip-barcode-text {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 2px;
+            font-weight: 700;
+            color: #64748b;
+        }
+
+        .slip-footer-tag {
+            font-size: 9.5px;
+            font-weight: 800;
+            color: #94a3b8;
+            letter-spacing: 0.6px;
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+
+        /* Action Buttons Grid - Full Width & 3 Equal Columns on Desktop */
+        .actions-grid {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            width: 100%;
+            margin-top: 24px;
+        }
+
+        .btn-action {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 18px;
+            border-radius: var(--radius-md);
+            font-size: 13.5px;
+            font-weight: 700;
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-whatsapp {
+            background: #25d366;
+            color: #052e16;
+        }
+
+        .btn-whatsapp:hover {
+            background: #22c55e;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-call {
+            background: var(--bg-surface);
+            border-color: var(--border);
+            color: #ffffff;
+        }
+
+        .btn-call:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-order-more {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+            color: #ffffff;
+            box-shadow: 0 8px 24px rgba(249, 115, 22, 0.35);
+        }
+
+        .btn-order-more:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(249, 115, 22, 0.5);
+        }
+
+        /* Loading Spinner */
+        .loading-wrap {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+        }
+
+        .spinner {
+            width: 44px;
+            height: 44px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .actions-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                margin-top: 18px;
+            }
+            .btn-order-more {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
+            .btn-order-more {
+                grid-column: span 1;
+            }
+            .track-container {
+                margin-top: 14px;
+            }
+        }
+    </style>
+</head>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <button class="mobile-toggle hamburger" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <a href="/" class="logo-link">
+                <img src="images/logo.png" class="nav-logo" alt="Litti Wale">
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="/#home">Home</a></li>
+                <li><a href="/menu">Menu</a></li>
+                <li><a href="/#about">About</a></li>
+                <li><a href="/#reach">Reach Us</a></li>
+                <li><a href="/#connect">Social</a></li>
+                <li><a href="/menu" class="nav-get-deals-btn">Get Deals</a></li>
+            </ul>
+
+            <div style="display:flex; align-items:center; gap:8px;">
+                <button type="button" class="nav-my-orders-btn" onclick="openCustomerOrdersDrawer()" title="View past orders & saved address">
+                    <i class="fas fa-user-circle"></i>
+                    <span>My Orders</span>
+                </button>
+
+                <a href="javascript:void(0)" class="cart-link nav-cart-btn">
+                    <i class="fas fa-shopping-cart"></i>
+                    Cart
+                    <span id="cart-count" class="cart-badge">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Live Tracking Stage -->
+    <main class="track-container" id="tracking-main-container">
+        <div class="loading-wrap" id="loading-state">
+            <div class="spinner"></div>
+            <h3 style="font-size:1.1rem; margin-bottom:4px; font-weight:700;">Connecting to Kitchen...</h3>
+            <p style="font-size:13px; color:var(--text-muted);">Fetching live order status</p>
+        </div>
+    </main>
+
+    <script>
+        const ADMIN_API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://localhost:5001/api' 
+            : 'https://littiwale-admin.vercel.app/api';
+
+        let activeOrderId = null;
+        let pollTimer = null;
+        let prevStatus = null;
+
+        function getTargetOrderId() {
+            const params = new URLSearchParams(window.location.search);
+            const fromQuery = params.get('orderId') || params.get('id');
+            if (fromQuery) return fromQuery;
+
+            try {
+                const stored = localStorage.getItem('littiWaleActiveOrder');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (parsed && parsed.id) return parsed.id;
+                }
+            } catch(e) {}
+
+            return null;
+        }
+
+        async function fetchLiveOrder() {
+            if (!activeOrderId) {
+                renderNotFound();
+                return;
+            }
+
+            try {
+                const res = await fetch(`${ADMIN_API_BASE}/orders/${activeOrderId}`);
+                if (res.ok) {
+                    const order = await res.json();
+                    if (order) {
+                        if (prevStatus === 'pending' && (order.status === 'accepted' || order.status === 'confirmed')) {
+                            playCelebrationSound();
+                        }
+                        prevStatus = order.status;
+                        renderOrderView(order);
+                    } else {
+                        renderNotFound();
+                    }
+                } else {
+                    renderNotFound();
+                }
+            } catch(e) {
+                console.warn('Live poll error:', e);
+            }
+        }
+
+        function playCelebrationSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.25, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.4);
+            } catch(e) {}
+        }
+
+        // Clean & High-End Visual Stage Generator for all 4 states
+        function getStageSceneSVG(status) {
+            if (status === 'pending') {
+                return `
+                    <svg class="scene-svg" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Elegant Ground Platform -->
+                        <ellipse cx="190" cy="96" rx="140" ry="7" fill="rgba(245,158,11,0.12)" />
+                        
+                        <!-- Center Pulse Beacon Unit -->
+                        <g transform="translate(190, 50)">
+                            <circle cx="0" cy="0" r="16" stroke="#fbbf24" stroke-width="1.5" class="anim-radar-wave" fill="none" />
+                            <circle cx="0" cy="0" r="28" stroke="#f59e0b" stroke-width="1.5" class="anim-radar-wave" style="animation-delay:0.5s;" fill="none" />
+                            <circle cx="0" cy="0" r="42" stroke="#ea580c" stroke-width="1.2" class="anim-radar-wave" style="animation-delay:1s;" fill="none" />
+                            <circle cx="0" cy="0" r="18" fill="#18181b" stroke="#fbbf24" stroke-width="2" />
+                            <circle cx="0" cy="0" r="6" fill="#fbbf24" />
+                        </g>
+
+                        <!-- Left Restaurant Cloud Kitchen Hub -->
+                        <g transform="translate(60, 32)">
+                            <rect x="0" y="14" width="46" height="42" rx="8" fill="#18181b" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" />
+                            <path d="M 12 30 L 34 30 M 12 38 L 26 38" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" />
+                            <circle cx="23" cy="22" r="3" fill="#f59e0b" />
+                        </g>
+
+                        <!-- Right Live Timer Clock -->
+                        <g transform="translate(275, 32)">
+                            <rect x="0" y="14" width="46" height="42" rx="8" fill="#18181b" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" />
+                            <circle cx="23" cy="35" r="12" fill="#27272a" stroke="#fbbf24" stroke-width="1.5" />
+                            <line x1="23" y1="35" x2="23" y2="28" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" />
+                            <line x1="23" y1="35" x2="29" y2="35" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round" />
+                        </g>
+                    </svg>
+                `;
+            } else if (status === 'accepted' || status === 'confirmed') {
+                return `
+                    <svg class="scene-svg" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Culinary Base Table -->
+                        <ellipse cx="190" cy="96" rx="140" ry="7" fill="rgba(249,115,22,0.15)" />
+                        <rect x="90" y="80" width="200" height="12" rx="4" fill="#27272a" stroke="#3f3f46" stroke-width="1.5" />
+                        
+                        <!-- Gas Burner Grate -->
+                        <rect x="145" y="68" width="90" height="12" rx="3" fill="#3f3f46" stroke="#52525b" stroke-width="1.5" />
+                        <circle cx="165" cy="74" r="2.5" fill="#f97316" />
+                        <circle cx="215" cy="74" r="2.5" fill="#f97316" />
+
+                        <!-- Dancing Stove Flame -->
+                        <g class="anim-flame" style="transform-origin: 190px 68px;">
+                            <path d="M 168 68 Q 176 48 184 68 Q 192 42 200 68 Q 208 48 214 68 Z" fill="url(#flameGrad)" />
+                        </g>
+
+                        <!-- Sleek Modern Cooking Wok -->
+                        <g transform="translate(142, 44)">
+                            <path d="M 10 16 Q 48 30 86 16 L 82 24 Q 48 36 14 24 Z" fill="#18181b" stroke="#52525b" stroke-width="1.5" />
+                            <rect x="0" y="14" width="14" height="4" rx="2" fill="#3f3f46" />
+                            <rect x="82" y="14" width="14" height="4" rx="2" fill="#3f3f46" />
+                            
+                            <!-- Sizzling Food Particles -->
+                            <circle cx="36" cy="20" r="4.5" fill="#f59e0b" />
+                            <circle cx="50" cy="18" r="4" fill="#d97706" />
+                            <circle cx="62" cy="21" r="4.5" fill="#fbbf24" />
+                        </g>
+
+                        <!-- Rising Pure Steam Curves -->
+                        <g class="anim-steam" style="transform-origin: 190px 30px;">
+                            <path d="M 178 36 Q 172 24 178 14 Q 184 6 178 0" stroke="#fed7aa" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.75" />
+                            <path d="M 190 36 Q 196 24 190 14 Q 184 6 190 0" stroke="#fed7aa" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.75" />
+                            <path d="M 202 36 Q 196 24 202 14 Q 208 6 202 0" stroke="#fed7aa" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.75" />
+                        </g>
+
+                        <defs>
+                            <linearGradient id="flameGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                                <stop offset="0%" stop-color="#ef4444" />
+                                <stop offset="60%" stop-color="#f97316" />
+                                <stop offset="100%" stop-color="#fef08a" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                `;
+            } else if (status === 'dispatched') {
+                return `
+                    <svg class="scene-svg" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <ellipse cx="190" cy="96" rx="150" ry="7" fill="rgba(249,115,22,0.15)" />
+                        <line x1="10" y1="96" x2="370" y2="96" stroke="#3f3f46" stroke-width="2.5" stroke-linecap="round" />
+                        <line class="anim-road-line" x1="10" y1="103" x2="370" y2="103" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" />
+                        
+                        <defs>
+                            <linearGradient id="headlightGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.85" />
+                                <stop offset="100%" stop-color="#fbbf24" stop-opacity="0" />
+                            </linearGradient>
+                            <linearGradient id="vanBodyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#ea580c" />
+                                <stop offset="60%" stop-color="#f97316" />
+                                <stop offset="100%" stop-color="#fbbf24" />
+                            </linearGradient>
+                        </defs>
+
+                        <g class="anim-vehicle-group">
+                            <polygon class="anim-headlight-beam" points="140,42 255,18 255,70 140,49" fill="url(#headlightGrad)" />
+
+                            <!-- Parcel in cargo -->
+                            <rect x="22" y="24" width="16" height="14" rx="2" fill="#d97706" stroke="#b45309" stroke-width="1.2" />
+                            <line x1="30" y1="24" x2="30" y2="38" stroke="#fef3c7" stroke-width="1.2" />
+                            <line x1="22" y1="31" x2="38" y2="31" stroke="#fef3c7" stroke-width="1.2" />
+
+                            <!-- Sleek Van Body -->
+                            <path d="M 10 16 C 10 12, 14 10, 18 10 L 110 10 C 114 10, 118 13, 122 18 L 138 32 C 140 34, 142 38, 142 42 L 142 56 C 142 58, 140 60, 138 60 L 10 60 C 8 60, 6 58, 6 56 L 6 20 C 6 18, 8 16, 10 16 Z" fill="url(#vanBodyGrad)" stroke="#c2410c" stroke-width="1.5" />
+                            <rect x="16" y="16" width="60" height="34" rx="3" fill="#27272a" stroke="#3f3f46" stroke-width="1.5" />
+                            <text x="46" y="31" fill="#fde047" font-size="7.5" font-weight="900" text-anchor="middle" font-family="'Space Grotesk', sans-serif" letter-spacing="0.5">LITTIWALE</text>
+
+                            <path d="M 88 16 L 116 16 C 118 16, 120 18, 122 22 L 132 34 L 88 34 Z" fill="#0284c7" opacity="0.85" stroke="#0369a1" stroke-width="1" />
+                            <circle cx="139" cy="46" r="3.5" fill="#fef08a" />
+
+                            <g class="anim-wheel" style="transform-origin: 34px 58px;">
+                                <circle cx="34" cy="58" r="11" fill="#18181b" stroke="#3f3f46" stroke-width="2" />
+                                <circle cx="34" cy="58" r="5" fill="#e4e4e7" />
+                            </g>
+                            <g class="anim-wheel" style="transform-origin: 114px 58px;">
+                                <circle cx="114" cy="58" r="11" fill="#18181b" stroke="#3f3f46" stroke-width="2" />
+                                <circle cx="114" cy="58" r="5" fill="#e4e4e7" />
+                            </g>
+                        </g>
+                    </svg>
+                `;
+            } else {
+                // Delivered Stage: Truck arrives, transforms/collides, and big verified Tick Mark stays centered
+                return `
+                    <svg class="scene-svg" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Ground / Road Base -->
+                        <ellipse cx="190" cy="96" rx="150" ry="7" fill="rgba(16,185,129,0.2)" />
+                        <line x1="20" y1="96" x2="360" y2="96" stroke="#27272a" stroke-width="2" stroke-linecap="round" />
+
+                        <!-- Arriving Delivery Van (Drives from left to center and transforms into checkmark) -->
+                        <g class="anim-delivered-truck">
+                            <path d="M 10 16 C 10 12, 14 10, 18 10 L 95 10 C 99 10, 103 13, 107 18 L 120 32 C 122 34, 123 38, 123 42 L 123 54 C 123 56, 121 58, 119 58 L 10 58 C 8 58, 6 56, 6 54 L 6 20 C 6 18, 8 16, 10 16 Z" fill="#10b981" stroke="#059669" stroke-width="1.5" />
+                            <rect x="14" y="16" width="55" height="30" rx="3" fill="#064e3b" />
+                            <text x="41" y="30" fill="#ffffff" font-size="7" font-weight="900" text-anchor="middle" font-family="'Space Grotesk', sans-serif">LITTIWALE</text>
+                            <path d="M 76 16 L 100 16 C 102 16, 104 18, 106 22 L 114 34 L 76 34 Z" fill="#a7f3d0" opacity="0.9" />
+                            <circle cx="28" cy="56" r="9" fill="#18181b" stroke="#3f3f46" stroke-width="2" />
+                            <circle cx="28" cy="56" r="4" fill="#e4e4e7" />
+                            <circle cx="98" cy="56" r="9" fill="#18181b" stroke="#3f3f46" stroke-width="2" />
+                            <circle cx="98" cy="56" r="4" fill="#e4e4e7" />
+                        </g>
+
+                        <!-- Celebration Shockwave Radiance (Bursts upon arrival) -->
+                        <g transform="translate(190, 48)">
+                            <g class="anim-delivered-pulse-ring">
+                                <circle cx="0" cy="0" r="32" stroke="#10b981" stroke-width="2" fill="none" opacity="0.8" />
+                                <circle cx="0" cy="0" r="46" stroke="#34d399" stroke-width="1.5" fill="none" opacity="0.5" />
+                            </g>
+                        </g>
+
+                        <!-- Permanent Bold Green Verified Tick Mark in the Center -->
+                        <g transform="translate(190, 48)">
+                            <g class="anim-delivered-final-check">
+                                <circle cx="0" cy="0" r="28" fill="#10b981" stroke="#34d399" stroke-width="3" />
+                                <circle cx="0" cy="0" r="23" fill="#059669" />
+                                <path d="M -11 -1 L -3 8 L 13 -8" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </g>
+                        </g>
+                    </svg>
+                `;
+            }
+        }
+
+        function renderOrderView(order) {
+            window.currentTrackedOrder = order;
+            const container = document.getElementById('tracking-main-container');
+            const shortId = order._id ? String(order._id).slice(-6).toUpperCase() : 'LW-ORD';
+            const status = (order.status || 'pending').toLowerCase();
+            const finalTotal = order.finalTotal || order.subtotal || 0;
+            const delFee = Number(order.deliveryCharge || 0);
+            const subtotal = Number(order.subtotal || (finalTotal - delFee));
+            const discount = Number(order.discount || 0);
+
+            const isStep1 = true;
+            const isStep2 = status === 'accepted' || status === 'confirmed' || status === 'dispatched' || status === 'delivered';
+            const isStep3 = status === 'dispatched' || status === 'delivered';
+            const isStep4 = status === 'delivered';
+
+            let statusBadgeClass = 'pending';
+            let dotClass = 'yellow';
+            let statusBadgeText = 'Pending Confirmation';
+            let statusTitle = 'Order Placed';
+            let statusDesc = 'We have received your order. The kitchen is currently reviewing your items.';
+
+            if (status === 'accepted' || status === 'confirmed') {
+                statusBadgeClass = 'confirmed';
+                dotClass = 'green';
+                statusBadgeText = 'Kitchen Preparing';
+                statusTitle = 'Preparing in Kitchen';
+                statusDesc = 'Our chefs are freshly preparing your authentic meal with authentic spices and ghee.';
+            } else if (status === 'dispatched') {
+                statusBadgeClass = 'dispatched';
+                dotClass = 'blue';
+                statusBadgeText = 'Out for Delivery';
+                statusTitle = 'Out for Delivery';
+                statusDesc = 'Your hot food has left the kitchen and is on the way to your delivery address.';
+            } else if (status === 'delivered') {
+                statusBadgeClass = 'delivered';
+                dotClass = 'green';
+                statusBadgeText = 'Order Delivered';
+                statusTitle = 'Order Delivered';
+                statusDesc = 'Your meal was successfully delivered. Enjoy your delicious hot food!';
+            } else if (status === 'cancelled') {
+                statusBadgeClass = 'pending';
+                dotClass = 'yellow';
+                statusBadgeText = 'Order Cancelled';
+                statusTitle = 'Order Cancelled';
+                statusDesc = 'This order was cancelled by the restaurant.';
+            }
+
+            const timeStr = order.createdAt ? new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+            const itemsHtml = (order.items || []).map(it => `
+                <div class="slip-item-row">
+                    <div class="slip-item-left">
+                        <span class="slip-item-qty">${it.quantity}x</span>
+                        <span class="slip-item-name">${it.name}</span>
+                    </div>
+                    <span class="slip-item-price">₹${it.subtotal || (it.price * it.quantity)}</span>
+                </div>
+            `).join('') || '<div style="color:#64748b; font-size:12px; text-align:center;">Items list unavailable</div>';
+
+            container.innerHTML = `
+                <div class="track-grid-layout">
+                    <!-- Left Column: Live Animation Hero & 4-Stage Stepper -->
+                    <div class="track-col-left">
+                        <div class="delivery-anim-card">
+                            <div class="anim-scene-stage">
+                                ${getStageSceneSVG(status)}
+                            </div>
+
+                            <!-- Status Text Header -->
+                            <div class="status-banner">
+                                <div class="status-badge ${statusBadgeClass}">
+                                    <span class="pulse-dot ${dotClass}"></span>
+                                    <span>${statusBadgeText}</span>
+                                </div>
+                                <h2 class="status-title">${statusTitle}</h2>
+                                <p class="status-subtitle">${statusDesc}</p>
+
+                                ${(status === 'accepted' || status === 'confirmed' || status === 'dispatched' || status === 'delivered') ? `
+                                <div style="display:flex; justify-content:center; margin-top:14px;">
+                                    <button type="button" onclick="window.openA4InvoiceModal(window.currentTrackedOrder)" style="padding:11px 24px; background:linear-gradient(135deg, #10b981 0%, #059669 100%); color:#fff; font-weight:800; font-size:13px; border:none; border-radius:26px; display:inline-flex; align-items:center; gap:8px; cursor:pointer; box-shadow:0 4px 16px rgba(16,185,129,0.35); transition:transform 0.2s, box-shadow 0.2s;">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="12" y2="18"/><line x1="15" y1="15" x2="12" y2="18"/></svg>
+                                        <span>Download Official Bill (PDF)</span>
+                                    </button>
+                                </div>
+                                ` : (status === 'pending' ? `
+                                <div style="margin-top:14px; padding:8px 16px; background:rgba(245,158,11,0.1); border:1px dashed rgba(245,158,11,0.3); border-radius:20px; font-size:12.5px; color:#fcd34d; display:inline-flex; align-items:center; gap:7px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    <span>Official Bill unlocks in the next step (Kitchen Preparing)</span>
+                                </div>
+                                ` : '')}
+                            </div>
+
+                            <!-- 4-Stage Visual Progress Bar -->
+                            <div class="stepper-wrap">
+                                <div class="step-item ${isStep1 ? (isStep2 ? 'completed' : 'active') : ''}">
+                                    <div class="step-circle">${isStep2 ? '✓' : '1'}</div>
+                                    <span class="step-label">Placed</span>
+                                </div>
+                                <div class="step-item ${isStep2 ? (isStep3 ? 'completed' : 'active') : ''}">
+                                    <div class="step-circle">${isStep3 ? '✓' : '2'}</div>
+                                    <span class="step-label">Kitchen</span>
+                                </div>
+                                <div class="step-item ${isStep3 ? (isStep4 ? 'completed' : 'active') : ''}">
+                                    <div class="step-circle">${isStep4 ? '✓' : '3'}</div>
+                                    <span class="step-label">On Way</span>
+                                </div>
+                                <div class="step-item ${isStep4 ? 'completed' : ''}">
+                                    <div class="step-circle">${isStep4 ? '✓' : '4'}</div>
+                                    <span class="step-label">Delivered</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: 3D Thermal Printer Dispenser Unit & Actions -->
+                    <div class="track-col-right">
+                        <div class="embedded-printer-stage">
+                            <!-- 3D POS Printer Head Dispenser -->
+                            <div class="embedded-printer-head">
+                                <div class="embedded-hood-top">
+                                    <div class="embedded-hood-highlight"></div>
+                                    <div class="embedded-hood-status">
+                                        <span class="embedded-led-dot"></span>
+                                        <span class="embedded-led-text">KITCHEN POS PRINTER</span>
+                                    </div>
+                                    <div style="font-size:10.5px; font-weight:800; color:#94a3b8; letter-spacing:0.5px;">LIVE BILL</div>
+                                </div>
+                                <div class="embedded-printer-slit"></div>
+                                <div class="embedded-hood-bottom"></div>
+                            </div>
+
+                            <!-- Live Rolling Paper Viewport -->
+                            <div class="embedded-paper-viewport">
+                                <div class="order-card thermal-receipt-slip">
+                                    <div class="slip-header">
+                                        <div class="slip-logo-row">
+                                            <img src="images/logo.png" alt="Littiwale" class="slip-logo-img">
+                                            <div>
+                                                <div class="slip-brand-title">LITTIWALE</div>
+                                                <div class="slip-brand-tag">Taste of Desi Swag</div>
+                                            </div>
+                                        </div>
+                                        <div class="slip-meta-info">
+                                            Ward No. 7, Punjabi Para, Barbil, Odisha<br>
+                                            Ph: +91 63706 80744
+                                        </div>
+                                        <div class="slip-dashed-divider"></div>
+                                        <div class="slip-order-meta">
+                                            <span>ORDER: <strong>#${shortId}</strong></span>
+                                            <span>${timeStr}</span>
+                                        </div>
+                                        <div class="slip-dashed-divider"></div>
+                                    </div>
+
+                                    <!-- Items Table -->
+                                    <div class="slip-items-table">
+                                        ${itemsHtml}
+                                    </div>
+
+                                    <div class="slip-dashed-divider"></div>
+
+                                    <!-- Billing Breakdown -->
+                                    <div class="slip-bill-row">
+                                        <span>Food Subtotal</span>
+                                        <span style="font-family:var(--font-mono); font-weight:700;">₹${subtotal}</span>
+                                    </div>
+                                    ${discount > 0 ? `
+                                    <div class="slip-bill-row discount">
+                                        <span>Coupon Discount</span>
+                                        <span style="font-family:var(--font-mono);">-₹${discount}</span>
+                                    </div>` : ''}
+                                    <div class="slip-bill-row">
+                                        <span>Delivery Fee</span>
+                                        <span style="font-family:var(--font-mono); font-weight:700;">${delFee > 0 ? '₹' + delFee : 'FREE'}</span>
+                                    </div>
+                                    <div class="slip-double-divider"></div>
+                                    <div class="slip-total-row">
+                                        <span>TOTAL PAYABLE</span>
+                                        <span style="color:#d97706; font-family:var(--font-mono);">₹${finalTotal}</span>
+                                    </div>
+                                    <div class="slip-double-divider"></div>
+
+                                    <!-- Customer Delivery Info -->
+                                    <div class="slip-customer-info">
+                                        <div><strong>Deliver To:</strong> ${order.customerName || 'Customer'} (${order.customerPhone || 'N/A'})</div>
+                                        <div><strong>Address:</strong> ${order.deliveryAddress || 'Barbil Area'}</div>
+                                        <div><strong>Payment:</strong> ${order.paymentMethod || 'Cash on Delivery'}</div>
+                                    </div>
+
+                                    <!-- Barcode -->
+                                    <div class="slip-barcode-wrap">
+                                        <div class="slip-barcode-lines"></div>
+                                        <div class="slip-barcode-text">* ${shortId} *</div>
+                                        <div class="slip-footer-tag">THANK YOU FOR ORDERING • LITTIWALE</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Full Width Quick Action Buttons across Desktop -->
+                    <div class="actions-grid">
+                        <a href="https://wa.me/916370680744?text=Hi%20Littiwale,%20regarding%20my%20Order%20%23${shortId}" target="_blank" class="btn-action btn-whatsapp">
+                            <i class="fab fa-whatsapp" style="font-size:1.15rem;"></i> WhatsApp Restaurant
+                        </a>
+                        <a href="tel:+916370680744" class="btn-action btn-call">
+                            <i class="fas fa-phone-alt"></i> Call Restaurant
+                        </a>
+                        <a href="index.html#menu" class="btn-action btn-order-more">
+                            <i class="fas fa-utensils"></i> Browse Full Menu
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderNotFound() {
+            const container = document.getElementById('tracking-main-container');
+            container.innerHTML = `
+                <div class="order-card" style="text-align:center; padding:48px 20px; max-width:560px; margin:0 auto;">
+                    <div style="font-size:36px; margin-bottom:12px; color:var(--text-muted);"><i class="fas fa-search"></i></div>
+                    <h3 style="font-size:1.3rem; margin-bottom:8px; font-weight:700;">No Active Order Found</h3>
+                    <p style="color:var(--text-dim); font-size:13.5px; margin-bottom:20px; line-height:1.5;">We couldn't locate an active order. Please check your tracking link or place a fresh order from our menu.</p>
+                    <a href="index.html#menu" class="btn-action btn-order-more" style="display:inline-flex; width:auto; padding:12px 28px;">
+                        <i class="fas fa-utensils"></i> Browse Menu & Order
+                    </a>
+                </div>
+            `;
+        }
+
+        // Initialize Live Poller
+        activeOrderId = getTargetOrderId();
+        fetchLiveOrder();
+        pollTimer = setInterval(fetchLiveOrder, 3000);
+
+        // Mobile Nav Toggle
+        const mobileToggle = document.querySelector('.mobile-toggle');
+        const navLinks = document.querySelector('.nav-links');
+        if (mobileToggle && navLinks) {
+            mobileToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+        }
+    </script>
+
+    <!-- FOOTER -->
+    <footer class="footer" style="background:#0a0a0a; padding:60px 0 20px; border-top:1px solid rgba(255,255,255,0.05); margin-top:auto;">
+        <div class="container" style="display:flex; flex-wrap:wrap; gap:40px; justify-content:space-between; margin-bottom:40px;">
+            <div class="footer-brand" style="flex:1; min-width:250px;">
+                <img src="images/logo.png" alt="Litti Wale" style="height:80px; margin-bottom:20px;">
+                <p style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; line-height:1.6; margin-bottom:20px;">The Soul of Bihar, Delivered.<br>Authentic Bihari flavours, made fresh daily in Barbil, Odisha.</p>
+                <div style="display:flex; gap:15px;">
+                    <a href="https://www.instagram.com/littiwaleofficial/" target="_blank" style="width:36px; height:36px; border-radius:8px; border:1px solid rgba(244,180,0,0.3); display:flex; align-items:center; justify-content:center; color:var(--primary-color, #f4b400); transition:all 0.3s ease;"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.facebook.com/share/18fQs5NEQU/" target="_blank" style="width:36px; height:36px; border-radius:8px; border:1px solid rgba(244,180,0,0.3); display:flex; align-items:center; justify-content:center; color:var(--primary-color, #f4b400); transition:all 0.3s ease;"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://wa.me/916370680744" target="_blank" style="width:36px; height:36px; border-radius:8px; border:1px solid rgba(244,180,0,0.3); display:flex; align-items:center; justify-content:center; color:var(--primary-color, #f4b400); transition:all 0.3s ease;"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-links" style="flex:1; min-width:150px;">
+                <h4 style="color:var(--primary-color, #f4b400); font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:20px;">Explore</h4>
+                <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px;">
+                    <li><a href="/#why-us" style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Why Littiwale</a></li>
+                    <li><a href="/#how-it-works" style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">How It Works</a></li>
+                    <li><a href="/#membership-section" style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Membership Plans</a></li>
+                    <li><a href="/menu" style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Full Menu</a></li>
+                    <li><a href="/#catering-section" style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Catering Services</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links" style="flex:1; min-width:150px;">
+                <h4 style="color:var(--primary-color, #f4b400); font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:20px;">Company</h4>
+                <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px;">
+                    <li><a href="/#about" style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">About Littiwale</a></li>
+                    <li><a href="/#reach" style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Reach Us</a></li>
+                    <li><a href="/#faq" style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">FAQ</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-contact" style="flex:2; min-width:300px; display:flex; flex-wrap:wrap; gap:30px;">
+                <div style="flex:1; min-width:140px;">
+                    <h4 style="color:var(--primary-color, #f4b400); font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:15px;">Cloud Kitchen</h4>
+                    <p style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; margin-bottom:12px; line-height:1.5;">Ward No. 7, Punjabi Para<br>Barbil, Odisha 758035</p>
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;">
+                        <a href="tel:+916370680744" style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; display:flex; align-items:center; gap:8px; text-decoration:none;"><i class="fas fa-phone-alt" style="color:#E1306C;"></i> +91 63706 80744</a>
+                        <span style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; display:flex; align-items:center; gap:8px;"><i class="far fa-clock" style="color:var(--text-secondary, #a1a1aa);"></i> 9 AM – 11 PM, Daily</span>
+                        <a href="https://g.page/r/CYlrxD6jO24cEAE/review" target="_blank" style="color:var(--primary-color, #f4b400); font-size:0.85rem; display:flex; align-items:center; gap:8px; text-decoration:none; font-weight:700;"><i class="fas fa-star" style="color:#facc15;"></i> Review Cloud Kitchen</a>
+                    </div>
+                </div>
+                <div style="flex:1; min-width:140px;">
+                    <h4 style="color:#4ade80; font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:15px;">Physical Outlet</h4>
+                    <p style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; margin-bottom:12px; line-height:1.5;">Near Barbil Court, Back Side of Rabisons Mall<br>Barbil, Odisha</p>
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;">
+                        <a href="tel:+916370680744" style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; display:flex; align-items:center; gap:8px; text-decoration:none;"><i class="fas fa-phone-alt" style="color:#4ade80;"></i> +91 63706 80744</a>
+                        <span style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; display:flex; align-items:center; gap:8px;"><i class="far fa-clock" style="color:var(--text-secondary, #a1a1aa);"></i> 8 AM – 10 PM (Sun Closed)</span>
+                        <a href="https://g.page/r/CWt0NauZrydZEAE/review" target="_blank" style="color:#4ade80; font-size:0.85rem; display:flex; align-items:center; gap:8px; text-decoration:none; font-weight:700;"><i class="fas fa-star" style="color:#facc15;"></i> Review Physical Outlet</a>
+                    </div>
+                </div>
+                <div style="width:100%;">
+                    <a href="/menu" class="btn btn-primary" style="display:inline-block; padding:10px 24px; font-size:0.9rem; border-radius:30px; border:none; color:#000; font-weight:800; text-decoration:none; cursor:pointer;">ORDER NOW <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="container" style="border-top:1px solid rgba(255,255,255,0.05); padding-top:20px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:15px;">
+            <p style="color:var(--text-secondary, #a1a1aa); font-size:0.8rem; margin:0;">© 2026 Littiwale Barbil. All rights reserved.</p>
+            <div style="display:flex; gap:20px; font-size:0.8rem;">
+                <a href="#" style="color:var(--text-secondary, #a1a1aa); transition:color 0.3s ease; text-decoration:none;">Privacy Policy</a>
+                <a href="#" style="color:var(--text-secondary, #a1a1aa); transition:color 0.3s ease; text-decoration:none;">Terms of Service</a>
+                <a href="https://brandnestagency.vercel.app" target="_blank" rel="noopener noreferrer" style="color:var(--text-primary, #fff); font-weight:600; transition:color 0.3s ease; text-decoration:none;">Developed by Brandnest - India's First AI Powered Digital agency</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- FLOAT BUTTONS -->
+    <div class="fab-container">
+        <button onclick="openPartnerModal()" class="fab-btn" style="background:#ffbc00; color:#000; border:none; outline:none;" title="Ordering Partner">
+            <i class="fas fa-motorcycle"></i>
+        </button>
+
+        <a href="menu/index.html" class="fab-btn cart-fab" style="background:#333;color:white;" title="View Menu / Cart">
+            <i class="fas fa-shopping-cart"></i>
+            <span id="fab-cart-badge">0</span>
+        </a>
+
+        <a href="tel:+916370680744" class="fab-btn" style="background:#007bff;color:white;" title="Call Us">
+            <i class="fas fa-phone"></i>
+        </a>
+
+        <a href="https://wa.me/916370680744" target="_blank" class="fab-btn" style="background:#25d366;color:white;" title="WhatsApp Us">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+    </div>
+
+    <!-- PARTNER MODAL -->
+    <div id="partner-popup" class="payment-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
+        <div class="payment-modal-content" style="max-width:400px; width:90%; background:#18181b; border:1px solid rgba(255,255,255,0.15); border-radius:16px; padding:24px; text-align:center; position:relative; color:#fff;">
+            <button id="close-partner-popup" class="close-btn" style="position:absolute; right:16px; top:12px; font-size:24px; background:none; border:none; color:#fff; cursor:pointer;" onclick="closePartnerModal()">&times;</button>
+            <div style="font-size:3rem; margin-bottom:10px; line-height:1;">🛵</div>
+            <h3 style="color:#f97316; margin-bottom:15px; font-size:1.2rem; font-weight:800;">Choose Your Preferred Ordering Option</h3>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <a href="index.html#menu" class="btn btn-primary" style="background:#f97316; color:#fff; font-size:1rem; padding:12px; font-weight:bold; border-radius:8px; text-decoration:none; display:block;">
+                    Order Directly from Website
+                </a>
+                <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" class="btn" style="background:#e23744; color:#fff; font-size:1rem; padding:12px; border-radius:8px; font-weight:bold; text-decoration:none; display:block;">
+                    Zomato
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="cart-toast"></div>
+    <script src="js/main.js"></script>
+    <script src="js/restaurant-timing.js"></script>
+    <script src="js/receipt-printer.js"></script>
+</body>
+
+</html>

@@ -59,45 +59,38 @@
 
 
     <!-- NAVBAR -->
-
     <nav class="navbar">
-
         <div class="nav-container">
-
-            <a href="/" class="logo-link">
-
-                <img src="images/logo.png" class="nav-logo" alt="Litti Wale">
-
-            </a>
-
-
-            <button class="mobile-toggle">
+            <button class="mobile-toggle hamburger" aria-label="Toggle navigation">
                 <i class="fas fa-bars"></i>
             </button>
 
+            <a href="/" class="logo-link">
+                <img src="images/logo.png" class="nav-logo" alt="Litti Wale">
+            </a>
 
             <ul class="nav-links">
-
                 <li><a href="/#home">Home</a></li>
-
                 <li><a href="/menu">Menu</a></li>
-
                 <li><a href="/#about">About</a></li>
-
                 <li><a href="/#reach">Reach Us</a></li>
-
-                <li>
-                    <a href="javascript:void(0)" class="cart-link nav-cart-btn">
-                        <i class="fas fa-shopping-cart"></i>
-                        Cart
-                        <span id="cart-count" class="cart-badge">0</span>
-                    </a>
-                </li>
-
+                <li><a href="/#connect">Social</a></li>
+                <li><a href="/menu" class="nav-get-deals-btn">🔥 Get Deals</a></li>
             </ul>
 
-        </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <button type="button" class="nav-my-orders-btn" onclick="openCustomerOrdersDrawer()" title="View past orders & saved address">
+                    <i class="fas fa-user-circle"></i>
+                    <span>My Orders</span>
+                </button>
 
+                <a href="javascript:void(0)" class="cart-link nav-cart-btn">
+                    <i class="fas fa-shopping-cart"></i>
+                    Cart
+                    <span id="cart-count" class="cart-badge">0</span>
+                </a>
+            </div>
+        </div>
     </nav>
 
 
@@ -154,13 +147,33 @@
                     <div class="form-group" style="margin-bottom:15px;">
                         <input type="text" id="checkout-name" class="form-control" placeholder="Your Name" style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:8px;">
                     </div>
-                    <div class="form-group" style="margin-bottom:15px;">
-                        <input type="tel" id="checkout-phone" class="form-control" placeholder="Phone Number" style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:8px;">
+                    <div class="form-group" style="margin-bottom:10px;">
+                        <input type="tel" id="checkout-phone" class="form-control" placeholder="Calling Phone Number" style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:8px;">
                     </div>
-                    <div class="form-group" style="margin-bottom:15px; position:relative;">
+
+                    <!-- WhatsApp Number Toggle Option -->
+                    <div class="form-group" style="margin-bottom:16px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:10px 14px; border-radius:8px;">
+                        <label style="display:flex; align-items:center; gap:9px; font-size:0.85rem; color:#cbd5e1; cursor:pointer; user-select:none; margin-bottom:0;">
+                            <input type="checkbox" id="same-whatsapp-chk" checked style="accent-color:#25d366; width:17px; height:17px; cursor:pointer;">
+                            <span>WhatsApp number is same as calling number</span>
+                        </label>
+                        <div id="custom-whatsapp-wrap" style="display:none; margin-top:10px;">
+                            <input type="tel" id="checkout-whatsapp" class="form-control" placeholder="Enter WhatsApp Number for Order Confirmation" style="width:100%; padding:11px; background:rgba(37,211,102,0.08); border:1px solid rgba(37,211,102,0.4); color:white; border-radius:8px;">
+                            <small style="color:#94a3b8; font-size:11px; margin-top:4px; display:block;">We will send order confirmation & live tracking updates to this WhatsApp number.</small>
+                        </div>
+                    </div>
+
+                    <!-- Address Block (Auto hides/changes for Takeaway) -->
+                    <div id="checkout-address-block" class="form-group" style="margin-bottom:15px; position:relative;">
                         <textarea id="checkout-address" class="form-control" placeholder="Complete Delivery Address" rows="3" style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:8px;"></textarea>
                         <button type="button" id="btn-gps" style="margin-top:10px; width:100%; padding:10px; background:#1a73e8; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;"><i class="fas fa-map-marker-alt"></i> Use Current Location (Optional)</button>
                     </div>
+
+                    <div id="checkout-takeaway-info-block" style="display:none; margin-bottom:15px; background:rgba(249,115,22,0.1); border:1px solid rgba(249,115,22,0.3); border-radius:8px; padding:12px 14px;">
+                        <div style="font-weight:700; color:#fbbf24; font-size:0.9rem; margin-bottom:4px;">🛍️ Self Pickup / Takeaway Selected</div>
+                        <div style="font-size:0.8rem; color:#cbd5e1; line-height:1.4;">Pickup Point: <strong>Littiwale Cloud Kitchen, Barbil</strong>. No delivery fee is charged.</div>
+                    </div>
+
                     <div class="form-group" style="margin-bottom:20px;">
                         <input type="text" id="checkout-notes" class="form-control" placeholder="Any special instructions? (Optional)" style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:8px;">
                     </div>
@@ -423,46 +436,6 @@
     <script src="IPL/MatchDetails/matchData.js"></script>
     <script src="js/main.js"></script>
     <script src="js/restaurant-timing.js"></script>
-    <script src="js/location-picker.js?v=2"></script>
-    <script>
-    document.addEventListener('littiWaleLocationSelected', function(e) {
-      var loc = e.detail;
-      if (loc !== 'outlet') return; // Cloud kitchen = sab normal
-    
-      // 1. Make Takeaway the primary/default selection for Outlet orders
-      var takeawayRadio = document.getElementById('checkout-type-takeaway');
-      if (takeawayRadio) {
-        takeawayRadio.checked = true;
-        takeawayRadio.dispatchEvent(new Event('change'));
-      }
-    
-      // 2. Show outlet banner above the form
-      if (!document.getElementById('lw-outlet-checkout-banner')) {
-        var banner = document.createElement('div');
-        banner.id  = 'lw-outlet-checkout-banner';
-        banner.style.cssText = [
-          'background:#1c1700;border:1.5px solid #f4b400;',
-          'border-radius:10px;padding:14px 16px;margin-bottom:20px;',
-          'font-size:14px;color:#f4b400;line-height:1.7;'
-        ].join('');
-        banner.innerHTML = [
-          '<strong>🏪 Outlet Order</strong><br>',
-          '<span style="color:#ccc;font-size:13px;">',
-          '📍 Near Barbil Court, Back Side of Rabisons Mall<br>',
-          '🕐 Mon–Sat, 8am–10pm &nbsp;|&nbsp; 🥗 Pure Veg &nbsp;|&nbsp; 🛍️ Primary Takeaway / Delivery Available<br>',
-          '📞 6370680744',
-          '</span>'
-        ].join('');
-    
-        // Insert above the delivery details section
-        var detailsHeading = Array.from(document.querySelectorAll('h3'))
-          .find(el => el.textContent.includes('Delivery Details'));
-        if (detailsHeading) {
-          detailsHeading.parentElement.insertBefore(banner, detailsHeading);
-        }
-      }
-    });
-    </script>
 </body>
 
 </html>

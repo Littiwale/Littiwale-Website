@@ -1,5 +1,151 @@
 document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener("error", (e) => console.error("Global Error:", e.message));
+
+    // ============================================================
+    // CUSTOM POPUP SYSTEM — replaces native alert() & confirm()
+    // ============================================================
+    (function injectCustomPopupSystem() {
+        if (document.getElementById('lw-popup-overlay')) return;
+
+        const style = document.createElement('style');
+        style.textContent = `
+            #lw-popup-overlay {
+                position: fixed; inset: 0;
+                background: rgba(0,0,0,0.75);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                z-index: 999999;
+                display: flex; align-items: center; justify-content: center;
+                padding: 20px; box-sizing: border-box;
+                opacity: 0; visibility: hidden;
+                transition: opacity 0.25s, visibility 0.25s;
+            }
+            #lw-popup-overlay.lw-show { opacity: 1; visibility: visible; }
+            #lw-popup-box {
+                background: #1a1d26;
+                border: 1px solid rgba(255,255,255,0.12);
+                border-radius: 20px;
+                padding: 28px 24px 22px;
+                width: 100%; max-width: 420px;
+                box-shadow: 0 24px 64px rgba(0,0,0,0.9);
+                transform: scale(0.92);
+                transition: transform 0.25s cubic-bezier(.175,.885,.32,1.275);
+                text-align: center;
+            }
+            #lw-popup-overlay.lw-show #lw-popup-box { transform: scale(1); }
+            #lw-popup-icon { font-size: 2.5rem; margin-bottom: 12px; line-height: 1; }
+            #lw-popup-title {
+                font-size: 1.15rem; font-weight: 800;
+                color: #ffffff; margin-bottom: 8px;
+                font-family: 'Outfit', sans-serif;
+            }
+            #lw-popup-msg {
+                font-size: 0.9rem; color: #94a3b8;
+                line-height: 1.55; margin-bottom: 20px;
+                white-space: pre-line;
+            }
+            #lw-popup-btns { display: flex; gap: 10px; justify-content: center; }
+            .lw-popup-btn {
+                flex: 1; padding: 11px 16px; border-radius: 12px;
+                font-size: 0.9rem; font-weight: 700; cursor: pointer;
+                border: none; transition: all 0.18s; max-width: 160px;
+            }
+            .lw-popup-btn-ok {
+                background: #f59e0b; color: #000;
+                box-shadow: 0 4px 14px rgba(245,158,11,0.35);
+            }
+            .lw-popup-btn-ok:hover { background: #fbbf24; }
+            .lw-popup-btn-ok.danger { background: #ef4444; color:#fff; box-shadow: 0 4px 14px rgba(239,68,68,0.35); }
+            .lw-popup-btn-ok.success { background: #22c55e; color:#000; box-shadow: 0 4px 14px rgba(34,197,94,0.35); }
+            .lw-popup-btn-cancel {
+                background: rgba(255,255,255,0.08); color: #cbd5e1;
+                border: 1px solid rgba(255,255,255,0.12);
+            }
+            .lw-popup-btn-cancel:hover { background: rgba(255,255,255,0.14); }
+        `;
+        document.head.appendChild(style);
+
+        const html = `
+            <div id="lw-popup-overlay">
+                <div id="lw-popup-box">
+                    <div id="lw-popup-icon">⚠️</div>
+                    <div id="lw-popup-title">Notice</div>
+                    <div id="lw-popup-msg"></div>
+                    <div id="lw-popup-btns">
+                        <button class="lw-popup-btn lw-popup-btn-cancel" id="lw-popup-cancel">Cancel</button>
+                        <button class="lw-popup-btn lw-popup-btn-ok" id="lw-popup-ok">OK</button>
+                    </div>
+                </div>
+            </div>`;
+        document.body.insertAdjacentHTML('beforeend', html);
+    })();
+
+    /**
+     * showAlert(msg, {title, icon, btnText, type})
+     * type: 'warning' | 'error' | 'success' | 'info'
+     */
+    window.showAlert = function(msg, opts = {}) {
+        return new Promise(resolve => {
+            const overlay = document.getElementById('lw-popup-overlay');
+            const box = document.getElementById('lw-popup-box');
+            const iconEl = document.getElementById('lw-popup-icon');
+            const titleEl = document.getElementById('lw-popup-title');
+            const msgEl = document.getElementById('lw-popup-msg');
+            const okBtn = document.getElementById('lw-popup-ok');
+            const cancelBtn = document.getElementById('lw-popup-cancel');
+
+            const typeMap = {
+                warning: { icon: '⚠️', title: 'Warning', cls: '' },
+                error:   { icon: '❌', title: 'Error', cls: 'danger' },
+                success: { icon: '✅', title: 'Success', cls: 'success' },
+                info:    { icon: 'ℹ️', title: 'Notice', cls: '' },
+            };
+            const t = typeMap[opts.type] || typeMap.warning;
+
+            iconEl.textContent = opts.icon || t.icon;
+            titleEl.textContent = opts.title || t.title;
+            msgEl.textContent = msg;
+
+            okBtn.textContent = opts.btnText || 'OK';
+            okBtn.className = `lw-popup-btn lw-popup-btn-ok ${t.cls}`;
+            cancelBtn.style.display = 'none';
+
+            overlay.classList.add('lw-show');
+            const close = () => { overlay.classList.remove('lw-show'); resolve(true); };
+            okBtn.onclick = close;
+            overlay.onclick = (e) => { if(e.target === overlay) close(); };
+        });
+    };
+
+    /**
+     * showConfirm(msg, {title, icon, okText, cancelText, type})
+     * Returns Promise<boolean>
+     */
+    window.showConfirm = function(msg, opts = {}) {
+        return new Promise(resolve => {
+            const overlay = document.getElementById('lw-popup-overlay');
+            const iconEl = document.getElementById('lw-popup-icon');
+            const titleEl = document.getElementById('lw-popup-title');
+            const msgEl = document.getElementById('lw-popup-msg');
+            const okBtn = document.getElementById('lw-popup-ok');
+            const cancelBtn = document.getElementById('lw-popup-cancel');
+
+            iconEl.textContent = opts.icon || '❓';
+            titleEl.textContent = opts.title || 'Confirm';
+            msgEl.textContent = msg;
+
+            okBtn.textContent = opts.okText || 'Yes';
+            okBtn.className = `lw-popup-btn lw-popup-btn-ok ${opts.type === 'danger' ? 'danger' : ''}`;
+            cancelBtn.style.display = 'flex';
+            cancelBtn.textContent = opts.cancelText || 'Cancel';
+
+            overlay.classList.add('lw-show');
+            const close = (val) => { overlay.classList.remove('lw-show'); resolve(val); };
+            okBtn.onclick = () => close(true);
+            cancelBtn.onclick = () => close(false);
+            overlay.onclick = (e) => { if(e.target === overlay) close(false); };
+        });
+    };
     
     // --- Mobile Navigation Toggle ---
     const mobileToggle = document.querySelector('.mobile-toggle');
@@ -33,7 +179,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const menuGrid = document.getElementById('menu-grid');
     const categoryFilters = document.getElementById('category-filters');
     
-    const ADMIN_API_BASE_URL = 'https://littiwale-admin.vercel.app/api';
+    const ADMIN_API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+        ? 'http://localhost:5001/api' 
+        : 'https://littiwale-admin.vercel.app/api';
 
     async function fetchWithTimeout(url, timeoutMs = 12000) {
         const controller = new AbortController();
@@ -68,14 +216,29 @@ document.addEventListener('DOMContentLoaded', () => {
             // Fetch live API Menu
             const apiMenu = await fetchWithTimeout(`${ADMIN_API_BASE_URL}/menu`, 12000);
 
-            // Fetch announcements, settings, coupons asynchronously in background without blocking menu display
+            // Fetch announcements, settings, coupons, categories asynchronously in background without blocking menu display
             Promise.all([
                 fetchWithTimeout(`${ADMIN_API_BASE_URL}/settings`, 5000),
                 fetchWithTimeout(`${ADMIN_API_BASE_URL}/announcements`, 5000),
-                fetchWithTimeout(`${ADMIN_API_BASE_URL}/coupons`, 5000)
-            ]).then(([apiSettings, apiAnnouncements, apiCoupons]) => {
+                fetchWithTimeout(`${ADMIN_API_BASE_URL}/coupons`, 5000),
+                fetchWithTimeout(`${ADMIN_API_BASE_URL}/categories`, 5000)
+            ]).then(([apiSettings, apiAnnouncements, apiCoupons, apiCategories]) => {
                 window.liveAnnouncements = Array.isArray(apiAnnouncements) ? apiAnnouncements : [];
-                window.liveCoupons = Array.isArray(apiCoupons) ? apiCoupons : [];
+                if (apiCoupons && Array.isArray(apiCoupons)) {
+                    availableCoupons = apiCoupons.map(c => ({
+                        code: c.code,
+                        type: c.discountType === 'percentage' ? 'PERCENT' : 'FLAT',
+                        discount: Number(c.discountValue) || 0,
+                        discountPercent: Number(c.discountValue) || 0,
+                        maxDiscount: Number(c.discountValue) || 0,
+                        minOrder: Number(c.minOrderValue) || 0,
+                        active: c.isActive !== false
+                    }));
+                    window.liveCoupons = availableCoupons;
+                }
+                if (apiCategories && Array.isArray(apiCategories)) {
+                    applyLiveCategories(apiCategories);
+                }
                 if (window.liveAnnouncements.length > 0) initAnnouncements(window.liveAnnouncements);
                 if (apiSettings && Array.isArray(apiSettings)) processSettings(apiSettings);
             }).catch(() => {});
@@ -131,27 +294,210 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function applyHeroCms(setting) {
+        if (!setting) return;
+        const heroTagline = document.querySelector('.hero-text-content .cursive-tagline');
+        if (heroTagline && setting.heroTagline) heroTagline.textContent = setting.heroTagline;
+
+        const heroTitle = document.querySelector('.hero-text-content .hero-title');
+        if (heroTitle && setting.heroTitle) {
+            heroTitle.innerHTML = setting.heroTitle.replace(/♡/g, '<span>♡</span>');
+        }
+
+        const heroSubtitle = document.querySelector('.hero-subtitle');
+        if (heroSubtitle && setting.heroDesc) heroSubtitle.textContent = setting.heroDesc;
+
+        const heroBtn1 = document.querySelector('.hero-buttons a.btn-primary');
+        if (heroBtn1 && setting.heroBtn1Text) {
+            heroBtn1.innerHTML = `<i class="fas fa-shopping-bag" style="margin-right: 8px;"></i> ${setting.heroBtn1Text}`;
+            if (setting.heroBtn1Link) heroBtn1.href = setting.heroBtn1Link;
+        }
+
+        const heroBtn2 = document.querySelector('.hero-buttons a.btn-whatsapp');
+        if (heroBtn2 && setting.heroBtn2Text) {
+            heroBtn2.innerHTML = `<i class="fab fa-whatsapp" style="font-size: 1.2rem; margin-right: 6px;"></i> ${setting.heroBtn2Text}`;
+            if (setting.heroBtn2Link) heroBtn2.href = setting.heroBtn2Link;
+        }
+
+        const heroBtn3 = document.querySelector('.hero-buttons button.btn-outline');
+        if (heroBtn3 && setting.heroBtn3Text) heroBtn3.textContent = setting.heroBtn3Text;
+
+        const trust1 = document.querySelector('.trust-badges-bar .trust-badge-item:nth-child(1) span');
+        if (trust1 && setting.heroTrust1Text) trust1.textContent = setting.heroTrust1Text;
+
+        const trust2 = document.querySelector('.trust-badges-bar .trust-badge-item:nth-child(2) span');
+        if (trust2 && setting.heroTrust2Text) trust2.textContent = setting.heroTrust2Text;
+
+        const badgeText = document.querySelector('.floating-food-badge span:nth-of-type(1)');
+        if (badgeText && setting.heroBadgeText) badgeText.textContent = setting.heroBadgeText;
+
+        const badgeSubtext = document.querySelector('.floating-food-badge span:nth-of-type(2)');
+        if (badgeSubtext && setting.heroBadgeSubtext) badgeSubtext.textContent = setting.heroBadgeSubtext;
+
+        const heroImg = document.querySelector('.hero-food-presentation img.hero-food-plate');
+        if (heroImg) {
+            heroImg.onerror = () => {
+                heroImg.onerror = null;
+                heroImg.src = 'images/logo.png';
+            };
+            if (setting.heroImage) {
+                heroImg.src = setting.heroImage;
+            }
+        }
+    }
+
+    function applyAboutCms(setting) {
+        if (!setting) return;
+        const aboutTagline = document.querySelector('#about .cursive-tagline');
+        if (aboutTagline && setting.aboutTagline) aboutTagline.textContent = setting.aboutTagline;
+
+        const aboutHeading = document.querySelector('#about h2.luxury-heading');
+        if (aboutHeading && setting.aboutHeading) {
+            const parts = setting.aboutHeading.split(' ');
+            if (parts.length > 1) {
+                const last = parts.pop();
+                aboutHeading.innerHTML = `${parts.join(' ')} <span>${last}</span>`;
+            } else {
+                aboutHeading.textContent = setting.aboutHeading;
+            }
+        }
+
+        const storySub = document.querySelector('.about-card-story .cursive-subtitle');
+        if (storySub && setting.aboutStorySubtitle) storySub.textContent = setting.aboutStorySubtitle;
+
+        const storyTitle = document.querySelector('.about-card-story h2');
+        if (storyTitle && setting.aboutStoryTitle) storyTitle.textContent = setting.aboutStoryTitle;
+
+        const storyText = document.querySelector('.about-card-story p');
+        if (storyText && setting.aboutStoryText) storyText.textContent = setting.aboutStoryText;
+
+        const storyCta = document.querySelector('.about-card-story a.btn');
+        if (storyCta && setting.aboutStoryCtaText) {
+            storyCta.innerHTML = `${setting.aboutStoryCtaText} <i class="fab fa-whatsapp" style="margin-left: 6px;"></i>`;
+            if (setting.aboutStoryCtaLink) storyCta.href = setting.aboutStoryCtaLink;
+        }
+
+        const aboutImg = document.querySelector('.about-ambience-card img');
+        if (aboutImg && setting.aboutImage) aboutImg.src = setting.aboutImage;
+
+        const statNum = document.querySelector('.ambience-stat-badge .stat-num');
+        if (statNum && setting.statNum) statNum.textContent = setting.statNum;
+
+        const statText = document.querySelector('.ambience-stat-badge .stat-text');
+        if (statText && setting.statText) statText.innerHTML = setting.statText.replace(/\n/g, '<br>');
+
+        // 4 Perks (Why Choose Us feature grid)
+        const perk1H = document.querySelector('.about-features-4grid .feature-box-item:nth-child(1) h4');
+        const perk1P = document.querySelector('.about-features-4grid .feature-box-item:nth-child(1) p');
+        if (perk1H && setting.perk1Title) perk1H.textContent = setting.perk1Title;
+        if (perk1P && setting.perk1Text) perk1P.textContent = setting.perk1Text;
+
+        const perk2H = document.querySelector('.about-features-4grid .feature-box-item:nth-child(2) h4');
+        const perk2P = document.querySelector('.about-features-4grid .feature-box-item:nth-child(2) p');
+        if (perk2H && setting.perk2Title) perk2H.textContent = setting.perk2Title;
+        if (perk2P && setting.perk2Text) perk2P.textContent = setting.perk2Text;
+
+        const perk3H = document.querySelector('.about-features-4grid .feature-box-item:nth-child(3) h4');
+        const perk3P = document.querySelector('.about-features-4grid .feature-box-item:nth-child(3) p');
+        if (perk3H && setting.perk3Title) perk3H.textContent = setting.perk3Title;
+        if (perk3P && setting.perk3Text) perk3P.textContent = setting.perk3Text;
+
+        const perk4H = document.querySelector('.about-features-4grid .feature-box-item:nth-child(4) h4');
+        const perk4P = document.querySelector('.about-features-4grid .feature-box-item:nth-child(4) p');
+        if (perk4H && setting.perk4Title) perk4H.textContent = setting.perk4Title;
+        if (perk4P && setting.perk4Text) perk4P.textContent = setting.perk4Text;
+
+        // Bulk Order Banner
+        const bulkTitle = document.querySelector('.reserve-banner-card .reserve-info h3');
+        if (bulkTitle && setting.bulkBannerTitle) bulkTitle.textContent = setting.bulkBannerTitle;
+
+        const bulkSub = document.querySelector('.reserve-banner-card .reserve-info p');
+        if (bulkSub && setting.bulkBannerSub) bulkSub.textContent = setting.bulkBannerSub;
+
+        const bulkCta = document.querySelector('.reserve-banner-card a.btn-whatsapp');
+        if (bulkCta && setting.bulkBannerCtaText) {
+            bulkCta.innerHTML = `<i class="fab fa-whatsapp" style="font-size: 1.2rem; margin-right: 8px;"></i> ${setting.bulkBannerCtaText}`;
+            if (setting.bulkBannerCtaLink) bulkCta.href = setting.bulkBannerCtaLink;
+        }
+    }
+
+    function applySeoCms(setting) {
+        if (!setting) return;
+        if (setting.seoTitle) {
+            document.title = setting.seoTitle;
+            const ogTitle = document.querySelector('meta[property="og:title"]');
+            if (ogTitle) ogTitle.content = setting.seoTitle;
+        }
+        if (setting.seoDescription) {
+            const metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc) metaDesc.content = setting.seoDescription;
+            const ogDesc = document.querySelector('meta[property="og:description"]');
+            if (ogDesc) ogDesc.content = setting.seoDescription;
+        }
+        if (setting.seoKeywords) {
+            const metaKeywords = document.querySelector('meta[name="keywords"]');
+            if (metaKeywords) metaKeywords.content = setting.seoKeywords;
+        }
+        if (setting.seoOgImage) {
+            const ogImg = document.querySelector('meta[property="og:image"]');
+            if (ogImg) ogImg.content = setting.seoOgImage;
+        }
+        if (setting.googleVerificationTag) {
+            let gvMeta = document.querySelector('meta[name="google-site-verification"]');
+            if (!gvMeta) {
+                gvMeta = document.createElement('meta');
+                gvMeta.name = 'google-site-verification';
+                document.head.appendChild(gvMeta);
+            }
+            gvMeta.content = setting.googleVerificationTag;
+        }
+    }
+
     function processSettings(apiSettings) {
         if (!apiSettings || !Array.isArray(apiSettings)) return;
-        const currentLoc = sessionStorage.getItem('littiWaleLocation') || 'all';
+        window.littiWaleSettings = apiSettings;
+
+        // Extract Admin-controlled delivery rate (stored in Cloud Kitchen / store settings)
+        const cloudSetting = apiSettings.find(s => s.storeId === 'cloud') || apiSettings[0] || {};
+        const parsedDeliveryRate = Number(cloudSetting.deliveryRateKm || cloudSetting.deliveryRate || cloudSetting.deliveryRatePerKm);
+        if (!isNaN(parsedDeliveryRate) && parsedDeliveryRate > 0) {
+            window.adminDeliveryRate = parsedDeliveryRate;
+        }
+
+        // Apply Hero, About, Dabba & SEO CMS from live settings
+        applyHeroCms(cloudSetting);
+        applyAboutCms(cloudSetting);
+        applySeoCms(cloudSetting);
+        if (typeof window.updatePlanDataFromCms === 'function') {
+            window.updatePlanDataFromCms(cloudSetting);
+        }
+
+        // Notify timing components
+        document.dispatchEvent(new CustomEvent('littiWaleSettingsLoaded', { detail: apiSettings }));
+
+        const currentLoc = sessionStorage.getItem('littiWaleLocation') || 'cloud';
         let isOffline = false;
         let offlineReason = '';
         
-        apiSettings.forEach(setting => {
-            if (currentLoc === setting.storeId || currentLoc === 'all') {
-                if (setting.isOnline === false) {
-                    isOffline = true;
-                    offlineReason = setting.offlineReason || `The ${setting.storeName} is currently offline.`;
-                }
-            }
-        });
+        const targetSetting = apiSettings.find(s => s.storeId === currentLoc) || apiSettings.find(s => s.storeId === 'cloud') || apiSettings[0];
+        if (targetSetting && targetSetting.isOnline === false) {
+            isOffline = true;
+            offlineReason = targetSetting.offlineReason || `The ${targetSetting.storeName} is currently offline.`;
+        }
 
-        if (isOffline && !document.getElementById('store-offline-banner')) {
-            const banner = document.createElement('div');
-            banner.id = 'store-offline-banner';
-            banner.style.cssText = 'background-color: #ef4444; color: white; text-align: center; padding: 12px; font-weight: bold; position: sticky; top: 0; z-index: 9999; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2);';
-            banner.innerHTML = `⚠️ ${offlineReason}`;
-            document.body.prepend(banner);
+        const existingBanner = document.getElementById('store-offline-banner');
+        if (isOffline) {
+            if (!existingBanner) {
+                const banner = document.createElement('div');
+                banner.id = 'store-offline-banner';
+                banner.style.cssText = 'background-color: #ef4444; color: white; text-align: center; padding: 12px; font-weight: bold; position: sticky; top: 0; z-index: 9999; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2);';
+                banner.innerHTML = `⚠️ ${offlineReason}`;
+                document.body.prepend(banner);
+            } else {
+                existingBanner.innerHTML = `⚠️ ${offlineReason}`;
+            }
+        } else if (existingBanner) {
+            existingBanner.remove();
         }
     }
 
@@ -298,12 +644,49 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentDietaryFilter = 'all';
     let currentLocationFilter = 'all'; // 'all' | 'cloud' | 'outlet'
 
-    const CATEGORY_ORDER = [
+    let CATEGORY_ORDER = [
         "Star Special", "Littiwale Mega Feast", "Littiwale Meal for One", "Littiwale Rice Bowl Combos",
         "Tiffin Specials", "Momos", "Pizza", "Sandwiches", "Maggi", "Pasta",
         "Soup", "Starters", "Noodles/Rice", "Main Course", "Breads", "Thali",
         "Parathas", "Daily Meal Specials", "Drinks", "Extras"
     ];
+
+    function applyLiveCategories(apiCategories) {
+        if (!apiCategories || !Array.isArray(apiCategories) || apiCategories.length === 0) return;
+        window.liveCategories = apiCategories;
+        const activeCats = apiCategories
+            .filter(c => c.isAvailable !== false && c.isActive !== false)
+            .sort((a, b) => (Number(a.displayOrder) || 0) - (Number(b.displayOrder) || 0))
+            .map(c => c.name);
+        if (activeCats.length > 0) {
+            CATEGORY_ORDER = activeCats;
+            if (isMenuDataLoaded) {
+                initMenuDisplay();
+            }
+        }
+    }
+
+    async function loadLiveCoupons() {
+        try {
+            const apiCoupons = await fetchWithTimeout(`${ADMIN_API_BASE_URL}/coupons`, 5000);
+            if (apiCoupons && Array.isArray(apiCoupons) && apiCoupons.length > 0) {
+                availableCoupons = apiCoupons.map(c => ({
+                    code: c.code,
+                    type: c.discountType === 'percentage' ? 'PERCENT' : 'FLAT',
+                    discount: Number(c.discountValue) || 0,
+                    discountPercent: Number(c.discountValue) || 0,
+                    maxDiscount: Number(c.discountValue) || 0,
+                    minOrder: Number(c.minOrderValue) || 0,
+                    active: c.isActive !== false
+                }));
+                window.liveCoupons = availableCoupons;
+                return availableCoupons;
+            }
+        } catch (e) {
+            console.error("Error loading coupons from Admin API:", e);
+        }
+        return availableCoupons || [];
+    }
 
     function initMenuDisplay() {
         const path = window.location.pathname;
@@ -337,7 +720,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isInStock = item.inStock !== false && item.inStock !== 'false';
                 const avail = (item.availability || item.locationAvailability || 'both').toLowerCase();
                 const isCloudAvailable = avail === 'both' || avail.includes('cloud');
-                return isInStock && isCloudAvailable;
+                const catLower = (item.category || '').toLowerCase();
+                const nameLower = (item.name || '').toLowerCase();
+                const isDealOrPromo = catLower.includes('deal') || catLower.includes('craziest') || nameLower.includes('khila de') || nameLower.includes('diet bhool') || nameLower.includes('bhook lagi');
+                return isInStock && isCloudAvailable && !isDealOrPromo;
             });
 
             const shuffled = [...availableCloudItems].sort(() => 0.5 - Math.random());
@@ -596,16 +982,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                 }
             } else {
+                // Desktop button HTML (hidden on mobile via CSS .menu-card-actions {display:none})
                 btnHtml = `
                     <div id="menu-btn-container-${item.id}" style="width:100%;">
-                        <button id="menu-add-btn-${item.id}" class="add-to-cart-btn add-to-cart" onclick="addToCart('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, '${itemImg}')">Add to Cart — ₹${item.price}</button>
-                        <div id="menu-qty-ctrl-${item.id}" style="display:none; align-items:center; justify-content:space-between; background:transparent; border: 1px solid #facc15; border-radius:999px; padding:4px; height: 48px;">
-                            <button style="background:transparent; border:none; width:40px; height:100%; font-weight:bold; color:#facc15; cursor:pointer;" onclick="updateQuantity('${item.id}', -1)">-</button>
-                            <span id="menu-qty-val-${item.id}" style="font-weight:bold; color:var(--text-primary); font-size:1.1rem;">0</span>
-                            <button style="background:#facc15; border:none; border-radius:999px; width:40px; height:36px; font-weight:bold; color:#0d0d0d; cursor:pointer;" onclick="updateQuantity('${item.id}', 1)">+</button>
+                        <button id="menu-add-btn-${item.id}" class="add-to-cart-btn add-to-cart" onclick="addToCart('${item.id}', '${item.name.replace(/'/g, "\\'")}',${ item.price}, '${itemImg}')">
+                            <span class="btn-desktop-text">Add to Cart — ₹${item.price}</span>
+                            <span class="btn-mobile-text">ADD +</span>
+                        </button>
+                        <div id="menu-qty-ctrl-${item.id}" class="menu-qty-ctrl" style="display:none; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.85); border: 1.5px solid #22c55e; border-radius:10px; padding:2px; height: 32px;">
+                            <button class="qty-btn minus" style="background:transparent; border:none; width:30px; height:100%; font-weight:bold; color:#22c55e; cursor:pointer;" onclick="updateQuantity('${item.id}', -1)">-</button>
+                            <span id="menu-qty-val-${item.id}" class="qty-val" style="font-weight:800; color:#ffffff; font-size:0.95rem;">0</span>
+                            <button class="qty-btn plus" style="background:#22c55e; border:none; border-radius:6px; width:28px; height:26px; font-weight:bold; color:#000000; cursor:pointer;" onclick="updateQuantity('${item.id}', 1)">+</button>
                         </div>
                     </div>
                 `;
+                // Store item id for mobile overlay injection after card is built
+                card._mobStdItemId   = item.id;
+                card._mobStdItemName = item.name;
+                card._mobStdItemPrice= item.price;
+                card._mobStdItemImg  = itemImg;
             }
         }
 
@@ -626,6 +1021,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Stock Badge
         const stockBadge = allOutOfStock ? '<span class="food-tag out-of-stock-tag">Out of Stock</span>' : '';
 
+        // Determine price display
+        let priceDisplay = '';
+        if (group.variants.half && group.variants.full) {
+            priceDisplay = `₹${group.variants.half.price} <span style="font-size:0.75rem; color:#94a3b8; font-weight:normal;">(Half)</span> • ₹${group.variants.full.price} <span style="font-size:0.75rem; color:#94a3b8; font-weight:normal;">(Full)</span>`;
+        } else {
+            const stdItem = group.variants.standard || group.variants.half || group.variants.full;
+            priceDisplay = `₹${stdItem.price}`;
+        }
+
         // Determine description and baseId for dynamic updates
         const hItem = group.variants.half;
         const fItem = group.variants.full;
@@ -641,19 +1045,92 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="menu-img-container image-wrapper">
                 <img src="${itemImg}" class="menu-img" loading="lazy" onerror="this.src='images/logo.png'">
             </div>
-            <div class="menu-details menu-card-content" style="padding: 16px 14px; display: flex; flex-direction: column; justify-content: space-between; flex-grow: 1;">
-                <div>
-                    <div class="food-tag-container" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">${fssaiIcon}${spicyBadge}${stockBadge}</div>
-                    <div class="menu-title-row">
-                        <h3 class="menu-title menu-card-title" style="font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; color: #ffffff;">${group.displayName}</h3>
-                    </div>
-                    <p class="menu-desc" id="desc-${baseId}" style="font-size: 0.85rem; color: #94a3b8; line-height: 1.4; margin-bottom: 16px; min-height: 18px;">${currentDesc}</p>
+            <div class="menu-details menu-card-content">
+                <div class="menu-meta-top">
+                    <div class="food-tag-container" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">${fssaiIcon}${spicyBadge}${stockBadge}</div>
                 </div>
-                <div class="button-wrapper" style="margin-top: auto;">
-                    ${btnHtml}
+                <div class="menu-title-row">
+                    <h3 class="menu-title menu-card-title">${group.displayName}</h3>
                 </div>
+                <div class="menu-price-row">
+                    <span class="menu-item-price">${priceDisplay}</span>
+                </div>
+                <p class="menu-desc" id="desc-${baseId}">${currentDesc}</p>
+            </div>
+            <div class="menu-card-actions button-wrapper">
+                ${btnHtml}
             </div>
         `;
+
+        // ---- MOBILE OVERLAY BUTTONS (injected inside image container) ----
+        const imgContainer = card.querySelector('.menu-img-container');
+        if (imgContainer) {
+            if (group.variants.half && group.variants.full && !allOutOfStock) {
+                // Half/Full: single ADD+ that opens bottom sheet
+                const half = group.variants.half;
+                const full = group.variants.full;
+                const halfQty = getCartQty(half.id);
+                const fullQty = getCartQty(full.id);
+                const totalInCart = halfQty + fullQty;
+
+                const mobAddBtn = document.createElement('button');
+                mobAddBtn.className = 'mob-add-btn';
+                if (totalInCart > 0) {
+                    mobAddBtn.textContent = `${totalInCart} ✓`;
+                    mobAddBtn.style.background = '#15803d';
+                } else {
+                    mobAddBtn.textContent = 'ADD +';
+                }
+                mobAddBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openHFVariantSheet(group.displayName, half, full, itemImg, mobAddBtn);
+                });
+                imgContainer.appendChild(mobAddBtn);
+
+            } else if (card._mobStdItemId) {
+                // Standard item: ADD+ → qty ctrl inline
+                const id    = card._mobStdItemId;
+                const name  = card._mobStdItemName;
+                const price = card._mobStdItemPrice;
+                const img   = card._mobStdItemImg;
+                const existingQty = getCartQty(id);
+
+                const mobAdd = document.createElement('button');
+                mobAdd.className = 'mob-add-btn';
+                mobAdd.id = `mob-add-${id}`;
+                mobAdd.textContent = 'ADD +';
+
+                const mobQty = document.createElement('div');
+                mobQty.className = 'mob-qty-ctrl';
+                mobQty.id = `mob-qty-${id}`;
+                mobQty.innerHTML = `
+                    <button class="mq-minus sq-btn" onclick="event.stopPropagation(); mobUpdateQty('${id}','${name.replace(/'/g,"\\'")}',${price},'${img}',-1)">−</button>
+                    <span class="mq-val" id="mob-qval-${id}">${existingQty > 0 ? existingQty : 1}</span>
+                    <button class="mq-plus sq-btn" onclick="event.stopPropagation(); mobUpdateQty('${id}','${name.replace(/'/g,"\\'")}',${price},'${img}',1)">+</button>
+                `;
+
+                if (existingQty > 0) {
+                    mobAdd.style.display = 'none';
+                    mobQty.style.display = 'flex';
+                } else {
+                    mobAdd.style.display = 'flex';
+                    mobQty.style.display = 'none';
+                }
+
+                mobAdd.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    addToCart(id, name, price, img);
+                    mobAdd.style.display = 'none';
+                    mobQty.style.display = 'flex';
+                    const valEl = document.getElementById(`mob-qval-${id}`);
+                    if (valEl) valEl.textContent = getCartQty(id);
+                });
+
+                imgContainer.appendChild(mobAdd);
+                imgContainer.appendChild(mobQty);
+            }
+        }
+
         return card;
     }
 
@@ -990,7 +1467,12 @@ document.addEventListener('DOMContentLoaded', () => {
         catContainer.style.gap = '10px';
         categoryFilters.appendChild(catContainer);
 
-        const categories = ['all', ...new Set(filterItems.map(item => item.category))];
+        const rawCats = [...new Set(filterItems.map(item => item.category).filter(Boolean))];
+        const orderedPresentCats = CATEGORY_ORDER.filter(c => rawCats.includes(c));
+        rawCats.forEach(c => {
+            if (!orderedPresentCats.includes(c)) orderedPresentCats.push(c);
+        });
+        const categories = ['all', ...orderedPresentCats];
         catContainer.innerHTML = '<button class="filter-btn active" data-filter="all">All Categories</button>';
         
         categories.slice(1).forEach(category => {
@@ -1092,6 +1574,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Delivery Logic ---
     let deliveryCharge = 0;
     let deliveryStatus = 'UNKNOWN'; // 'AVAILABLE', 'UNAVAILABLE', 'UNKNOWN'
+    window.adminDeliveryRate = window.adminDeliveryRate || 30;
     let activeLocForDelivery = sessionStorage.getItem('littiWaleLocation') || 'cloud';
     let RESTAURANT_LAT = activeLocForDelivery === 'outlet' ? 22.099435 : 22.1152751;
     let RESTAURANT_LNG = activeLocForDelivery === 'outlet' ? 85.386035 : 85.3871145;
@@ -1131,8 +1614,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const userLng = position.coords.longitude;
                     const distanceKm = calculateDistance(userLat, userLng, RESTAURANT_LAT, RESTAURANT_LNG);
                     const roundedKm = Math.max(1, Math.round(distanceKm)); // At least 1 km to prevent zero
+                    const currentRate = window.adminDeliveryRate || 30;
                     
-                    deliveryCharge = roundedKm * 30;
+                    deliveryCharge = roundedKm * currentRate;
                     deliveryStatus = 'AVAILABLE';
                     updateCartUI();
                 },
@@ -1177,9 +1661,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         dismiss(id = null) {
             try {
-                // If ID is provided, ONLY dismiss if it matches activeId
                 if (id && this.activeId !== id) return;
-
                 if (this.timeoutId) {
                     clearTimeout(this.timeoutId);
                     this.timeoutId = null;
@@ -1187,7 +1669,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const toastEl = document.getElementById('cart-toast');
                 if (toastEl) {
                     toastEl.classList.remove('show');
-                    toastEl.classList.remove('hide-toast'); // Ensure it's visible for next time
+                    toastEl.classList.add('hide-toast');
+                    setTimeout(() => {
+                        toastEl.classList.remove('hide-toast');
+                    }, 350);
                 }
                 this.activeId = null;
                 this.log("dismiss", "success", id ? `ID: ${id}` : "");
@@ -1198,40 +1683,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         success(message, config = {}) {
             try {
-                const toastId = config.toastId || null;
-                const duration = this.isMobile ? (config.autoClose || 1300) : (config.autoClose || 1500);
-
-                if (this.isMobile) {
-                    this.dismiss(); // Force clear before show
-                }
-
-                const toastEl = document.getElementById('cart-toast');
-                if (!toastEl) {
-                    this.log("show", "failed", "Toast element not found");
+                // Don't show floating toast if cart drawer is already open
+                const cartDrawer = document.getElementById('cart-drawer');
+                if (cartDrawer && cartDrawer.classList.contains('open')) {
                     return;
                 }
 
-                this.log("trigger", "success", message);
+                const toastId = config.toastId || null;
+                const duration = this.isMobile ? 1200 : 1500;
+
+                this.dismiss();
+
+                const toastEl = document.getElementById('cart-toast');
+                if (!toastEl) return;
+
                 this.activeId = toastId;
-
                 toastEl.innerHTML = `<i class="fas fa-check-circle"></i> <span>${message}</span>`;
+                toastEl.classList.remove('hide-toast');
                 toastEl.classList.add('show');
-                if (config.className) {
-                    toastEl.classList.add(config.className);
-                }
-                toastEl.classList.add('custom-toast');
 
-                // Force visual hide after 1s (both mobile and desktop)
-                setTimeout(() => {
-                    if (this.activeId === toastId) {
-                        toastEl.classList.add('hide-toast');
-                    }
-                }, 1000);
-
-                // Safe cleanup after 1.3s
+                // Force visual hide after duration
                 this.timeoutId = setTimeout(() => {
                     this.dismiss();
-                }, 1300);
+                }, duration);
 
             } catch (error) {
                 this.log("show", "failed", error.message);
@@ -1239,10 +1713,139 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+
     // Backward compatibility wrapper
     function showToast(message) {
         toast.success(message);
     }
+
+    // ============================================================
+    // MOBILE MENU CARD HELPERS
+    // ============================================================
+
+    /** Get current cart quantity for a given item id */
+    function getCartQty(id) {
+        const item = cart.find(c => c.id === id);
+        return item ? item.quantity : 0;
+    }
+
+    /** Update mobile overlay qty control and sync cart */
+    window.mobUpdateQty = function(id, name, price, img, delta) {
+        const current = getCartQty(id);
+        const newQty  = current + delta;
+
+        if (newQty <= 0) {
+            // Remove from cart and swap back to ADD+
+            updateQuantity(id, -current); // set to 0
+            const mobAdd = document.getElementById(`mob-add-${id}`);
+            const mobQty = document.getElementById(`mob-qty-${id}`);
+            if (mobAdd) mobAdd.style.display = 'flex';
+            if (mobQty) mobQty.style.display = 'none';
+            return;
+        }
+
+        updateQuantity(id, delta);
+        const valEl = document.getElementById(`mob-qval-${id}`);
+        if (valEl) valEl.textContent = newQty;
+    };
+
+    /** Inject & open the Half/Full bottom sheet */
+    function openHFVariantSheet(itemName, half, full, img, mobAddBtn) {
+        // Inject sheet HTML once
+        if (!document.getElementById('hf-variant-sheet')) {
+            document.body.insertAdjacentHTML('beforeend', `
+                <div id="hf-sheet-overlay"></div>
+                <div id="hf-variant-sheet">
+                    <div class="hf-sheet-handle"></div>
+                    <div class="hf-sheet-title" id="hf-sheet-name"></div>
+                    <div class="hf-sheet-subtitle">Choose your portion size</div>
+                    <div class="hf-sheet-options">
+                        <div class="hf-sheet-opt" id="hf-opt-half">
+                            <div class="hf-sheet-opt-label">Half</div>
+                            <div class="hf-sheet-opt-price" id="hf-half-price"></div>
+                            <div class="hf-sheet-opt-qty">
+                                <button class="sq-btn sq-minus" id="hf-half-minus">−</button>
+                                <span class="sq-val" id="hf-half-val">0</span>
+                                <button class="sq-btn sq-plus" id="hf-half-plus">+</button>
+                            </div>
+                        </div>
+                        <div class="hf-sheet-opt" id="hf-opt-full">
+                            <div class="hf-sheet-opt-label">Full</div>
+                            <div class="hf-sheet-opt-price" id="hf-full-price"></div>
+                            <div class="hf-sheet-opt-qty">
+                                <button class="sq-btn sq-minus" id="hf-full-minus">−</button>
+                                <span class="sq-val" id="hf-full-val">0</span>
+                                <button class="sq-btn sq-plus" id="hf-full-plus">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+
+            // Dismiss on overlay click
+            document.getElementById('hf-sheet-overlay').addEventListener('click', closeHFSheet);
+        }
+
+        function syncMobButton() {
+            if (!mobAddBtn) return;
+            const total = (getCartQty(half.id) || 0) + (getCartQty(full.id) || 0);
+            if (total > 0) {
+                mobAddBtn.textContent = `${total} ✓`;
+                mobAddBtn.style.background = '#15803d';
+            } else {
+                mobAddBtn.textContent = 'ADD +';
+                mobAddBtn.style.background = '#16a34a';
+            }
+        }
+
+        // Populate
+        document.getElementById('hf-sheet-name').textContent  = itemName;
+        document.getElementById('hf-half-price').textContent  = `₹${half.price}`;
+        document.getElementById('hf-full-price').textContent  = `₹${full.price}`;
+        document.getElementById('hf-half-val').textContent    = getCartQty(half.id) || 0;
+        document.getElementById('hf-full-val').textContent    = getCartQty(full.id) || 0;
+
+        // Wire buttons (remove old listeners by cloning)
+        ['hf-half-minus','hf-half-plus','hf-full-minus','hf-full-plus'].forEach(id => {
+            const el = document.getElementById(id);
+            const clone = el.cloneNode(true);
+            el.parentNode.replaceChild(clone, el);
+        });
+
+        document.getElementById('hf-half-plus').addEventListener('click', () => {
+            addToCart(half.id, half.name, half.price, img);
+            document.getElementById('hf-half-val').textContent = getCartQty(half.id);
+            syncMobButton();
+        });
+        document.getElementById('hf-half-minus').addEventListener('click', () => {
+            updateQuantity(half.id, -1);
+            document.getElementById('hf-half-val').textContent = getCartQty(half.id);
+            syncMobButton();
+        });
+        document.getElementById('hf-full-plus').addEventListener('click', () => {
+            addToCart(full.id, full.name, full.price, img);
+            document.getElementById('hf-full-val').textContent = getCartQty(full.id);
+            syncMobButton();
+        });
+        document.getElementById('hf-full-minus').addEventListener('click', () => {
+            updateQuantity(full.id, -1);
+            document.getElementById('hf-full-val').textContent = getCartQty(full.id);
+            syncMobButton();
+        });
+
+        // Open
+        document.getElementById('hf-sheet-overlay').classList.add('open');
+        document.getElementById('hf-variant-sheet').classList.add('open');
+    }
+
+    function closeHFSheet() {
+        const sheet   = document.getElementById('hf-variant-sheet');
+        const overlay = document.getElementById('hf-sheet-overlay');
+        if (sheet)   sheet.classList.remove('open');
+        if (overlay) overlay.classList.remove('open');
+    }
+    window.closeHFSheet = closeHFSheet;
+
 
     // Initialize Cart
     function initCart() {
@@ -1251,43 +1854,22 @@ document.addEventListener('DOMContentLoaded', () => {
             cart = JSON.parse(storedCart);
         }
         
-        // Fetch coupons to validate stored coupon state
-        Promise.all([
-            fetch(`${ADMIN_API_BASE_URL}/coupons`).then(res => res.json()).catch(() => []),
-            fetch('/data/coupon.json').then(res => res.json()).catch(() => [])
-        ])
-        .then(([apiCoupons, localCoupons]) => {
-            let data = [];
-            if (apiCoupons && Array.isArray(apiCoupons) && apiCoupons.length > 0) {
-                data = apiCoupons.map(c => ({
-                    code: c.code,
-                    type: c.discountType === 'percentage' ? 'PERCENT' : 'FLAT',
-                    discount: c.discountValue,
-                    discountPercent: c.discountValue,
-                    maxDiscount: c.discountValue, 
-                    minOrder: c.minOrderValue,
-                    active: c.isActive !== false
-                }));
-            } else {
-                data = localCoupons;
-            }
-            availableCoupons = getMergedCoupons(data);
+        // Fetch live coupons from Admin API to validate stored coupon state
+        loadLiveCoupons().then(coupons => {
             if (appliedCoupon) {
-                const stillValid = availableCoupons.find(c => c.code === appliedCoupon.code && c.active === true);
-                // Edge case: Clear if invalid or cart is empty
+                const stillValid = (coupons || []).find(c => c.code === appliedCoupon.code && c.active === true);
                 if (!stillValid || cart.length === 0) {
-                        appliedCoupon = null;
-                        discountAmount = 0;
-                        localStorage.removeItem('littiWaleAppliedCoupon');
-                        localStorage.removeItem('littiWaleDiscountAmount');
-                    }
+                    appliedCoupon = null;
+                    discountAmount = 0;
+                    localStorage.removeItem('littiWaleAppliedCoupon');
+                    localStorage.removeItem('littiWaleDiscountAmount');
                 }
-                updateCartUI();
-            })
-            .catch(err => {
-                console.error("Error validating coupons:", err);
-                updateCartUI();
-            });
+            }
+            updateCartUI();
+        }).catch(err => {
+            console.error("Error validating coupons:", err);
+            updateCartUI();
+        });
             
         // Fetch location details exclusively for Delivery Calculation
         getUserLocation();
@@ -1296,35 +1878,89 @@ document.addEventListener('DOMContentLoaded', () => {
     // Global add to cart function accessible from inline HTML onclick
     window.addToCart = function(id, name, price, image, selectedOption = null) {
         if (!selectedOption) {
-            const baseId = id.replace('_half', '').replace('_full', '');
-            const menuItem = menuData.find(i => i.id === baseId);
+            const baseId = String(id).replace('_half', '').replace('_full', '');
+            const menuItem = (typeof menuData !== 'undefined' && Array.isArray(menuData)) ? menuData.find(i => String(i.id) === String(baseId) || String(i._id) === String(baseId)) : null;
             
-            if (menuItem && menuItem.options && menuItem.options.length > 0) {
+            // Check if this item is a Thali dish
+            const isThali = (name && name.toLowerCase().includes('thali')) || 
+                            (menuItem && menuItem.category && menuItem.category.toLowerCase().includes('thali')) ||
+                            (menuItem && menuItem.name && menuItem.name.toLowerCase().includes('thali'));
+
+            const defaultThaliOptions = [
+                { label: 'Rice + Dal', desc: 'Steamed Basmati Rice with Homestyle Tadka Dal' },
+                { label: '5 Roti (5 Pcs)', desc: '5 Fresh Hot Whole Wheat Tawa Rotis' },
+                { label: 'Mix (Rice + Dal + 2 Rotis)', desc: 'Mini Rice, Homestyle Dal & 2 Hot Rotis' }
+            ];
+
+            let optionsToPresent = null;
+            if (isThali) {
+                optionsToPresent = defaultThaliOptions;
+            } else if (menuItem && menuItem.options && menuItem.options.length > 0) {
+                optionsToPresent = menuItem.options.map(opt => typeof opt === 'string' ? { label: opt, desc: '' } : opt);
+            }
+
+            if (optionsToPresent && optionsToPresent.length > 0) {
                 const optionsModal = document.getElementById('options-modal');
                 const optionsNameEl = document.getElementById('options-item-name');
                 const container = document.getElementById('options-container');
                 
-                if (optionsModal && container && optionsNameEl) {
-                    optionsNameEl.textContent = name;
+                if (optionsModal && container) {
+                    if (optionsNameEl) {
+                        optionsNameEl.innerHTML = `
+                            <strong style="color:#ffffff; font-size:1.15rem; display:block; margin-bottom:4px;">${name}</strong>
+                            <span style="font-size:0.85rem; color:#f59e0b; font-weight:700;">Select your Thali Combination:</span>
+                        `;
+                    }
                     container.innerHTML = '';
                     
-                    menuItem.options.forEach(opt => {
+                    optionsToPresent.forEach(optObj => {
+                        const optLabel = optObj.label || optObj;
+                        const optDesc = optObj.desc || '';
+                        
                         const btn = document.createElement('button');
-                        btn.className = 'btn btn-outline btn-block py-3';
-                        btn.textContent = opt;
-                        btn.style.fontSize = '1.1rem';
-                        btn.onclick = () => {
+                        btn.type = 'button';
+                        btn.className = 'btn btn-outline btn-block';
+                        btn.style.textAlign = 'left';
+                        btn.style.padding = '14px 18px';
+                        btn.style.borderRadius = '12px';
+                        btn.style.borderColor = 'rgba(255,255,255,0.15)';
+                        btn.style.background = 'rgba(255,255,255,0.04)';
+                        btn.style.display = 'flex';
+                        btn.style.alignItems = 'center';
+                        btn.style.justifyContent = 'space-between';
+                        btn.style.cursor = 'pointer';
+                        btn.style.transition = 'all 0.2s ease';
+                        btn.style.marginBottom = '4px';
+
+                        btn.innerHTML = `
+                            <div>
+                                <div style="font-weight:800; font-size:1rem; color:#ffffff;">${optLabel}</div>
+                                ${optDesc ? `<div style="font-size:0.8rem; color:#9ca3af; margin-top:2px;">${optDesc}</div>` : ''}
+                            </div>
+                            <span style="font-size:1.1rem; color:#f59e0b; font-weight:900;">+</span>
+                        `;
+
+                        btn.onmouseover = () => {
+                            btn.style.borderColor = '#f97316';
+                            btn.style.background = 'rgba(249,115,22,0.12)';
+                            btn.style.transform = 'translateY(-2px)';
+                        };
+                        btn.onmouseout = () => {
+                            btn.style.borderColor = 'rgba(255,255,255,0.15)';
+                            btn.style.background = 'rgba(255,255,255,0.04)';
+                            btn.style.transform = 'translateY(0)';
+                        };
+
+                        btn.onclick = (e) => {
+                            if (e) e.stopPropagation();
                             optionsModal.classList.remove('show');
-                            const added = window.addToCart(id, name, price, image, opt);
-                            // If this was triggered from upsell modal logic, cartDrawer is open but we might need to proceed
-                            // However, upsell flow uses inline onclick, which already returned false
-                            // So we just add it to cart.
+                            window.addToCart(id, name, price, image, optLabel);
                         };
                         container.appendChild(btn);
                     });
                     
                     optionsModal.classList.add('show');
-                    return; // Wait for user selection
+                    return; // Wait for customer choice
                 }
             }
         }
@@ -1416,6 +2052,44 @@ document.addEventListener('DOMContentLoaded', () => {
         cart = cart.filter(item => item.id !== id);
         saveCart();
         updateCartUI();
+    };
+
+    window.reorderItemsIntoCart = function(items) {
+        if (!items || !Array.isArray(items) || items.length === 0) return 0;
+        let count = 0;
+        items.forEach(it => {
+            const name = it.name || 'Dish Item';
+            const price = Number(it.price) || 100;
+            const qty = Number(it.quantity) || 1;
+            const id = it.id || it._id || `reorder_${name.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+
+            const existing = cart.find(c => c.name === name || c.id === id);
+            if (existing) {
+                existing.quantity += qty;
+            } else {
+                cart.push({
+                    id: id,
+                    name: name,
+                    price: price,
+                    quantity: qty,
+                    image: it.image || 'images/logo.png',
+                    diet: it.diet || 'veg'
+                });
+            }
+            count += qty;
+        });
+
+        saveCart();
+        updateCartUI();
+        syncMenuWithCart();
+
+        const cartDrawer = document.getElementById('cart-drawer');
+        if (cartDrawer) {
+            cartDrawer.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        return count;
     };
 
     function saveCart() {
@@ -1519,7 +2193,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 deliveryText = 'Pickup (Free)';
                 finalTotal = subtotalAmount;
             } else if (deliveryStatus === 'AVAILABLE') {
-                const distanceVal = Math.round(deliveryCharge / 30);
+                const currentRate = window.adminDeliveryRate || 30;
+                const distanceVal = Math.round(deliveryCharge / currentRate);
                 deliveryText = `₹${deliveryCharge} (${distanceVal} km)`;
                 finalTotal += deliveryCharge;
             } else if (deliveryStatus === 'UNAVAILABLE') {
@@ -1677,12 +2352,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const fullId = btn.id.replace('menu-add-btn-', '');
             const ctrl = document.getElementById(`menu-qty-ctrl-${fullId}`);
             const valSpan = document.getElementById(`menu-qty-val-${fullId}`);
-            const cartItem = cart.find(item => item.id === fullId);
+            const matchingItems = cart.filter(item => item.id === fullId || item.id.startsWith(fullId + '_'));
+            const totalQty = matchingItems.reduce((sum, item) => sum + item.quantity, 0);
             
-            if (cartItem) {
+            if (totalQty > 0) {
                 btn.style.display = 'none';
                 if (ctrl) ctrl.style.display = 'flex';
-                if (valSpan) valSpan.textContent = cartItem.quantity;
+                if (valSpan) valSpan.textContent = totalQty;
             } else {
                 btn.style.display = 'block';
                 if (ctrl) ctrl.style.display = 'none';
@@ -1852,6 +2528,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('close-options-modal')?.addEventListener('click', () => {
             if (optionsModal) optionsModal.classList.remove('show');
         });
+        optionsModal?.addEventListener('click', (e) => {
+            if (e.target === optionsModal) {
+                optionsModal.classList.remove('show');
+            }
+        });
 
         const updateNoteUI = () => {
             const btnText = document.getElementById('add-note-btn-text');
@@ -1919,7 +2600,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Coupon Handlers
-        document.getElementById('apply-coupon-btn')?.addEventListener('click', () => {
+        document.getElementById('apply-coupon-btn')?.addEventListener('click', async () => {
             const codeInput = document.getElementById('coupon-input');
             const code = codeInput.value.trim().toUpperCase();
             if (!code) return;
@@ -1930,48 +2611,38 @@ document.addEventListener('DOMContentLoaded', () => {
             
             console.log("Applying coupon code:", code);
             
-            fetch('/data/coupon.json')
-                .then(res => {
-                    if (!res.ok) throw new Error("Could not load coupon data");
-                    return res.json();
-                })
-                .then(data => {
-                    console.log("Coupons loaded for validation:", data);
-                    availableCoupons = getMergedCoupons(data);
-                    const coupon = availableCoupons.find(c => c.code === code && c.active === true);
-                    
-                    if (!coupon) {
-                        msgEl.textContent = 'Invalid or Inactive Coupon';
-                        msgEl.style.color = '#dc3545';
-                        return;
-                    }
-                    
-                    // Check minOrder if present
-                    const subtotal = cart.reduce((sum, item) => sum + (Number(item.price) * Number(item.quantity)), 0);
-                    if (coupon.minOrder && subtotal < coupon.minOrder) {
-                        msgEl.textContent = `Min order ₹${coupon.minOrder} required`;
-                        msgEl.style.color = '#dc3545';
-                        return;
-                    }
+            // Ensure live coupons are loaded from Admin API
+            if (!availableCoupons || availableCoupons.length === 0) {
+                await loadLiveCoupons();
+            }
 
-                    appliedCoupon = coupon;
-                    console.log("Coupon applied successfully:", coupon);
-                    
-                    // Persist coupon state
-                    localStorage.setItem('littiWaleAppliedCoupon', JSON.stringify(coupon));
-                    // We'll update the discountAmount in localStorage after updateCartUI recalculates it
-                    
-                    codeInput.value = '';
-                    msgEl.textContent = 'Applied!';
-                    msgEl.style.color = '#4ade80';
-                    updateCartUI();
-                    localStorage.setItem('littiWaleDiscountAmount', discountAmount);
-                })
-                .catch(err => {
-                    console.error('Error applying coupon:', err);
-                    msgEl.textContent = 'System Error: Try again';
-                    msgEl.style.color = '#dc3545';
-                });
+            const coupon = (availableCoupons || []).find(c => c.code === code && c.active === true);
+            
+            if (!coupon) {
+                msgEl.textContent = 'Invalid or Inactive Coupon';
+                msgEl.style.color = '#dc3545';
+                return;
+            }
+            
+            // Check minOrder if present
+            const subtotal = cart.reduce((sum, item) => sum + (Number(item.price) * Number(item.quantity)), 0);
+            if (coupon.minOrder && subtotal < coupon.minOrder) {
+                msgEl.textContent = `Min order ₹${coupon.minOrder} required`;
+                msgEl.style.color = '#dc3545';
+                return;
+            }
+
+            appliedCoupon = coupon;
+            console.log("Coupon applied successfully from Live Admin API:", coupon);
+            
+            // Persist coupon state
+            localStorage.setItem('littiWaleAppliedCoupon', JSON.stringify(coupon));
+            
+            codeInput.value = '';
+            msgEl.textContent = 'Applied!';
+            msgEl.style.color = '#4ade80';
+            updateCartUI();
+            localStorage.setItem('littiWaleDiscountAmount', discountAmount);
         });
         
         document.getElementById('remove-coupon-btn')?.addEventListener('click', () => {
@@ -1984,72 +2655,63 @@ document.addEventListener('DOMContentLoaded', () => {
             updateCartUI();
         });
         
-        // View All Coupons Modal Logic
+        // View All Coupons Modal Logic (100% Live Admin Source)
         const couponsModal = document.getElementById('coupons-modal');
-        document.getElementById('view-all-coupons-btn')?.addEventListener('click', () => {
+        document.getElementById('view-all-coupons-btn')?.addEventListener('click', async () => {
             if (!couponsModal) return;
             const container = document.getElementById('all-coupons-container');
             container.innerHTML = '<p class="text-center" style="color: var(--text-secondary);">Loading coupons...</p>';
             couponsModal.classList.add('show');
             
-            console.log("Fetching all coupons for modal...");
-            fetch('/data/coupon.json')
-                .then(res => {
-                    if (!res.ok) throw new Error("Failed to fetch coupons");
-                    return res.json();
-                })
-                .then(data => {
-                    console.log("Coupons fetched successfully for modal:", data);
-                    availableCoupons = getMergedCoupons(data);
-                    container.innerHTML = '';
-                    
-                    const activeCoupons = availableCoupons.filter(c => c.active === true);
-                    
-                    if (activeCoupons.length === 0) {
-                        console.warn("No active coupons found in JSON");
-                        container.innerHTML = '<p class="text-center" style="color: var(--text-secondary);">No coupons available currently</p>';
-                    } else {
-                        activeCoupons.forEach(coupon => {
-                            const btnHtml = `<button class="btn btn-primary select-modal-coupon-btn" data-code="${coupon.code}" style="padding: 5px 15px; font-size:0.85rem;">Select</button>`;
-                                
-                            const html = `
-                                <div style="border: 1px dashed var(--primary-color); background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
-                                    <div>
-                                        <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; color: var(--primary-color);">${coupon.code}</div>
-                                        <div style="color: var(--text-secondary); font-size: 0.9rem;">
-                                            ${coupon.type === 'PEPSI' ? 'Free Pepsi on this order' : (coupon.isDynamic ? `${coupon.discount}% OFF` : `${coupon.discount}% OFF (Upto ₹${coupon.maxDiscount})`)}
-                                        </div>
-                                        ${coupon.minOrder ? `<div style="color: #888; font-size: 0.75rem; margin-top: 5px;">Min Order: ₹${coupon.minOrder}</div>` : ''}
-                                        ${coupon.isDynamic ? `<div style="color: #aaa; font-size: 0.75rem; margin-top: 3px;">*T&C Applied</div>` : ''}
-                                    </div>
-                                    <div>
-                                        ${btnHtml}
-                                    </div>
+            console.log("Fetching all live coupons from Admin API for modal...");
+            if (!availableCoupons || availableCoupons.length === 0) {
+                await loadLiveCoupons();
+            }
+
+            container.innerHTML = '';
+            const activeCoupons = (availableCoupons || []).filter(c => c.active === true);
+            
+            if (activeCoupons.length === 0) {
+                console.warn("No active coupons found");
+                container.innerHTML = '<p class="text-center" style="color: var(--text-secondary);">No coupons available currently</p>';
+            } else {
+                activeCoupons.forEach(coupon => {
+                    const btnHtml = `<button class="btn btn-primary select-modal-coupon-btn" data-code="${coupon.code}" style="padding: 5px 15px; font-size:0.85rem;">Select</button>`;
+                    const discountDesc = coupon.type === 'PERCENT' 
+                        ? `${coupon.discount}% OFF (Upto ₹${coupon.maxDiscount || coupon.discount})`
+                        : `Flat ₹${coupon.discount} OFF`;
+                    const html = `
+                        <div style="border: 1px dashed var(--primary-color); background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div>
+                                <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; color: var(--primary-color);">${coupon.code}</div>
+                                <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                                    ${discountDesc}
                                 </div>
-                            `;
-                            container.insertAdjacentHTML('beforeend', html);
-                        });
-                        
-                        document.querySelectorAll('.select-modal-coupon-btn').forEach(btn => {
-                            btn.addEventListener('click', (e) => {
-                                const code = e.target.getAttribute('data-code');
-                                console.log("Coupon selected from modal:", code);
-                                
-                                const codeInput = document.getElementById('coupon-input');
-                                if (codeInput) {
-                                    codeInput.value = code;
-                                    codeInput.focus();
-                                }
-                                
-                                if (couponsModal) couponsModal.classList.remove('show');
-                            });
-                        });
-                    }
-                })
-                .catch(err => {
-                    console.error('Error fetching modal coupons:', err);
-                    container.innerHTML = '<p class="text-center" style="color: var(--text-secondary);">Error loading coupons. Please try manual entry.</p>';
+                                ${coupon.minOrder ? `<div style="color: #888; font-size: 0.75rem; margin-top: 5px;">Min Order: ₹${coupon.minOrder}</div>` : ''}
+                            </div>
+                            <div>
+                                ${btnHtml}
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', html);
                 });
+                
+                document.querySelectorAll('.select-modal-coupon-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const code = e.target.getAttribute('data-code');
+                        console.log("Coupon selected from modal:", code);
+                        
+                        const codeInput = document.getElementById('coupon-input');
+                        if (codeInput) {
+                            codeInput.value = code;
+                            codeInput.focus();
+                        }
+                        
+                        if (couponsModal) couponsModal.classList.remove('show');
+                    });
+                });
+            }
         });
         
         document.getElementById('close-coupons-modal')?.addEventListener('click', () => {
@@ -2080,8 +2742,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const clearBtn = document.getElementById('clear-cart-btn');
         const clearBtnGlobal = document.getElementById('clear-cart-global');
         
-        const handleClearCart = () => {
-            if(confirm('Are you sure you want to clear your cart?')) {
+        const handleClearCart = async () => {
+            const confirmed = await window.showConfirm('Are you sure you want to clear your cart?', {
+                title: 'Clear Cart',
+                icon: '🗑️',
+                okText: 'Yes, Clear',
+                cancelText: 'Keep it',
+                type: 'danger'
+            });
+            if (confirmed) {
                 // Mobile specific: dismiss toast on cart clear
                 if (toast.isMobile) {
                     toast.dismiss(TOAST_ID);
@@ -2107,6 +2776,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (clearBtnGlobal) {
             clearBtnGlobal.addEventListener('click', handleClearCart);
         }
+
+
 
         // Delivery Info Modal HTML Injection
         if (!document.getElementById('delivery-info-modal')) {
@@ -2294,7 +2965,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveCart();
                 updateCartUI();
                 
-                alert('Order received!\n\nPlease confirm your payment status.\n\n* If your payment is still pending, contact the restaurant.\n* If the restaurant has confirmed your payment in WhatsApp, your order is successfully placed.');
+                window.showAlert('Order received!\n\nPlease confirm your payment status.\n\n• If your payment is still pending, contact the restaurant.\n• If the restaurant has confirmed your payment in WhatsApp, your order is successfully placed.', { title: 'Order Received! 🎉', icon: '✅', type: 'success' });
                 
                 // Sync checkout page if applicable
                 if (window.location.pathname.includes('checkout.html')) {
@@ -2303,7 +2974,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             document.getElementById('btn-verify-no')?.addEventListener('click', () => {
-                alert('Please confirm your payment first');
+                window.showAlert('Please confirm your payment first before continuing.', { title: 'Payment Pending', icon: '💳', type: 'warning' });
                 document.getElementById('restaurant-verify-modal').classList.remove('show');
                 
                 // Loop back to screenshot modal
@@ -2313,27 +2984,37 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // COD Confirmation Modal HTML Injection
+        // Order Confirmation Modal HTML Injection (Replaces obsolete call popup)
         if (!document.getElementById('cod-confirm-modal')) {
             const codConfirmModalHTML = `
                 <div id="cod-confirm-modal" class="payment-modal" style="z-index: 99999;">
-                    <div class="payment-modal-content" style="text-align:center;">
-                        <h3 style="font-family: var(--font-heading); margin-bottom:15px;">✅ Order Sent!</h3>
-                        <p style="color:var(--text-secondary); margin-bottom:5px; font-size:1rem;">Your COD order has been sent via WhatsApp.</p>
-                        <p style="font-weight:bold; margin-bottom:20px; font-size:1.05rem;">Please call the restaurant to confirm your order.</p>
+                    <div class="payment-modal-content" style="text-align:center; max-width:420px; padding:28px 22px; border-radius:20px; background:#18181b; border:1px solid rgba(255,255,255,0.12); box-shadow:0 20px 50px rgba(0,0,0,0.85);">
+                        <div style="font-size:44px; margin-bottom:12px;">🎉</div>
+                        <h3 style="font-family: var(--font-heading); margin-bottom:8px; font-size:1.35rem; color:#ffffff;">Order Sent to Kitchen!</h3>
+                        <p style="color:var(--text-secondary, #cbd5e1); margin-bottom:14px; font-size:0.95rem; line-height:1.5;">Your order details have been received. The restaurant is confirming your order now.</p>
+                        
+                        <div style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); border-radius:12px; padding:12px 14px; margin-bottom:20px; text-align:left; display:flex; align-items:center; gap:12px;">
+                            <span class="tracker-dot-pulse yellow" style="flex-shrink:0;"></span>
+                            <div style="font-size:0.85rem; color:#fde68a;">
+                                <strong>Live Tracking Active:</strong> Status will update automatically as soon as kitchen accepts.
+                            </div>
+                        </div>
+
                         <div style="display:flex; flex-direction:column; gap:10px;">
-                            <a href="tel:+916370680744" id="btn-cod-call" class="btn btn-primary btn-block py-3" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:10px;">
-                                <i class="fas fa-phone"></i> Call Restaurant
+                            <button id="btn-cod-done" class="btn btn-primary btn-block py-3" style="font-weight:800; font-size:1rem; border-radius:12px; cursor:pointer;">
+                                👍 Got It / Track Live Order
+                            </button>
+                            <a href="tel:+916370680744" id="btn-cod-call" class="btn btn-outline btn-block py-2" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-size:0.85rem; color:#a1a1aa; border-color:rgba(255,255,255,0.15);">
+                                <i class="fas fa-phone"></i> Need to change order? Call Restaurant
                             </a>
-                            <button id="btn-cod-done" class="btn btn-outline btn-block py-3">I'll confirm later</button>
                         </div>
                     </div>
                 </div>
             `;
             document.body.insertAdjacentHTML('beforeend', codConfirmModalHTML);
 
-            document.getElementById('btn-cod-call')?.addEventListener('click', () => {
-                document.getElementById('cod-confirm-modal').classList.remove('show');
+            const dismissAndClean = () => {
+                document.getElementById('cod-confirm-modal')?.classList.remove('show');
                 
                 // Clear form fields
                 document.getElementById('checkout-name') && (document.getElementById('checkout-name').value = '');
@@ -2346,23 +3027,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (typeof updateNoteUI === 'function') updateNoteUI();
                 saveCart();
                 updateCartUI();
-            });
+            };
 
-            document.getElementById('btn-cod-done')?.addEventListener('click', () => {
-                document.getElementById('cod-confirm-modal').classList.remove('show');
-
-                // Clear form fields
-                document.getElementById('checkout-name') && (document.getElementById('checkout-name').value = '');
-                document.getElementById('checkout-phone') && (document.getElementById('checkout-phone').value = '');
-                document.getElementById('checkout-address') && (document.getElementById('checkout-address').value = '');
-                document.getElementById('checkout-notes') && (document.getElementById('checkout-notes').value = '');
-
-                cart = [];
-                restaurantNote = '';
-                if (typeof updateNoteUI === 'function') updateNoteUI();
-                saveCart();
-                updateCartUI();
-            });
+            document.getElementById('btn-cod-call')?.addEventListener('click', dismissAndClean);
+            document.getElementById('btn-cod-done')?.addEventListener('click', dismissAndClean);
         }
 
         // Payment Modal HTML Injection
@@ -2479,7 +3147,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!isDelivery) {
                 deliveryText = 'Pickup (Takeaway)';
             } else if (deliveryStatus === 'AVAILABLE') {
-                const distanceVal = Math.round(deliveryCharge / 30);
+                const currentRate = window.adminDeliveryRate || 30;
+                const distanceVal = Math.round(deliveryCharge / currentRate);
                 deliveryText = `₹${deliveryCharge} (${distanceVal} km)`;
                 finalTotal += deliveryCharge;
             } else {
@@ -2587,7 +3256,48 @@ document.addEventListener('DOMContentLoaded', () => {
             return msg;
         };
 
-        function sendWhatsAppMessage() {
+        async function saveOrderToDatabase(orderData) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                const res = await fetch(`${ADMIN_API_BASE_URL}/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.error || errData.message || `HTTP ${res.status}`);
+                }
+                const savedDoc = await res.json();
+                return { success: true, data: savedDoc };
+            } catch (err) {
+                console.error("Order save to MongoDB error:", err);
+                return { success: false, error: err.message || "Network request failed" };
+            }
+        }
+
+        async function sendWhatsAppMessage() {
+            // Duplicate submission lock
+            if (window.isSubmittingOrder) return;
+            window.isSubmittingOrder = true;
+
+            const submitBtns = [
+                document.getElementById('btn-cod'),
+                document.getElementById('btn-i-have-paid'),
+                document.getElementById('checkout-place-order-btn')
+            ].filter(Boolean);
+
+            const origBtnTexts = submitBtns.map(b => b.innerHTML);
+            submitBtns.forEach(b => {
+                b.disabled = true;
+                b.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving Order...';
+            });
+
             const getVal = (id1, id2) => {
                 const el1 = document.getElementById(id1);
                 const el2 = document.getElementById(id2);
@@ -2598,15 +3308,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const name = getVal('checkout-name', 'cust-name');
             const phone = getVal('checkout-phone', 'cust-phone');
-            const address = getVal('checkout-address', 'cust-address');
+            const isSameWhatsApp = document.getElementById('same-whatsapp-chk') ? document.getElementById('same-whatsapp-chk').checked : true;
+            const customWhatsApp = document.getElementById('checkout-whatsapp') ? document.getElementById('checkout-whatsapp').value.trim() : '';
+            const whatsappPhone = isSameWhatsApp ? phone : (customWhatsApp || phone);
             
-            let subtotalAmount = 0;
-            cart.forEach(item => {
-                const priceNum = Number(item.price) || 0;
-                const qtyNum = Number(item.quantity) || 0;
-                subtotalAmount += (priceNum * qtyNum);
-            });
-
             const orderTypeDel1 = document.getElementById('checkout-type-delivery');
             const orderTypeDel2 = document.getElementById('order-type-delivery');
             let isDelivery = true;
@@ -2615,6 +3320,99 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (orderTypeDel2 && orderTypeDel2.checked !== undefined) {
                 isDelivery = orderTypeDel2.checked;
             }
+
+            const address = isDelivery ? getVal('checkout-address', 'cust-address') : 'Self Pickup (Takeaway)';
+            const landmark = isDelivery ? (document.getElementById('checkout-landmark')?.value || '').trim() : '';
+            
+            let subtotalAmount = 0;
+            cart.forEach(item => {
+                const priceNum = Number(item.price) || 0;
+                const qtyNum = Number(item.quantity) || 0;
+                subtotalAmount += (priceNum * qtyNum);
+            });
+
+            const currentDelCharge = (isDelivery && deliveryStatus === 'AVAILABLE') ? (deliveryCharge || 0) : 0;
+            const currentDiscount = (appliedCoupon && typeof discountAmount !== 'undefined') ? discountAmount : 0;
+            const computedFinalTotal = Math.max(0, subtotalAmount + currentDelCharge - currentDiscount);
+
+            // Construct Order Payload for MongoDB
+            const orderPayload = {
+                customerName: name,
+                customerPhone: phone,
+                whatsappPhone: whatsappPhone,
+                deliveryAddress: address,
+                landmark: landmark,
+                deliveryLocation: sessionStorage.getItem('littiWaleLocation') || 'cloud',
+                orderType: isDelivery ? 'delivery' : 'takeaway',
+                items: cart.map(item => ({
+                    id: item.id || item._id || '',
+                    name: item.name,
+                    price: Number(item.price) || 0,
+                    quantity: Number(item.quantity) || 1,
+                    subtotal: (Number(item.price) || 0) * (Number(item.quantity) || 1)
+                })),
+                subtotal: subtotalAmount,
+                discount: currentDiscount,
+                couponCode: appliedCoupon ? (appliedCoupon.code || appliedCoupon) : '',
+                deliveryCharge: currentDelCharge,
+                finalTotal: computedFinalTotal,
+                paymentMethod: isCOD ? 'COD' : 'UPI',
+                paymentMode: selectedPaymentMode || 'full',
+                notes: restaurantNote || '',
+                orderSource: 'website',
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            };
+
+            // Save order to MongoDB before WhatsApp
+            const saveRes = await saveOrderToDatabase(orderPayload);
+
+            if (!saveRes.success) {
+                window.isSubmittingOrder = false;
+                submitBtns.forEach((b, i) => {
+                    b.disabled = false;
+                    b.innerHTML = origBtnTexts[i];
+                });
+                window.showAlert('Unable to save order to the restaurant system:\n' + (saveRes.error || 'Please check your internet connection and try again.') + '\n\nYour cart has been preserved.', { title: 'Order Failed', icon: '❌', type: 'error' });
+                return;
+            }
+
+            // Save active order to localStorage for live customer status tracking
+            const createdOrder = saveRes.data?.order || saveRes.data;
+            if (createdOrder && createdOrder._id) {
+                localStorage.setItem('littiWaleActiveOrder', JSON.stringify({
+                    id: createdOrder._id,
+                    shortId: String(createdOrder._id).slice(-6).toUpperCase(),
+                    status: 'pending',
+                    customerName: createdOrder.customerName || name,
+                    subtotal: createdOrder.subtotal || subtotalAmount,
+                    deliveryCharge: createdOrder.deliveryCharge || 0,
+                    finalTotal: createdOrder.finalTotal || computedFinalTotal,
+                    time: new Date().toISOString()
+                }));
+                if (typeof window.initOrderTracker === 'function') {
+                    window.initOrderTracker();
+                }
+            }
+
+            // Save Customer Profile for Instant Reorder & Auto-Fill
+            const cleanCustPhone = String(phone || '').replace(/\D/g, '').slice(-10);
+            if (cleanCustPhone) {
+                localStorage.setItem('littiwale_customer_phone', cleanCustPhone);
+                localStorage.setItem('littiwale_customer_profile', JSON.stringify({
+                    name: name,
+                    phone: cleanCustPhone,
+                    address: address,
+                    landmark: landmark || ''
+                }));
+            }
+
+            // Restore button state
+            window.isSubmittingOrder = false;
+            submitBtns.forEach((b, i) => {
+                b.disabled = false;
+                b.innerHTML = origBtnTexts[i];
+            });
 
             const message = window.buildWhatsAppMessage({
                 isCOD,
@@ -2660,22 +3458,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 3000);
             }
             
+            // Clear cart immediately
+            cart = [];
+            restaurantNote = '';
+            if (typeof updateNoteUI === 'function') updateNoteUI();
+            saveCart();
+            updateCartUI();
+
+            // Open WhatsApp in new tab and redirect website to dedicated Live Tracking Page!
             window.open(whatsappUrl, '_blank');
             paymentModal.classList.remove('show');
             cartDrawer.classList.remove('open');
 
-            // COD: Show call-to-confirm popup after WhatsApp opens
-            if (isCOD) {
-                // Clear cart immediately for COD as order is sent
-                cart = [];
-                restaurantNote = '';
-                if (typeof updateNoteUI === 'function') updateNoteUI();
-                saveCart();
-                updateCartUI();
-                
+            if (createdOrder && createdOrder._id) {
                 setTimeout(() => {
-                    document.getElementById('cod-confirm-modal')?.classList.add('show');
-                }, 800);
+                    window.location.href = `track.html?orderId=${createdOrder._id}`;
+                }, 600);
             }
         }
 
@@ -2690,17 +3488,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const isDelivery = orderTypeDelivery ? orderTypeDelivery.checked : true;
             
             if (!name || !phone) {
-                alert('Please fill in your Name and Phone.');
+                window.showAlert('Please fill in your Name and Phone Number to continue.', { title: 'Missing Details', icon: '📝', type: 'warning' });
                 return;
             }
             if (isDelivery && !address) {
-                alert('Please provide a delivery address.');
+                window.showAlert('Please provide your delivery address.', { title: 'Address Required', icon: '📍', type: 'warning' });
                 return;
             }
             
             const phoneRegex = /^(\+91\d{10}|0\d{10}|\d{10})$/;
             if (!phoneRegex.test(phone)) {
-                alert('Please enter a valid phone number');
+                window.showAlert('Please enter a valid 10-digit Indian phone number.', { title: 'Invalid Phone', icon: '📱', type: 'error' });
                 phoneInput.style.borderColor = 'red';
                 phoneInput.focus();
                 return;
@@ -2738,6 +3536,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const cartDrawerCheckoutBtn = document.getElementById('checkout-btn');
         if (cartDrawerCheckoutBtn) {
             cartDrawerCheckoutBtn.addEventListener('click', () => {
+                // Block checkout when admin has set restaurant offline
+                if (window.isRestaurantCurrentlyOpen === false) {
+                    const reason = window.restaurantClosedReason || 'Kitchen is temporarily offline';
+                    const overlay = document.getElementById('restaurant-closed-overlay');
+                    if (overlay) overlay.classList.add('show');
+                    return;
+                }
                 const deliveryRadio = document.getElementById('order-type-delivery');
                 if (deliveryRadio) {
                     localStorage.setItem('littiWaleOrderType', deliveryRadio.checked ? 'delivery' : 'takeaway');
@@ -2757,11 +3562,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isDelivery = document.getElementById('checkout-type-delivery')?.checked;
                 
                 if (!name || !phone) {
-                    alert('Please fill in your Name and Phone.');
+                    window.showAlert('Please fill in your Name and Phone Number to continue.', { title: 'Missing Details', icon: '📝', type: 'warning' });
                     return;
                 }
                 if (isDelivery && !address) {
-                    alert('Please provide a delivery address.');
+                    window.showAlert('Please provide your delivery address.', { title: 'Address Required', icon: '📍', type: 'warning' });
                     return;
                 }
 
@@ -2782,18 +3587,19 @@ document.addEventListener('DOMContentLoaded', () => {
                         btnGps.style.background = '#28a745';
                         const dist = calculateDistance(position.coords.latitude, position.coords.longitude, RESTAURANT_LAT, RESTAURANT_LNG);
                         const roundedKm = Math.max(1, Math.round(dist));
-                        deliveryCharge = roundedKm * 30;
+                        const currentRate = window.adminDeliveryRate || 30;
+                        deliveryCharge = roundedKm * currentRate;
                         deliveryStatus = 'AVAILABLE';
                         updateCartUI();
                     }, error => {
-                        alert("Could not get location. Ensure GPS is enabled.");
+                        window.showAlert('Could not get your location. Please ensure GPS is enabled and try again.', { title: 'Location Error', icon: '📍', type: 'error' });
                         btnGps.innerHTML = '<i class="fas fa-map-marker-alt"></i> Use Current Location (Optional)';
                         deliveryStatus = 'UNKNOWN';
                         deliveryCharge = 0;
                         updateCartUI();
                     });
                 } else {
-                    alert('Geolocation is not supported by your browser.');
+                    window.showAlert('Geolocation is not supported by your browser. Please enter your address manually.', { title: 'Not Supported', icon: '🌍', type: 'info' });
                 }
             });
         }
@@ -3393,17 +4199,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // Checkout specific initialization
     const checkoutTypeDel = document.getElementById('checkout-type-delivery');
     const checkoutTypeTake = document.getElementById('checkout-type-takeaway');
-    const checkoutAddressBlock = document.getElementById('checkout-address')?.parentElement;
+    const checkoutAddressBlock = document.getElementById('checkout-address-block') || document.getElementById('checkout-address')?.parentElement;
+    const takeawayInfoBlock = document.getElementById('checkout-takeaway-info-block');
+    const sameWhatsAppChk = document.getElementById('same-whatsapp-chk');
+    const customWhatsAppWrap = document.getElementById('custom-whatsapp-wrap');
+
+    if (sameWhatsAppChk && customWhatsAppWrap) {
+        sameWhatsAppChk.addEventListener('change', () => {
+            if (sameWhatsAppChk.checked) {
+                customWhatsAppWrap.style.display = 'none';
+            } else {
+                customWhatsAppWrap.style.display = 'block';
+                document.getElementById('checkout-whatsapp')?.focus();
+            }
+        });
+    }
     
-    if (checkoutTypeDel && checkoutTypeTake && checkoutAddressBlock) {
+    if (checkoutTypeDel && checkoutTypeTake) {
         const savedOrderType = localStorage.getItem('littiWaleOrderType') || 'delivery';
         
         const updateAddressVisibility = () => {
             if (checkoutTypeTake.checked) {
-                checkoutAddressBlock.style.display = 'none';
+                if (checkoutAddressBlock) checkoutAddressBlock.style.display = 'none';
+                if (takeawayInfoBlock) takeawayInfoBlock.style.display = 'block';
+                localStorage.setItem('littiWaleOrderType', 'takeaway');
             } else {
-                checkoutAddressBlock.style.display = 'block';
+                if (checkoutAddressBlock) checkoutAddressBlock.style.display = 'block';
+                if (takeawayInfoBlock) takeawayInfoBlock.style.display = 'none';
+                localStorage.setItem('littiWaleOrderType', 'delivery');
             }
+            if (typeof updateCartUI === 'function') updateCartUI();
         };
 
         if (savedOrderType === 'takeaway') {
@@ -3920,3 +4745,409 @@ async function initLiveSiteSettings() {
         console.warn('Could not sync live site settings:', e);
     }
 }
+
+// ==========================================================================
+// LIVE CUSTOMER ORDER STATUS TRACKER & POLLING
+// Clean up any legacy floating widgets if present
+document.getElementById('live-order-pill')?.remove();
+document.getElementById('order-animation-modal')?.remove();
+document.getElementById('live-order-tracker')?.remove();
+
+// ==========================================================================
+// CUSTOMER MY ORDERS & SAVED PROFILE MODULE (ZERO-FRICTION FLOW)
+// ==========================================================================
+// ZERO-FRICTION CUSTOMER ACCOUNT & ORDERS DRAWER
+// ==========================================================================
+window.cachedCustomerOrders = [];
+
+const CUSTOMER_API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:5001/api'
+    : 'https://littiwale-admin.vercel.app/api';
+
+function ensureCustomerDrawerInDOM() {
+    if (document.getElementById('customer-orders-drawer')) return;
+
+    const drawerHtml = `
+        <div id="customer-orders-drawer" class="customer-orders-drawer">
+            <div class="customer-orders-overlay" onclick="window.closeCustomerOrdersDrawer()"></div>
+            <div class="customer-orders-panel">
+                <div class="cust-drawer-header">
+                    <div class="cust-drawer-title">
+                        <span>My Account & Orders</span>
+                    </div>
+                    <button type="button" class="cust-drawer-close" onclick="window.closeCustomerOrdersDrawer()" title="Close Drawer">✕</button>
+                </div>
+                <div id="customer-drawer-content" class="cust-drawer-body">
+                    <!-- Dynamic views injected here -->
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', drawerHtml);
+}
+
+window.openCustomerOrdersDrawer = function() {
+    // If not on orders.html, navigate directly to dedicated orders page
+    if (!window.location.pathname.includes('orders.html')) {
+        window.location.href = 'orders.html';
+        return;
+    }
+    window.renderCustomerOrdersUI();
+};
+
+window.closeCustomerOrdersDrawer = function() {
+    const drawer = document.getElementById('customer-orders-drawer');
+    if (drawer) {
+        drawer.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+};
+
+window.renderCustomerOrdersUI = function() {
+    const savedPhone = localStorage.getItem('littiwale_customer_phone');
+    if (savedPhone) {
+        window.fetchCustomerOrders(savedPhone);
+    } else {
+        window.renderCustomerPhoneLookupView();
+    }
+};
+
+function getCustomerOrdersTargetContainer() {
+    return document.getElementById('customer-orders-container') || document.getElementById('customer-drawer-content');
+}
+
+window.renderCustomerPhoneLookupView = function() {
+    const container = getCustomerOrdersTargetContainer();
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="cust-lookup-box">
+            <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 6px;">Find Your Orders</h3>
+            <p style="font-size: 13px; color: var(--text-dim, #94a3b8); max-width: 320px; margin: 0 auto 18px; line-height: 1.5;">
+                Enter your 10-digit mobile number to view your past orders, saved delivery address, live status & 1-click reorder.
+            </p>
+            <form onsubmit="window.handleCustomerPhoneSubmit(event)">
+                <div class="cust-lookup-input-group">
+                    <span class="cust-lookup-input-prefix">+91</span>
+                    <input type="tel" id="cust-lookup-phone-input" class="cust-lookup-input" placeholder="Enter Mobile Number" maxlength="10" pattern="[0-9]{10}" required autofocus>
+                </div>
+                <button type="submit" class="cust-lookup-btn">View My Orders</button>
+            </form>
+            <p style="font-size: 11.5px; color: #64748b; margin-top: 16px;">
+                🔒 Zero password or OTP required. Instant lookup.
+            </p>
+        </div>
+    `;
+    setTimeout(() => {
+        document.getElementById('cust-lookup-phone-input')?.focus();
+    }, 150);
+};
+
+window.handleCustomerPhoneSubmit = function(e) {
+    if (e) e.preventDefault();
+    const input = document.getElementById('cust-lookup-phone-input');
+    if (!input) return;
+    const phone = input.value.replace(/\D/g, '');
+    if (phone.length !== 10) {
+        if (typeof window.showAlert === 'function') {
+            window.showAlert('Please enter a valid 10-digit mobile number', { type: 'warning', title: 'Invalid Mobile' });
+        } else {
+            alert('Please enter a valid 10-digit mobile number');
+        }
+        return;
+    }
+    localStorage.setItem('littiwale_customer_phone', phone);
+    window.fetchCustomerOrders(phone);
+};
+
+window.fetchCustomerOrders = async function(phone) {
+    const container = getCustomerOrdersTargetContainer();
+    if (!container) return;
+
+    container.innerHTML = `
+        <div style="text-align:center; padding: 50px 20px; color: #94a3b8;">
+            <div class="spinner" style="margin: 0 auto 16px; width: 36px; height: 36px; border:3px solid rgba(255,255,255,0.1); border-top-color: #f97316; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+            <div style="font-size: 14px; font-weight: 700; color: #fff;">Looking up your orders...</div>
+            <div style="font-size: 12px; margin-top: 4px; color: #64748b;">+91 ${phone}</div>
+        </div>
+    `;
+
+    try {
+        const res = await fetch(`${CUSTOMER_API_BASE_URL}/orders/customer/${phone}`);
+        const data = await res.json();
+
+        if (!data || !data.success) {
+            throw new Error(data.error || 'Failed to fetch orders');
+        }
+
+        window.cachedCustomerOrders = data.orders || [];
+
+        if (data.customer) {
+            localStorage.setItem('littiwale_customer_profile', JSON.stringify(data.customer));
+            autoFillCheckoutFromSavedProfile(data.customer);
+        }
+
+        if (!data.hasOrders || data.orders.length === 0) {
+            // New Customer View
+            container.innerHTML = `
+                <div class="cust-profile-header-card">
+                    <div>
+                        <div class="cust-profile-greeting">Welcome to Littiwale</div>
+                        <div class="cust-profile-phone">+91 ${phone}</div>
+                    </div>
+                    <button type="button" class="cust-switch-account-btn" onclick="window.switchCustomerAccount()" title="Use another number">Switch</button>
+                </div>
+                <div class="cust-lookup-box" style="margin-top: 10px;">
+                    <h4 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 6px;">No Past Orders Yet</h4>
+                    <p style="font-size: 12.5px; color: #94a3b8; margin-bottom: 20px;">
+                        Ready for authentic Taste of Desi Swag? Explore our chef-special Littis, Combos, and Thalis.
+                    </p>
+                    <a href="menu/index.html" class="cust-lookup-btn" style="text-decoration:none; display:inline-block;">Explore Menu & Order Now</a>
+                </div>
+            `;
+            return;
+        }
+
+        // Returning Customer View
+        const custName = data.customer?.name || 'Customer';
+        const address = data.customer?.address || '';
+        const landmark = data.customer?.landmark || '';
+
+        // Check for active order in progress
+        const activeOrder = data.orders.find(o => o.status === 'pending' || o.status === 'accepted' || o.status === 'confirmed' || o.status === 'dispatched');
+
+        let liveOrderHtml = '';
+        if (activeOrder) {
+            const shortId = activeOrder._id ? String(activeOrder._id).slice(-6).toUpperCase() : 'LW';
+            const statusLabel = activeOrder.status === 'dispatched' ? 'Out for Delivery' : (activeOrder.status === 'accepted' || activeOrder.status === 'confirmed' ? 'Preparing in Kitchen' : 'Order Placed (Pending)');
+            liveOrderHtml = `
+                <div class="cust-live-order-banner">
+                    <div class="cust-live-order-left">
+                        <div class="cust-live-order-icon">🛵</div>
+                        <div>
+                            <div class="cust-live-order-title">Active Order: #${shortId}</div>
+                            <div class="cust-live-order-sub">${statusLabel} • ${(activeOrder.items || []).map(i => `${i.quantity}x ${i.name}`).join(', ')}</div>
+                        </div>
+                    </div>
+                    <a href="track.html?id=${activeOrder._id}" class="cust-live-order-btn">Track Live Status →</a>
+                </div>
+            `;
+        }
+
+        let addressCardHtml = '';
+        if (address) {
+            addressCardHtml = `
+                <div class="cust-saved-address-card" style="background:var(--bg-surface, #18181f); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px 18px; margin-bottom:18px;">
+                    <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:#fbbf24; letter-spacing:0.8px; margin-bottom:4px;">
+                        <span>Saved Delivery Address</span>
+                    </div>
+                    <div style="font-size:13.5px; color:#e2e8f0; line-height:1.4;">
+                        <strong>${custName}</strong><br>
+                        ${address}${landmark ? `<br><span style="color:#94a3b8; font-size:12px;">Landmark: ${landmark}</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        const ordersListHtml = data.orders.map(ord => {
+            const shortId = ord._id ? String(ord._id).slice(-6).toUpperCase() : 'LW-ORD';
+            const dateStr = ord.createdAt ? new Date(ord.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent';
+            const total = ord.finalTotal || ord.subtotal || 0;
+            const itemsStr = (ord.items || []).map(i => `${i.quantity}x ${i.name}`).join(', ');
+            const status = (ord.status || 'delivered').toUpperCase();
+            const statusColor = status === 'DELIVERED' ? '#22c55e' : (status === 'CANCELLED' ? '#ef4444' : '#f59e0b');
+
+            return `
+                <div class="cust-past-order-card">
+                    <div class="cust-order-top-row">
+                        <span class="cust-order-id">#${shortId}</span>
+                        <span style="font-size:10.5px; font-weight:800; color:${statusColor}; background:rgba(255,255,255,0.06); padding:2px 8px; border-radius:12px;">${status}</span>
+                    </div>
+                    <div class="cust-order-date">${dateStr}</div>
+                    <div class="cust-order-items">${itemsStr}</div>
+                    <div class="cust-order-footer-row">
+                        <span class="cust-order-total">₹${total}</span>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <button type="button" class="cust-view-order-btn" onclick="window.viewPastOrderDetails('${ord._id}')" title="View Order Details & Bill">
+                                <span>View Details</span>
+                            </button>
+                            <button type="button" class="cust-reorder-btn" onclick="window.reorderPastOrder('${ord._id}')" title="Add all items to cart">
+                                <span>Reorder</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = `
+            <div class="cust-profile-header-card">
+                <div>
+                    <div class="cust-profile-greeting">Welcome back, ${custName}! 👋</div>
+                    <div class="cust-profile-phone">📱 +91 ${phone} • ${data.orders.length} Orders</div>
+                </div>
+                <button type="button" class="cust-switch-account-btn" onclick="window.switchCustomerAccount()" title="Use another number">Switch</button>
+            </div>
+
+            ${liveOrderHtml}
+            ${addressCardHtml}
+
+            <div style="font-size: 13.5px; font-weight: 800; color: #fff; margin: 18px 0 12px; display:flex; justify-content:space-between; align-items:center;">
+                <span>Past Orders (${data.orders.length})</span>
+            </div>
+
+            ${ordersListHtml}
+        `;
+
+    } catch(err) {
+        console.error(err);
+        container.innerHTML = `
+            <div class="cust-lookup-box">
+                <div style="font-size:32px; color:#ef4444; margin-bottom:8px;">⚠️</div>
+                <h4 style="font-size:1.1rem; color:#fff; margin-bottom:6px;">Could Not Load Orders</h4>
+                <p style="font-size:12px; color:#94a3b8; margin-bottom:16px;">Please check your connection and try again.</p>
+                <button type="button" class="cust-lookup-btn" onclick="window.fetchCustomerOrders('${phone}')">Retry</button>
+            </div>
+        `;
+    }
+};
+
+window.viewPastOrderDetails = function(orderId) {
+    if (!orderId) return;
+    try {
+        localStorage.setItem('littiWaleActiveOrder', JSON.stringify({ id: orderId }));
+    } catch(e) {}
+    window.location.href = `track.html?id=${encodeURIComponent(orderId)}`;
+};
+
+window.switchCustomerAccount = function() {
+    localStorage.removeItem('littiwale_customer_phone');
+    localStorage.removeItem('littiwale_customer_profile');
+    window.renderCustomerPhoneLookupView();
+};
+
+window.reorderPastOrder = function(orderId) {
+    const ord = (window.cachedCustomerOrders || []).find(o => o._id === orderId);
+    if (!ord || !ord.items || ord.items.length === 0) {
+        if (typeof window.showAlert === 'function') {
+            window.showAlert('Could not retrieve items from this order.', { type: 'error', title: 'Reorder Failed' });
+        } else {
+            alert('Could not retrieve items from this order.');
+        }
+        return;
+    }
+
+    // Save and pre-fill customer profile details
+    let profile = null;
+    try {
+        const raw = localStorage.getItem('littiwale_customer_profile');
+        if (raw) profile = JSON.parse(raw);
+    } catch(e) {}
+
+    if (!profile && (ord.customerName || ord.customerPhone || ord.deliveryAddress)) {
+        profile = {
+            name: ord.customerName || '',
+            phone: ord.customerPhone || ord.whatsappPhone || '',
+            address: ord.deliveryAddress || '',
+            landmark: ord.landmark || ''
+        };
+        localStorage.setItem('littiwale_customer_profile', JSON.stringify(profile));
+    }
+
+    if (profile) {
+        autoFillCheckoutFromSavedProfile(profile);
+    }
+
+    // Close customer orders drawer
+    window.closeCustomerOrdersDrawer();
+
+    let itemsAdded = 0;
+    if (typeof window.reorderItemsIntoCart === 'function') {
+        itemsAdded = window.reorderItemsIntoCart(ord.items);
+    } else {
+        // Fallback: save to littiWaleCart
+        let currentCart = [];
+        try {
+            const stored = localStorage.getItem('littiWaleCart');
+            if (stored) currentCart = JSON.parse(stored);
+            if (!Array.isArray(currentCart)) currentCart = [];
+        } catch(e) {
+            currentCart = [];
+        }
+
+        ord.items.forEach(item => {
+            const itemName = item.name || 'Dish Item';
+            const itemPrice = Number(item.price) || 100;
+            const itemQty = Number(item.quantity) || 1;
+            const itemId = item._id || item.id || `dish_${itemName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+
+            const existingIdx = currentCart.findIndex(c => c.name === itemName || c.id === itemId);
+            if (existingIdx > -1) {
+                currentCart[existingIdx].quantity += itemQty;
+            } else {
+                currentCart.push({
+                    id: itemId,
+                    name: itemName,
+                    price: itemPrice,
+                    quantity: itemQty,
+                    image: item.image || 'images/logo.png',
+                    diet: item.diet || 'veg'
+                });
+            }
+            itemsAdded += itemQty;
+        });
+
+        localStorage.setItem('littiWaleCart', JSON.stringify(currentCart));
+        if (typeof updateCartUI === 'function') updateCartUI();
+        if (typeof syncMenuWithCart === 'function') syncMenuWithCart();
+
+        const cartDrawer = document.getElementById('cart-drawer');
+        if (cartDrawer) {
+            cartDrawer.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    if (typeof toast !== 'undefined' && typeof toast.success === 'function') {
+        toast.success(`Added ${itemsAdded} items to cart!`);
+    } else if (typeof showToast === 'function') {
+        showToast(`Added ${itemsAdded} items to cart!`, 'success');
+    }
+};
+
+function autoFillCheckoutFromSavedProfile(profile) {
+    if (!profile) {
+        try {
+            const raw = localStorage.getItem('littiwale_customer_profile');
+            if (raw) profile = JSON.parse(raw);
+        } catch(e) {}
+    }
+    if (!profile) return;
+
+    const nameInputs = [document.getElementById('checkout-name'), document.getElementById('cust-name'), document.getElementById('name')];
+    const phoneInputs = [document.getElementById('checkout-phone'), document.getElementById('cust-phone'), document.getElementById('phone')];
+    const whatsappInputs = [document.getElementById('checkout-whatsapp'), document.getElementById('cust-whatsapp')];
+    const addressInputs = [document.getElementById('checkout-address'), document.getElementById('cust-address'), document.getElementById('address')];
+    const landmarkInputs = [document.getElementById('checkout-landmark'), document.getElementById('cust-landmark'), document.getElementById('landmark')];
+
+    nameInputs.forEach(input => {
+        if (input && profile.name) input.value = profile.name;
+    });
+    phoneInputs.forEach(input => {
+        if (input && profile.phone) input.value = profile.phone;
+    });
+    whatsappInputs.forEach(input => {
+        if (input && (profile.whatsapp || profile.phone)) input.value = profile.whatsapp || profile.phone;
+    });
+    addressInputs.forEach(input => {
+        if (input && profile.address) input.value = profile.address;
+    });
+    landmarkInputs.forEach(input => {
+        if (input && profile.landmark) input.value = profile.landmark;
+    });
+}
+
+// Auto-fill checkout on initial DOM load if profile exists
+document.addEventListener('DOMContentLoaded', () => {
+    autoFillCheckoutFromSavedProfile();
+});
