@@ -3425,15 +3425,23 @@ document.addEventListener('DOMContentLoaded', () => {
             // Save active order to localStorage for live customer status tracking
             const createdOrder = saveRes.data?.order || saveRes.data;
             if (createdOrder && createdOrder._id) {
+                const cleanCustPhone = String(phone || '').replace(/\D/g, '').slice(-10);
                 localStorage.setItem('littiWaleActiveOrder', JSON.stringify({
+                    _id: createdOrder._id,
                     id: createdOrder._id,
                     shortId: String(createdOrder._id).slice(-6).toUpperCase(),
                     status: 'pending',
                     customerName: createdOrder.customerName || name,
+                    customerPhone: cleanCustPhone,
+                    deliveryAddress: address,
+                    items: cart.map(i => ({ name: i.name, quantity: i.quantity, price: i.price, subtotal: i.price * i.quantity })),
                     subtotal: createdOrder.subtotal || subtotalAmount,
+                    discount: currentDiscount,
                     deliveryCharge: createdOrder.deliveryCharge || 0,
                     finalTotal: createdOrder.finalTotal || computedFinalTotal,
-                    time: new Date().toISOString()
+                    paymentMethod: isCOD ? 'COD' : 'UPI',
+                    orderType: isDelivery ? 'delivery' : 'takeaway',
+                    createdAt: new Date().toISOString()
                 }));
                 if (typeof window.initOrderTracker === 'function') {
                     window.initOrderTracker();

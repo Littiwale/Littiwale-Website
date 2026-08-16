@@ -1462,10 +1462,22 @@
             `;
         }
 
-        // Initialize Live Poller
+        // 0ms Instant Cache-First Display (No connecting spinner delay!)
         activeOrderId = getTargetOrderId();
+        try {
+            const stored = localStorage.getItem('littiWaleActiveOrder');
+            if (stored) {
+                const cachedOrder = JSON.parse(stored);
+                if (cachedOrder && (!activeOrderId || activeOrderId === cachedOrder._id || activeOrderId === cachedOrder.id || activeOrderId === cachedOrder.shortId)) {
+                    activeOrderId = cachedOrder._id || cachedOrder.id;
+                    _orderRendered = true;
+                    renderOrderView(cachedOrder);
+                }
+            }
+        } catch(e) {}
+
+        // Fetch live updates in background & start continuous poller
         fetchLiveOrder();
-        // Only start continuous polling when we have an order ID
         if (activeOrderId) {
             pollTimer = setInterval(fetchLiveOrder, 3000);
         }
