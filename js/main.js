@@ -203,51 +203,90 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function initMenu() {
         // Fast Cache-First Load for Instant UI Display (0ms delay)
-        const cachedMenuRaw = sessionStorage.getItem('littiWaleCachedMenu');
-        if (cachedMenuRaw) {
-            try {
+        try {
+            const cachedAnnouncementsRaw = localStorage.getItem('lw_cached_announcements');
+            if (cachedAnnouncementsRaw) {
+                const cachedAnnouncements = JSON.parse(cachedAnnouncementsRaw);
+                if (Array.isArray(cachedAnnouncements) && cachedAnnouncements.length > 0) {
+                    window.liveAnnouncements = cachedAnnouncements;
+                    initAnnouncements(cachedAnnouncements);
+                }
+            }
+
+            const cachedSettingsRaw = localStorage.getItem('lw_cached_settings');
+            if (cachedSettingsRaw) {
+                const cachedSettings = JSON.parse(cachedSettingsRaw);
+                if (Array.isArray(cachedSettings)) processSettings(cachedSettings);
+            }
+
+            const cachedCategoriesRaw = localStorage.getItem('lw_cached_categories');
+            if (cachedCategoriesRaw) {
+                const cachedCategories = JSON.parse(cachedCategoriesRaw);
+                if (Array.isArray(cachedCategories)) applyLiveCategories(cachedCategories);
+            }
+
+            const cachedMenuRaw = localStorage.getItem('lw_cached_menu') || sessionStorage.getItem('littiWaleCachedMenu');
+            if (cachedMenuRaw) {
                 menuData = JSON.parse(cachedMenuRaw);
                 isMenuDataLoaded = true;
                 initMenuDisplay();
-            } catch (e) {}
+            }
+        } catch (e) {
+            console.warn('Cache load notice:', e);
         }
 
-        try {
-            // Fetch live API Menu
-            const apiMenu = await fetchWithTimeout(`${ADMIN_API_BASE_URL}/menu`, 12000);
+        // Parallel Independent Async Network Fetching (Never blocks each other)
+        
+        // 1. Announcements fetch (Instant background update)
+        fetchWithTimeout(`${ADMIN_API_BASE_URL}/announcements`, 6000).then(apiAnnouncements => {
+            if (apiAnnouncements && Array.isArray(apiAnnouncements) && apiAnnouncements.length > 0) {
+                window.liveAnnouncements = apiAnnouncements;
+                localStorage.setItem('lw_cached_announcements', JSON.stringify(apiAnnouncements));
+                initAnnouncements(apiAnnouncements);
+            }
+        }).catch(() => {});
 
-            // Fetch announcements, settings, coupons, categories asynchronously in background without blocking menu display
-            Promise.all([
-                fetchWithTimeout(`${ADMIN_API_BASE_URL}/settings`, 5000),
-                fetchWithTimeout(`${ADMIN_API_BASE_URL}/announcements`, 5000),
-                fetchWithTimeout(`${ADMIN_API_BASE_URL}/coupons`, 5000),
-                fetchWithTimeout(`${ADMIN_API_BASE_URL}/categories`, 5000)
-            ]).then(([apiSettings, apiAnnouncements, apiCoupons, apiCategories]) => {
-                window.liveAnnouncements = Array.isArray(apiAnnouncements) ? apiAnnouncements : [];
-                if (apiCoupons && Array.isArray(apiCoupons)) {
-                    availableCoupons = apiCoupons.map(c => ({
-                        code: c.code,
-                        type: c.discountType === 'percentage' ? 'PERCENT' : 'FLAT',
-                        discount: Number(c.discountValue) || 0,
-                        discountPercent: Number(c.discountValue) || 0,
-                        maxDiscount: Number(c.discountValue) || 0,
-                        minOrder: Number(c.minOrderValue) || 0,
-                        active: c.isActive !== false
-                    }));
-                    window.liveCoupons = availableCoupons;
-                }
-                if (apiCategories && Array.isArray(apiCategories)) {
-                    applyLiveCategories(apiCategories);
-                }
-                if (window.liveAnnouncements.length > 0) initAnnouncements(window.liveAnnouncements);
-                if (apiSettings && Array.isArray(apiSettings)) processSettings(apiSettings);
-            }).catch(() => {});
+        // 2. Settings & Store Status fetch
+        fetchWithTimeout(`${ADMIN_API_BASE_URL}/settings`, 5000).then(apiSettings => {
+            if (apiSettings && Array.isArray(apiSettings)) {
+                localStorage.setItem('lw_cached_settings', JSON.stringify(apiSettings));
+                processSettings(apiSettings);
+            }
+        }).catch(() => {});
+
+        // 3. Coupons fetch
+        fetchWithTimeout(`${ADMIN_API_BASE_URL}/coupons`, 5000).then(apiCoupons => {
+            if (apiCoupons && Array.isArray(apiCoupons)) {
+                availableCoupons = apiCoupons.map(c => ({
+                    code: c.code,
+                    type: c.discountType === 'percentage' ? 'PERCENT' : 'FLAT',
+                    discount: Number(c.discountValue) || 0,
+                    discountPercent: Number(c.discountValue) || 0,
+                    maxDiscount: Number(c.discountValue) || 0,
+                    minOrder: Number(c.minOrderValue) || 0,
+                    active: c.isActive !== false
+                }));
+                window.liveCoupons = availableCoupons;
+                localStorage.setItem('lw_cached_coupons', JSON.stringify(availableCoupons));
+            }
+        }).catch(() => {});
+
+        // 4. Categories fetch
+        fetchWithTimeout(`${ADMIN_API_BASE_URL}/categories`, 5000).then(apiCategories => {
+            if (apiCategories && Array.isArray(apiCategories)) {
+                localStorage.setItem('lw_cached_categories', JSON.stringify(apiCategories));
+                applyLiveCategories(apiCategories);
+            }
+        }).catch(() => {});
+
+        // 5. Menu fetch
+        try {
+            const apiMenu = await fetchWithTimeout(`${ADMIN_API_BASE_URL}/menu`, 10000);
 
             let finalMenu = [];
             let finalMap = {};
             
             if (apiMenu && Array.isArray(apiMenu) && apiMenu.length > 0) {
-                console.log("✅ Menu loaded 100% Live from Admin Panel API!");
                 apiMenu.forEach(item => {
                     const id = item._id;
                     let avail = item.locationAvailability || 'both';
@@ -277,18 +316,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
                 menuData = finalMenu;
-            } else {
+                localStorage.setItem('lw_cached_menu', JSON.stringify(finalMenu));
+                sessionStorage.setItem('littiWaleCachedMenu', JSON.stringify(finalMenu));
+            } else if (!menuData || menuData.length === 0) {
                 console.warn("⚠️ Live Admin Panel API menu empty or unreachable.");
-                menuData = [];
             }
             
             menuImageMap = finalMap;
             isMenuDataLoaded = true;
-            console.log("Admin API Menu ready:", menuData.length, "items loaded.");
             initMenuDisplay();
         } catch (error) {
             console.error('Error loading menu from Admin API:', error);
-            if (menuGrid) {
+            if (menuGrid && (!menuData || menuData.length === 0)) {
                 menuGrid.innerHTML = '<div class="error" style="grid-column: 1/-1; text-align: center; color: red; padding: 20px;">Failed to load menu items from Admin API. Please refresh or check connection.</div>';
             }
         }
@@ -587,11 +626,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initialize Live Admin Announcements
+    let announcementInterval = null;
     function initAnnouncements(announcements) {
         const section = document.getElementById('announcement');
         const carousel = document.getElementById('announcement-carousel');
         const dotsContainer = document.getElementById('announcement-dots');
         if (!section || !carousel) return;
+
+        if (announcementInterval) {
+            clearInterval(announcementInterval);
+            announcementInterval = null;
+        }
 
         if (!announcements || !Array.isArray(announcements) || announcements.length === 0) {
             section.style.display = 'none';
@@ -625,7 +670,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (active.length > 1) {
             let currentIndex = 0;
-            setInterval(() => {
+            announcementInterval = setInterval(() => {
                 currentIndex = (currentIndex + 1) % active.length;
                 carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
                 if (dotsContainer) {
