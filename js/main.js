@@ -745,10 +745,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isFullMenuPage) {
             isMenuExpanded = true;
-            // Filter menuData to include only items available for Cloud Kitchen delivery
+            // Filter menuData to include only items available for Cloud Kitchen delivery (excluding Craziest Deals promo combos)
             const cloudOnlyMenu = menuData.filter(item => {
                 const avail = (item.availability || item.locationAvailability || 'both').toLowerCase();
-                return avail === 'both' || avail.includes('cloud');
+                const isCloudAvailable = avail === 'both' || avail.includes('cloud');
+                const catLower = (item.category || '').toLowerCase();
+                const nameLower = (item.name || '').toLowerCase();
+                const isDealOrPromo = catLower.includes('deal') || catLower.includes('craziest') || item.isCraziestDeal === true;
+                return isCloudAvailable && !isDealOrPromo;
             });
             currentFilteredData = cloudOnlyMenu;
             if (categoryFilters) categoryFilters.style.display = 'flex';
@@ -807,6 +811,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const dealsGrid = document.getElementById('deals-grid');
         if (!dealsSection || !dealsGrid) return;
         
+        // Priority 1: Check if admin configured custom Craziest Deals exist in DB
+        const dbDeals = (menuData || []).filter(item => {
+            const cat = (item.category || '').toLowerCase();
+            return cat === 'craziest deals of the hour' || cat.includes('craziest deal') || item.isCraziestDeal === true;
+        });
+
+        if (dbDeals && dbDeals.length > 0) {
+            renderConfiguredDeals(dbDeals, dealsGrid);
+            dealsSection.style.display = 'block';
+            return;
+        }
+
+        // Priority 2: Auto-Generated Hourly Smart Deals Pool
         const now = new Date();
         const hourStr = now.toDateString() + '_' + now.getHours();
         const storedDate = localStorage.getItem('littiWaleDealsDateHour');
@@ -827,12 +844,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const nameLower = (item.name || '').toLowerCase();
                 if (catLower.includes('thali') || catLower.includes('combo')) return false;
                 if (nameLower.includes('thali') || nameLower.includes('combo')) return false;
+                if (catLower.includes('deal') || catLower.includes('craziest')) return false;
                 return true;
             });
             
-            if (pool.length < 10) return;
+            if (pool.length < 4) return;
 
-            const numDeals = Math.floor(Math.random() * 3) + 3; // 3 to 5
+            const numDeals = Math.min(pool.length, Math.floor(Math.random() * 3) + 3); // 3 to 5
             smartDeals = [];
             
             const shuffledNames = [...DEAL_NAMES].sort(() => 0.5 - Math.random());
@@ -853,14 +871,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const marginPercent = Math.floor(Math.random() * 11) + 5;
                 let finalPrice = Math.floor(origTotal * (1 + (marginPercent/100)));
-                
                 finalPrice = Math.floor(finalPrice / 10) * 10 + 9;
                 
                 if (finalPrice <= origTotal) {
                     finalPrice = Math.floor(origTotal) + 9;
                 }
                 
-                const fakeMargin = Math.floor(Math.random() * 21) + 20;
+                const fakeMargin = Math.floor(Math.random() * 21) + 25;
                 const fakePrice = Math.floor(origTotal * (1 + (fakeMargin/100)));
 
                 smartDeals.push({
@@ -880,6 +897,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderSmartDeals(smartDeals, dealsGrid);
         dealsSection.style.display = 'block';
+    }
+
+    function renderConfiguredDeals(deals, grid) {
+        grid.innerHTML = '';
+        deals.forEach(deal => {
+            const card = document.createElement('div');
+            card.className = 'menu-card';
+            card.style.background = 'linear-gradient(145deg, #1f1f1f, #141414)';
+            card.style.border = '1px solid var(--primary-color)';
+            
+            const origPrice = Number(deal.originalPrice || 0);
+            const dealPrice = Number(deal.price || 0);
+            const discountPct = (origPrice > dealPrice && origPrice > 0) ? Math.round(((origPrice - dealPrice) / origPrice) * 100) : 0;
+            const savings = origPrice > dealPrice ? (origPrice - dealPrice) : 0;
+            const dealNote = deal.note || deal.description || 'Special Chef Discount Combo';
+            const dealImage = deal.image || getDealImage(deal.name);
+            const safeAddCall = `window.addDealToCart('${deal._id || deal.id}', '${(deal.name || '').replace(/'/g, "\\'")}', ${dealPrice}, ${origPrice || dealPrice}, '${dealNote.replace(/'/g, "\\'")}', '${dealImage}');`;
+
+            card.innerHTML = `
+                <div class="menu-img-container image-wrapper" style="position:relative;">
+                    <img src="${dealImage}" class="menu-img" loading="lazy" onerror="this.src='images/logo.png'">
+                    ${discountPct > 0 ? `
+                    <div style="position:absolute; top:10px; right:10px; background:linear-gradient(135deg, #ef4444, #dc2626); color:#fff; font-size:11px; font-weight:800; padding:4px 8px; border-radius:6px; box-shadow:0 4px 10px rgba(0,0,0,0.5);">
+                        🔥 ${discountPct}% OFF
+                    </div>
+                    ` : ''}
+                </div>
+                <div class="menu-details menu-card-content">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                        <span style="font-size: 0.8rem; color: #facc15; font-weight: 800; text-transform:uppercase; letter-spacing:0.5px;">🔥 CRAZIEST DEAL</span>
+                        ${savings > 0 ? `<span style="font-size:0.75rem; color:#4ade80; font-weight:700; background:rgba(34,197,94,0.12); padding:2px 6px; border-radius:4px;">Save ₹${savings}</span>` : ''}
+                    </div>
+                    <div class="menu-title-row" style="margin-bottom: 5px;">
+                        <h3 class="menu-title menu-card-title">${deal.name}</h3>
+                    </div>
+                    <p class="menu-desc" style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 10px; line-height:1.4;">
+                        ${dealNote}
+                    </p>
+                    <div class="menu-title-row" style="margin-bottom:12px;">
+                        <div style="display:flex; align-items:baseline; gap:8px;">
+                            <span class="menu-price" style="font-size: 1.35rem; color:#4ade80; font-weight:900;">₹${dealPrice}</span>
+                            ${origPrice > dealPrice ? `<span style="text-decoration: line-through; color: #94a3b8; font-size: 0.95rem;">₹${origPrice}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="button-wrapper">
+                        <button class="add-to-cart-btn add-to-cart" onclick="${safeAddCall}">Grab this Deal 🛒</button>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
     }
 
     function renderSmartDeals(deals, grid) {
@@ -937,40 +1005,42 @@ document.addEventListener('DOMContentLoaded', () => {
         let allOutOfStock = true;
         const isOutletView = (typeof currentLocationFilter !== 'undefined' && currentLocationFilter === 'outlet');
 
-        // Case 1: Dual Variants (Half & Full)
-        if (group.variants.half && group.variants.full) {
-            const half = group.variants.half;
-            const full = group.variants.full;
-            
-            const halfInStock = isOutletView ? false : half.inStock;
-            const fullInStock = isOutletView ? false : full.inStock;
+        // Case 1: Dual Variants (Half & Full, or Option 1 & Option 2 like Sweet / Salted)
+        const v1 = group.variants.half || group.variants.opt1;
+        const v2 = group.variants.full || group.variants.opt2;
+        const v1Label = group.variants.half ? 'Half' : (group.variants.opt1?.label || 'Option 1');
+        const v2Label = group.variants.full ? 'Full' : (group.variants.opt2?.label || 'Option 2');
 
-            if (halfInStock !== false || fullInStock !== false) {
+        if (v1 && v2) {
+            const v1InStock = isOutletView ? false : v1.inStock;
+            const v2InStock = isOutletView ? false : v2.inStock;
+
+            if (v1InStock !== false || v2InStock !== false) {
                 allOutOfStock = false;
             }
 
             // Variants for descriptions
-            const hDesc = (half.description && half.description !== 'nan' && half.description !== 'undefined') ? half.description : "";
-            const fDesc = (full.description && full.description !== 'nan' && full.description !== 'undefined') ? full.description : "";
+            const v1Desc = (v1.description && v1.description !== 'nan' && v1.description !== 'undefined') ? v1.description : "";
+            const v2Desc = (v2.description && v2.description !== 'nan' && v2.description !== 'undefined') ? v2.description : "";
             
             // Base ID for the description container
-            const baseId = group.variants.half.id.replace(/-half|_half/g, '');
+            const baseId = v1.id.replace(/-half|_half|-opt1/g, '');
 
-            const halfControls = halfInStock === false 
+            const v1Controls = v1InStock === false 
                 ? (isOutletView 
                     ? `<span style="color:#ef4444; font-weight:bold; font-size:0.75rem; padding:4px 0; display:block; text-align:center;">Not at Outlet</span>`
                     : `<span style="color:#ef4444; font-weight:bold; font-size:0.85rem; padding:4px 0;">Out of stock</span>`)
-                : `<button class="hf-btn minus" onclick="event.stopPropagation(); updateQuantity('${half.id}', -1)">-</button>
-                   <span class="hf-value" id="hf-val-${half.id}">0</span>
-                   <button class="hf-btn plus" onclick="event.stopPropagation(); addToCart('${half.id}', '${half.name.replace(/'/g, "\\'")}', ${half.price}, '${itemImg}'); if(document.getElementById('desc-${baseId}')) document.getElementById('desc-${baseId}').innerText = '${hDesc.replace(/'/g, "\\'")}';">+</button>`;
+                : `<button class="hf-btn minus" onclick="event.stopPropagation(); updateQuantity('${v1.id}', -1)">-</button>
+                   <span class="hf-value" id="hf-val-${v1.id}">0</span>
+                   <button class="hf-btn plus" onclick="event.stopPropagation(); addToCart('${v1.id}', '${v1.name.replace(/'/g, "\\'")}', ${v1.price}, '${itemImg}'); if(document.getElementById('desc-${baseId}')) document.getElementById('desc-${baseId}').innerText = '${v1Desc.replace(/'/g, "\\'")}';">+</button>`;
 
-            const fullControls = fullInStock === false 
+            const v2Controls = v2InStock === false 
                 ? (isOutletView 
                     ? `<span style="color:#ef4444; font-weight:bold; font-size:0.75rem; padding:4px 0; display:block; text-align:center;">Not at Outlet</span>`
                     : `<span style="color:#ef4444; font-weight:bold; font-size:0.85rem; padding:4px 0;">Out of stock</span>`)
-                : `<button class="hf-btn minus" onclick="event.stopPropagation(); updateQuantity('${full.id}', -1)">-</button>
-                   <span class="hf-value" id="hf-val-${full.id}">0</span>
-                   <button class="hf-btn plus" onclick="event.stopPropagation(); addToCart('${full.id}', '${full.name.replace(/'/g, "\\'")}', ${full.price}, '${itemImg}'); if(document.getElementById('desc-${baseId}')) document.getElementById('desc-${baseId}').innerText = '${fDesc.replace(/'/g, "\\'")}';">+</button>`;
+                : `<button class="hf-btn minus" onclick="event.stopPropagation(); updateQuantity('${v2.id}', -1)">-</button>
+                   <span class="hf-value" id="hf-val-${v2.id}">0</span>
+                   <button class="hf-btn plus" onclick="event.stopPropagation(); addToCart('${v2.id}', '${v2.name.replace(/'/g, "\\'")}', ${v2.price}, '${itemImg}'); if(document.getElementById('desc-${baseId}')) document.getElementById('desc-${baseId}').innerText = '${v2Desc.replace(/'/g, "\\'")}';">+</button>`;
 
             let switchBtn = isOutletView 
                 ? `<div style="margin-top: 12px; width: 100%;">
@@ -983,17 +1053,17 @@ document.addEventListener('DOMContentLoaded', () => {
             btnHtml = `
                 <div class="half-full-wrapper">
                     <div class="half-full-box">
-                        <div class="hf-label">Half</div>
-                        <div class="hf-price">₹${half.price}</div>
+                        <div class="hf-label">${v1Label}</div>
+                        <div class="hf-price">₹${v1.price}</div>
                         <div class="hf-controls">
-                            ${halfControls}
+                            ${v1Controls}
                         </div>
                     </div>
                     <div class="half-full-box">
-                        <div class="hf-label">Full</div>
-                        <div class="hf-price">₹${full.price}</div>
+                        <div class="hf-label">${v2Label}</div>
+                        <div class="hf-price">₹${v2.price}</div>
                         <div class="hf-controls">
-                            ${fullControls}
+                            ${v2Controls}
                         </div>
                     </div>
                 </div>
@@ -1002,7 +1072,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } 
         // Case 2: Standard Single Item
         else {
-            const item = group.variants.standard || group.variants.half || group.variants.full;
+            const item = group.variants.standard || group.variants.half || group.variants.full || group.variants.opt1;
             const effInStock = isOutletView ? false : item.inStock;
 
             if (effInStock !== false) {
@@ -1050,7 +1120,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Determine Veg/Non-Veg FSSAI Icon
-        const baseItem = group.variants.standard || group.variants.half || group.variants.full;
+        const baseItem = group.variants.standard || group.variants.half || group.variants.full || group.variants.opt1;
         const combinedText = (group.displayName + " " + (group.description || "")).toLowerCase();
         const isEggless = combinedText.includes("eggless");
         const hasNonVegWords = /chicken|egg|fish|mutton|murgh|seekh|kebab|kabab|keema/.test(combinedText);
@@ -1068,23 +1138,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Determine price display
         let priceDisplay = '';
-        if (group.variants.half && group.variants.full) {
-            priceDisplay = `₹${group.variants.half.price} <span style="font-size:0.75rem; color:#94a3b8; font-weight:normal;">(Half)</span> • ₹${group.variants.full.price} <span style="font-size:0.75rem; color:#94a3b8; font-weight:normal;">(Full)</span>`;
+        if (v1 && v2) {
+            priceDisplay = `₹${v1.price} <span style="font-size:0.75rem; color:#94a3b8; font-weight:normal;">(${v1Label})</span> • ₹${v2.price} <span style="font-size:0.75rem; color:#94a3b8; font-weight:normal;">(${v2Label})</span>`;
         } else {
-            const stdItem = group.variants.standard || group.variants.half || group.variants.full;
+            const stdItem = group.variants.standard || group.variants.half || group.variants.full || group.variants.opt1;
             priceDisplay = `₹${stdItem.price}`;
         }
 
         // Determine description and baseId for dynamic updates
-        const hItem = group.variants.half;
-        const fItem = group.variants.full;
-        const halfDesc = (hItem && hItem.description && hItem.description !== 'nan' && hItem.description !== 'undefined') ? hItem.description : "";
-        const fullDesc = (fItem && fItem.description && fItem.description !== 'nan' && fItem.description !== 'undefined') ? fItem.description : "";
+        const v1Desc = (v1 && v1.description && v1.description !== 'nan' && v1.description !== 'undefined') ? v1.description : "";
+        const v2Desc = (v2 && v2.description && v2.description !== 'nan' && v2.description !== 'undefined') ? v2.description : "";
         
-        let currentDesc = halfDesc || fullDesc || group.description || "";
+        let currentDesc = v1Desc || v2Desc || group.description || "";
         if (currentDesc === 'nan' || currentDesc === 'undefined') currentDesc = "";
         
-        const baseId = (group.variants.half || group.variants.full || group.variants.standard).id.replace(/-half|_half|-full|_full/g, '');
+        const baseId = (group.variants.half || group.variants.full || group.variants.opt1 || group.variants.standard).id.replace(/-half|_half|-full|_full|-opt1/g, '');
 
         card.innerHTML = `
             <div class="menu-img-container image-wrapper">
@@ -1110,13 +1178,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // ---- MOBILE OVERLAY BUTTONS (injected inside image container) ----
         const imgContainer = card.querySelector('.menu-img-container');
         if (imgContainer) {
-            if (group.variants.half && group.variants.full && !allOutOfStock) {
-                // Half/Full: single ADD+ that opens bottom sheet
-                const half = group.variants.half;
-                const full = group.variants.full;
-                const halfQty = getCartQty(half.id);
-                const fullQty = getCartQty(full.id);
-                const totalInCart = halfQty + fullQty;
+            if (v1 && v2 && !allOutOfStock) {
+                // Dual Variants (Half/Full or Sweet/Salted): single ADD+ that opens bottom sheet
+                const v1Qty = getCartQty(v1.id);
+                const v2Qty = getCartQty(v2.id);
+                const totalInCart = v1Qty + v2Qty;
 
                 const mobAddBtn = document.createElement('button');
                 mobAddBtn.className = 'mob-add-btn';
@@ -1128,7 +1194,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 mobAddBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    openHFVariantSheet(group.displayName, half, full, itemImg, mobAddBtn);
+                    openHFVariantSheet(group.displayName, v1, v2, itemImg, mobAddBtn, v1Label, v2Label);
                 });
                 imgContainer.appendChild(mobAddBtn);
 
@@ -1292,20 +1358,58 @@ document.addEventListener('DOMContentLoaded', () => {
         outletGrid.innerHTML = html;
     }
 
-    function renderBestSellers(items) {
-        const grid = document.getElementById('best-seller-items');
-        if (!grid) return;
-        grid.innerHTML = '';
-
-        // Process items into Half/Full groups
+    // Universal Grouping Engine for Half/Full & Custom Variant Pairs (Sweet / Salted)
+    function buildMenuGrouping(items) {
         const baseGroups = {};
-        items.forEach(item => {
-            const baseName = getNormalizedName(item.name);
+        (items || []).forEach(item => {
+            const rawName = item.name || '';
+            const lowerName = rawName.toLowerCase();
             const category = item.category || 'Other';
+
+            // Check if item has dual options in brackets separated by / like "(Sweet / Salted)"
+            const slashMatch = rawName.match(/\(([^/)]+)\s*\/\s*([^/)]+)\)/);
+            if (slashMatch) {
+                const opt1 = slashMatch[1].trim(); // e.g. "Sweet"
+                const opt2 = slashMatch[2].trim(); // e.g. "Salted"
+                const baseName = getNormalizedName(rawName);
+                const displayName = rawName.replace(/\(.*?\)/g, "").trim();
+                const groupKey = `${category}_${baseName}`;
+
+                const itemId = String(item._id || item.id || baseName);
+
+                baseGroups[groupKey] = {
+                    name: baseName,
+                    displayName: displayName,
+                    category: category,
+                    description: item.description,
+                    image: getItemImage(item.name),
+                    variants: {
+                        opt1: {
+                            id: `${itemId}-opt1`,
+                            name: `${displayName} (${opt1})`,
+                            label: opt1,
+                            price: item.price || item.full || 40,
+                            inStock: item.inStock,
+                            description: item.description
+                        },
+                        opt2: {
+                            id: `${itemId}-opt2`,
+                            name: `${displayName} (${opt2})`,
+                            label: opt2,
+                            price: item.price || item.full || 40,
+                            inStock: item.inStock,
+                            description: item.description
+                        }
+                    }
+                };
+                return;
+            }
+
+            const baseName = getNormalizedName(rawName);
             const groupKey = `${category}_${baseName}`;
 
             if (!baseGroups[groupKey]) {
-                let displayName = item.name.replace(/\((Half|Full|half|full)\)/g, "").trim();
+                let displayName = rawName.replace(/\((Half|Full|half|full)\)/g, "").trim();
                 baseGroups[groupKey] = {
                     name: baseName,
                     displayName: displayName,
@@ -1316,16 +1420,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
             }
 
-            const lowerName = item.name.toLowerCase();
             if (lowerName.includes('(half)')) {
                 baseGroups[groupKey].variants.half = item;
-                // Capture Half description specifically if it exists
                 if (item.description && item.description !== 'nan' && item.description !== 'undefined') {
                     baseGroups[groupKey].halfDesc = item.description;
                 }
             } else if (lowerName.includes('(full)')) {
                 baseGroups[groupKey].variants.full = item;
-                // Capture Full description specifically if it exists
                 if (item.description && item.description !== 'nan' && item.description !== 'undefined') {
                     baseGroups[groupKey].fullDesc = item.description;
                 }
@@ -1333,6 +1434,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 baseGroups[groupKey].variants.standard = item;
             }
         });
+        return baseGroups;
+    }
+
+    function renderBestSellers(items) {
+        const grid = document.getElementById('best-seller-items');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        // Process items into variant groups
+        const baseGroups = buildMenuGrouping(items);
 
         // Render first 6 groups
         Object.values(baseGroups).slice(0, 6).forEach(group => {
@@ -1404,42 +1515,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // --- NEW: Grouping Logic (Half/Full) ---
-        const baseGroups = {};
-        displayItems.forEach(item => {
-            const baseName = getNormalizedName(item.name);
-            const category = item.category || 'Other';
-            const groupKey = `${category}_${baseName}`;
-
-            if (!baseGroups[groupKey]) {
-                // Determine original display name (strip (Half)/(Full) but keep case)
-                let displayName = item.name.replace(/\((Half|Full|half|full)\)/g, "").trim();
-
-                baseGroups[groupKey] = {
-                    name: baseName, // for lookup
-                    displayName: displayName, // for UI display
-                    category: category,
-                    description: item.description,
-                    image: getItemImage(item.name),
-                    variants: {} // { half: item, full: item, standard: item }
-                };
-            }
-
-            const lowerName = item.name.toLowerCase();
-            if (lowerName.includes('(half)')) {
-                baseGroups[groupKey].variants.half = item;
-                if (item.description && item.description !== 'nan' && item.description !== 'undefined') {
-                    baseGroups[groupKey].halfDesc = item.description;
-                }
-            } else if (lowerName.includes('(full)')) {
-                baseGroups[groupKey].variants.full = item;
-                if (item.description && item.description !== 'nan' && item.description !== 'undefined') {
-                    baseGroups[groupKey].fullDesc = item.description;
-                }
-            } else {
-                baseGroups[groupKey].variants.standard = item;
-            }
-        });
+        // Process items into variant groups
+        const baseGroups = buildMenuGrouping(displayItems);
 
         // Group the resulting cards by category for final display
         const groupedByCategory = {};
@@ -1794,8 +1871,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (valEl) valEl.textContent = newQty;
     };
 
-    /** Inject & open the Half/Full bottom sheet */
-    function openHFVariantSheet(itemName, half, full, img, mobAddBtn) {
+    /** Inject & open the Variant (Half/Full or Options) bottom sheet */
+    function openHFVariantSheet(itemName, v1, v2, img, mobAddBtn, v1Label = 'Half', v2Label = 'Full') {
         // Inject sheet HTML once
         if (!document.getElementById('hf-variant-sheet')) {
             document.body.insertAdjacentHTML('beforeend', `
@@ -1803,10 +1880,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div id="hf-variant-sheet">
                     <div class="hf-sheet-handle"></div>
                     <div class="hf-sheet-title" id="hf-sheet-name"></div>
-                    <div class="hf-sheet-subtitle">Choose your portion size</div>
+                    <div class="hf-sheet-subtitle" id="hf-sheet-subtitle">Choose your option</div>
                     <div class="hf-sheet-options">
                         <div class="hf-sheet-opt" id="hf-opt-half">
-                            <div class="hf-sheet-opt-label">Half</div>
+                            <div class="hf-sheet-opt-label" id="hf-label-v1">Half</div>
                             <div class="hf-sheet-opt-price" id="hf-half-price"></div>
                             <div class="hf-sheet-opt-qty">
                                 <button class="sq-btn sq-minus" id="hf-half-minus">−</button>
@@ -1815,7 +1892,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                         <div class="hf-sheet-opt" id="hf-opt-full">
-                            <div class="hf-sheet-opt-label">Full</div>
+                            <div class="hf-sheet-opt-label" id="hf-label-v2">Full</div>
                             <div class="hf-sheet-opt-price" id="hf-full-price"></div>
                             <div class="hf-sheet-opt-qty">
                                 <button class="sq-btn sq-minus" id="hf-full-minus">−</button>
@@ -1833,7 +1910,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function syncMobButton() {
             if (!mobAddBtn) return;
-            const total = (getCartQty(half.id) || 0) + (getCartQty(full.id) || 0);
+            const total = (getCartQty(v1.id) || 0) + (getCartQty(v2.id) || 0);
             if (total > 0) {
                 mobAddBtn.textContent = `${total} ✓`;
                 mobAddBtn.style.background = '#15803d';
@@ -1844,37 +1921,49 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Populate
-        document.getElementById('hf-sheet-name').textContent  = itemName;
-        document.getElementById('hf-half-price').textContent  = `₹${half.price}`;
-        document.getElementById('hf-full-price').textContent  = `₹${full.price}`;
-        document.getElementById('hf-half-val').textContent    = getCartQty(half.id) || 0;
-        document.getElementById('hf-full-val').textContent    = getCartQty(full.id) || 0;
+        document.getElementById('hf-sheet-name').textContent = itemName;
+        const subTitleEl = document.getElementById('hf-sheet-subtitle');
+        if (subTitleEl) {
+            subTitleEl.textContent = (v1Label === 'Half' && v2Label === 'Full') ? 'Choose your portion size' : 'Choose your flavor / option';
+        }
+
+        const label1El = document.getElementById('hf-label-v1');
+        if (label1El) label1El.textContent = v1Label;
+        const label2El = document.getElementById('hf-label-v2');
+        if (label2El) label2El.textContent = v2Label;
+
+        document.getElementById('hf-half-price').textContent = `₹${v1.price}`;
+        document.getElementById('hf-full-price').textContent = `₹${v2.price}`;
+        document.getElementById('hf-half-val').textContent = getCartQty(v1.id) || 0;
+        document.getElementById('hf-full-val').textContent = getCartQty(v2.id) || 0;
 
         // Wire buttons (remove old listeners by cloning)
         ['hf-half-minus','hf-half-plus','hf-full-minus','hf-full-plus'].forEach(id => {
             const el = document.getElementById(id);
-            const clone = el.cloneNode(true);
-            el.parentNode.replaceChild(clone, el);
+            if (el) {
+                const clone = el.cloneNode(true);
+                el.parentNode.replaceChild(clone, el);
+            }
         });
 
-        document.getElementById('hf-half-plus').addEventListener('click', () => {
-            addToCart(half.id, half.name, half.price, img);
-            document.getElementById('hf-half-val').textContent = getCartQty(half.id);
+        document.getElementById('hf-half-plus')?.addEventListener('click', () => {
+            addToCart(v1.id, v1.name, v1.price, img);
+            document.getElementById('hf-half-val').textContent = getCartQty(v1.id);
             syncMobButton();
         });
-        document.getElementById('hf-half-minus').addEventListener('click', () => {
-            updateQuantity(half.id, -1);
-            document.getElementById('hf-half-val').textContent = getCartQty(half.id);
+        document.getElementById('hf-half-minus')?.addEventListener('click', () => {
+            updateQuantity(v1.id, -1);
+            document.getElementById('hf-half-val').textContent = getCartQty(v1.id);
             syncMobButton();
         });
-        document.getElementById('hf-full-plus').addEventListener('click', () => {
-            addToCart(full.id, full.name, full.price, img);
-            document.getElementById('hf-full-val').textContent = getCartQty(full.id);
+        document.getElementById('hf-full-plus')?.addEventListener('click', () => {
+            addToCart(v2.id, v2.name, v2.price, img);
+            document.getElementById('hf-full-val').textContent = getCartQty(v2.id);
             syncMobButton();
         });
-        document.getElementById('hf-full-minus').addEventListener('click', () => {
-            updateQuantity(full.id, -1);
-            document.getElementById('hf-full-val').textContent = getCartQty(full.id);
+        document.getElementById('hf-full-minus')?.addEventListener('click', () => {
+            updateQuantity(v2.id, -1);
+            document.getElementById('hf-full-val').textContent = getCartQty(v2.id);
             syncMobButton();
         });
 
