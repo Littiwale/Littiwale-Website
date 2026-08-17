@@ -334,13 +334,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function initMenu() {
-        // 1. Auto-Clean heavy cache on every load: Ensures 0MB memory bloat & 100% fresh live API data
+        // Fast Instant Render from Local Cache (0ms)
         try {
-            const heavyKeys = ['lw_cached_menu', 'littiWaleCachedMenu', 'lw_cached_announcements', 'littiWaleDealsData', 'littiWaleDealsDateHour'];
-            heavyKeys.forEach(k => {
-                localStorage.removeItem(k);
-                sessionStorage.removeItem(k);
-            });
+            const cachedMenuStr = localStorage.getItem('lw_cached_menu_v2');
+            if (cachedMenuStr) {
+                const cachedArr = JSON.parse(cachedMenuStr);
+                if (Array.isArray(cachedArr) && cachedArr.length > 0 && (!menuData || menuData.length === 0)) {
+                    menuData = cachedArr;
+                    isMenuDataLoaded = true;
+                    initMenuDisplay();
+                }
+            }
         } catch(e) {}
 
         // Parallel Independent Async Network Fetching (Direct from MongoDB API)
@@ -442,6 +446,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 menuData = finalMenu;
                 menuImageMap = Object.assign({}, DEFAULT_IMAGE_MAP, finalMap);
                 isMenuDataLoaded = true;
+                try {
+                    localStorage.setItem('lw_cached_menu_v2', JSON.stringify(finalMenu));
+                } catch(e) {}
                 initMenuDisplay();
             } else if (!menuData || menuData.length === 0) {
                 // If API is empty/unreachable, load local data/menu.json fallback
@@ -3892,15 +3899,28 @@ document.addEventListener('DOMContentLoaded', () => {
             saveCart();
             updateCartUI();
 
-            // Open WhatsApp in new tab and redirect website to dedicated Live Tracking Page!
-            window.open(whatsappUrl, '_blank');
             paymentModal.classList.remove('show');
             cartDrawer.classList.remove('open');
 
-            if (createdOrder && createdOrder._id) {
-                setTimeout(() => {
-                    window.location.href = `track.html?orderId=${createdOrder._id}`;
-                }, 600);
+            // Store whatsapp url for fallback/resend
+            try {
+                localStorage.setItem('lw_last_whatsapp_url', whatsappUrl);
+            } catch(e) {}
+
+            // Robust WhatsApp Launch for Mobile & Desktop (Bypasses popup blocker)
+            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (isMobileDevice) {
+                // On mobile, window.location.href triggers native WhatsApp app instantly
+                window.location.href = whatsappUrl;
+            } else {
+                // On desktop, open in new tab and navigate current page to track
+                window.open(whatsappUrl, '_blank');
+                if (createdOrder && createdOrder._id) {
+                    setTimeout(() => {
+                        window.location.href = `track.html?orderId=${createdOrder._id}`;
+                    }, 600);
+                }
             }
         }
 
