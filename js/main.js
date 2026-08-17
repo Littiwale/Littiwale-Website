@@ -356,6 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const parsedCachedMenu = JSON.parse(cachedMenuRaw);
                 if (Array.isArray(parsedCachedMenu) && parsedCachedMenu.length > 0) {
                     menuData = parsedCachedMenu;
+                    console.log('%c⚡ [LITTIWALE] Fast-load: Initial display from Local Cache (' + parsedCachedMenu.length + ' items)', 'color:#f97316; font-weight:bold;');
                     // Restore menuImageMap from cached items and default map
                     menuData.forEach(item => {
                         if (item.name) {
@@ -421,12 +422,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 5. Menu fetch from MongoDB Admin API
         try {
+            console.log('%c🌐 [LITTIWALE] Fetching LIVE MENU directly from Admin MongoDB API: ' + ADMIN_API_BASE_URL + '/menu', 'color:#3b82f6; font-weight:bold;');
             const apiMenu = await fetchWithTimeout(`${ADMIN_API_BASE_URL}/menu`, 9000);
 
             let finalMenu = [];
             let finalMap = {};
             
             if (apiMenu && Array.isArray(apiMenu) && apiMenu.length > 0) {
+                console.log('%c✅ [LITTIWALE] LIVE MENU LOADED FROM API (MongoDB): ' + apiMenu.length + ' items with full details & descriptions', 'color:#22c55e; font-weight:bold; font-size:12px;');
                 apiMenu.forEach(item => {
                     const id = item._id || item.id;
                     const norm = getNormalizedName(item.name);
@@ -480,10 +483,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 initMenuDisplay();
             } else if (!menuData || menuData.length === 0) {
                 // If API is empty/unreachable and no cache, try loading local data/menu.json
-                console.warn("Live Admin Panel API menu empty or unreachable, trying local fallback.");
+                console.warn("%c⚠️ [LITTIWALE] Admin API unreachable or empty, loading local menu.json fallback", 'color:#eab308; font-weight:bold;');
                 try {
                     const localMenu = await fetchWithTimeout('data/menu.json', 3000);
                     if (localMenu && Array.isArray(localMenu)) {
+                        console.log('%c📁 [LITTIWALE] Loaded from local data/menu.json (' + localMenu.length + ' items)', 'color:#eab308;');
                         menuData = localMenu.map(it => {
                             const norm = getNormalizedName(it.name);
                             const img = it.image || DEFAULT_IMAGE_MAP[norm] || 'images/logo.png';
