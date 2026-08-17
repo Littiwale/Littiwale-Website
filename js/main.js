@@ -1229,9 +1229,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 allOutOfStock = false;
             }
 
-            // Variants for descriptions
-            const v1Desc = (v1.description && v1.description !== 'nan' && v1.description !== 'undefined') ? v1.description : "";
-            const v2Desc = (v2.description && v2.description !== 'nan' && v2.description !== 'undefined') ? v2.description : "";
+            // Variants for descriptions with robust fallback across variants
+            const sharedDesc = (group.description && group.description !== 'nan' && group.description !== 'undefined' && group.description.trim() !== '') 
+                ? group.description 
+                : ((v2 && v2.description && v2.description !== 'nan' && v2.description !== 'undefined' && v2.description.trim() !== '') 
+                    ? v2.description 
+                    : ((v1 && v1.description && v1.description !== 'nan' && v1.description !== 'undefined' && v1.description.trim() !== '') ? v1.description : ""));
+
+            const v1Desc = (v1 && v1.description && v1.description !== 'nan' && v1.description !== 'undefined' && v1.description.trim() !== '') ? v1.description : sharedDesc;
+            const v2Desc = (v2 && v2.description && v2.description !== 'nan' && v2.description !== 'undefined' && v2.description.trim() !== '') ? v2.description : sharedDesc;
             
             // Base ID for the description container
             const baseId = v1.id.replace(/-half|_half|-opt1/g, '');
@@ -1653,14 +1659,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
             }
 
+            if (item.description && item.description !== 'nan' && item.description !== 'undefined' && item.description.trim() !== '') {
+                baseGroups[groupKey].description = item.description;
+            }
+
             if (lowerName.includes('(half)')) {
                 baseGroups[groupKey].variants.half = item;
-                if (item.description && item.description !== 'nan' && item.description !== 'undefined') {
+                if (item.description && item.description !== 'nan' && item.description !== 'undefined' && item.description.trim() !== '') {
                     baseGroups[groupKey].halfDesc = item.description;
                 }
             } else if (lowerName.includes('(full)')) {
                 baseGroups[groupKey].variants.full = item;
-                if (item.description && item.description !== 'nan' && item.description !== 'undefined') {
+                if (item.description && item.description !== 'nan' && item.description !== 'undefined' && item.description.trim() !== '') {
                     baseGroups[groupKey].fullDesc = item.description;
                 }
             } else {
