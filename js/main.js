@@ -2491,7 +2491,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function syncMenuWithCart() {
-        // --- 1. Sync Standard Items (Add/Qty controls) ---
+        // --- 1. Sync Desktop Standard Items (Add/Qty controls) ---
         const addBtns = document.querySelectorAll('[id^="menu-add-btn-"]');
         addBtns.forEach(btn => {
             const fullId = btn.id.replace('menu-add-btn-', '');
@@ -2510,24 +2510,63 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // --- 2. Sync Half/Full Variants (STRICTLY Independent quantities) ---
+        // --- 2. Sync Mobile Standard Items (mob-add & mob-qty controls) ---
+        const mobAddBtns = document.querySelectorAll('[id^="mob-add-"]');
+        mobAddBtns.forEach(mobBtn => {
+            const fullId = mobBtn.id.replace('mob-add-', '');
+            const mobCtrl = document.getElementById(`mob-qty-${fullId}`);
+            const mobValSpan = document.getElementById(`mob-qval-${fullId}`);
+            const matchingItems = cart.filter(item => item.id === fullId || item.id.startsWith(fullId + '_'));
+            const totalQty = matchingItems.reduce((sum, item) => sum + item.quantity, 0);
+
+            if (totalQty > 0) {
+                mobBtn.style.display = 'none';
+                if (mobCtrl) mobCtrl.style.display = 'flex';
+                if (mobValSpan) mobValSpan.textContent = totalQty;
+            } else {
+                mobBtn.style.display = 'flex';
+                if (mobCtrl) mobCtrl.style.display = 'none';
+                if (mobValSpan) mobValSpan.textContent = '0';
+            }
+        });
+
+        // --- 3. Sync Desktop Half/Full & Dual Variants ---
         document.querySelectorAll('.half-full-wrapper').forEach(wrapper => {
             const boxes = wrapper.querySelectorAll('.half-full-box');
             if (boxes.length === 2) {
-                const hValSpan = boxes[0].querySelector('.hf-value');
-                const fValSpan = boxes[1].querySelector('.hf-value');
+                const v1ValSpan = boxes[0].querySelector('.hf-value');
+                const v2ValSpan = boxes[1].querySelector('.hf-value');
                 
-                if (hValSpan && fValSpan) {
-                    const hId = hValSpan.id.replace('hf-val-', '');
-                    const fId = fValSpan.id.replace('hf-val-', '');
+                if (v1ValSpan && v2ValSpan) {
+                    const v1Id = v1ValSpan.id.replace('hf-val-', '');
+                    const v2Id = v2ValSpan.id.replace('hf-val-', '');
                     
-                    // Directly fetch quantities from cart by exact ID match
-                    const hQty = cart.find(i => i.id === hId)?.quantity || 0;
-                    const fQty = cart.find(i => i.id === fId)?.quantity || 0;
+                    const v1Qty = cart.find(i => i.id === v1Id)?.quantity || 0;
+                    const v2Qty = cart.find(i => i.id === v2Id)?.quantity || 0;
                     
-                    // Explicitly set each variant to its own quantity ONLY
-                    hValSpan.textContent = hQty; 
-                    fValSpan.textContent = fQty;
+                    v1ValSpan.textContent = v1Qty; 
+                    v2ValSpan.textContent = v2Qty;
+                }
+            }
+        });
+
+        // --- 4. Sync Mobile Dual Variant Buttons (Half/Full & Options) ---
+        document.querySelectorAll('.menu-card').forEach(card => {
+            const mobBtn = card.querySelector('.mob-add-btn');
+            const hfWrapper = card.querySelector('.half-full-wrapper');
+            if (mobBtn && hfWrapper) {
+                const valSpans = hfWrapper.querySelectorAll('.hf-value');
+                if (valSpans.length === 2) {
+                    const v1Id = valSpans[0].id.replace('hf-val-', '');
+                    const v2Id = valSpans[1].id.replace('hf-val-', '');
+                    const total = (cart.find(i => i.id === v1Id)?.quantity || 0) + (cart.find(i => i.id === v2Id)?.quantity || 0);
+                    if (total > 0) {
+                        mobBtn.textContent = `${total} ✓`;
+                        mobBtn.style.background = '#15803d';
+                    } else {
+                        mobBtn.textContent = 'ADD +';
+                        mobBtn.style.background = '#16a34a';
+                    }
                 }
             }
         });
