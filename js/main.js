@@ -328,65 +328,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function initMenu() {
-        // 1. Fast Cache-First Load for Instant UI Display (0ms delay on all devices)
+        // 1. Auto-Clean heavy cache on every load: Ensures 0MB memory bloat & 100% fresh live API data
         try {
-            const cachedAnnouncementsRaw = localStorage.getItem('lw_cached_announcements');
-            if (cachedAnnouncementsRaw) {
-                const cachedAnnouncements = JSON.parse(cachedAnnouncementsRaw);
-                if (Array.isArray(cachedAnnouncements) && cachedAnnouncements.length > 0) {
-                    window.liveAnnouncements = cachedAnnouncements;
-                    initAnnouncements(cachedAnnouncements);
-                }
-            }
+            const heavyKeys = ['lw_cached_menu', 'littiWaleCachedMenu', 'lw_cached_announcements', 'littiWaleDealsData', 'littiWaleDealsDateHour'];
+            heavyKeys.forEach(k => {
+                localStorage.removeItem(k);
+                sessionStorage.removeItem(k);
+            });
+        } catch(e) {}
 
-            const cachedSettingsRaw = localStorage.getItem('lw_cached_settings');
-            if (cachedSettingsRaw) {
-                const cachedSettings = JSON.parse(cachedSettingsRaw);
-                if (Array.isArray(cachedSettings)) processSettings(cachedSettings);
-            }
-
-            const cachedCategoriesRaw = localStorage.getItem('lw_cached_categories');
-            if (cachedCategoriesRaw) {
-                const cachedCategories = JSON.parse(cachedCategoriesRaw);
-                if (Array.isArray(cachedCategories)) applyLiveCategories(cachedCategories);
-            }
-
-            const cachedMenuRaw = localStorage.getItem('lw_cached_menu') || sessionStorage.getItem('littiWaleCachedMenu');
-            if (cachedMenuRaw) {
-                const parsedCachedMenu = JSON.parse(cachedMenuRaw);
-                if (Array.isArray(parsedCachedMenu) && parsedCachedMenu.length > 0) {
-                    menuData = parsedCachedMenu;
-                    console.log('%c⚡ [LITTIWALE] Fast-load: Initial display from Local Cache (' + parsedCachedMenu.length + ' items)', 'color:#f97316; font-weight:bold;');
-                    // Restore menuImageMap from cached items and default map
-                    menuData.forEach(item => {
-                        if (item.name) {
-                            const norm = getNormalizedName(item.name);
-                            if (item.image && item.image !== 'images/logo.png') {
-                                menuImageMap[norm] = item.image;
-                            } else if (DEFAULT_IMAGE_MAP[norm]) {
-                                menuImageMap[norm] = DEFAULT_IMAGE_MAP[norm];
-                            }
-                        }
-                    });
-                    isMenuDataLoaded = true;
-                    initMenuDisplay();
-                }
-            }
-        } catch (e) {
-            console.warn('Cache load notice:', e);
-        }
-
-        // Parallel Independent Async Network Fetching (Never blocks UI)
+        // Parallel Independent Async Network Fetching (Direct from MongoDB API)
         
-        // 1. Announcements fetch (Instant background update)
+        // 1. Announcements fetch
         fetchWithTimeout(`${ADMIN_API_BASE_URL}/announcements`, 5000).then(apiAnnouncements => {
             if (apiAnnouncements && Array.isArray(apiAnnouncements) && apiAnnouncements.length > 0) {
                 window.liveAnnouncements = apiAnnouncements;
                 initAnnouncements(apiAnnouncements);
-                try {
-                    const lightAnn = apiAnnouncements.map(a => (a.image && a.image.startsWith('data:')) ? Object.assign({}, a, { image: '' }) : a);
-                    localStorage.setItem('lw_cached_announcements', JSON.stringify(lightAnn));
-                } catch(e) {}
             }
         }).catch(() => {});
 
@@ -394,9 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchWithTimeout(`${ADMIN_API_BASE_URL}/settings`, 5000).then(apiSettings => {
             if (apiSettings && Array.isArray(apiSettings)) {
                 processSettings(apiSettings);
-                try {
-                    localStorage.setItem('lw_cached_settings', JSON.stringify(apiSettings));
-                } catch(e) {}
             }
         }).catch(() => {});
 
@@ -413,9 +367,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     active: c.isActive !== false
                 }));
                 window.liveCoupons = availableCoupons;
-                try {
-                    localStorage.setItem('lw_cached_coupons', JSON.stringify(availableCoupons));
-                } catch(e) {}
             }
         }).catch(() => {});
 
@@ -423,9 +374,6 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchWithTimeout(`${ADMIN_API_BASE_URL}/categories`, 5000).then(apiCategories => {
             if (apiCategories && Array.isArray(apiCategories)) {
                 applyLiveCategories(apiCategories);
-                try {
-                    localStorage.setItem('lw_cached_categories', JSON.stringify(apiCategories));
-                } catch(e) {}
             }
         }).catch(() => {});
 
@@ -484,23 +432,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 });
 
-                // Set live data and render UI IMMEDIATELY
+                // Set live data and render UI IMMEDIATELY from API
                 menuData = finalMenu;
                 menuImageMap = Object.assign({}, DEFAULT_IMAGE_MAP, finalMap);
                 isMenuDataLoaded = true;
                 initMenuDisplay();
-
-                // Safely cache without crashing on QuotaExceededError
-                try {
-                    const lightMenu = finalMenu.map(it => (it.image && it.image.startsWith('data:')) ? Object.assign({}, it, { image: '' }) : it);
-                    localStorage.setItem('lw_cached_menu', JSON.stringify(lightMenu));
-                    sessionStorage.setItem('littiWaleCachedMenu', JSON.stringify(lightMenu));
-                } catch (e) {
-                    console.warn('Storage quota notice, skipped local storage cache:', e);
-                }
             } else if (!menuData || menuData.length === 0) {
-                // If API is empty/unreachable and no cache, try loading local data/menu.json
-                console.warn("%c⚠️ [LITTIWALE] Admin API unreachable or empty, loading local menu.json fallback", 'color:#eab308; font-weight:bold;');
+                // If API is empty/unreachable, load local data/menu.json fallback
+                console.warn("%c⚠️ [LITTIWALE] Admin API unreachable, loading local menu.json fallback", 'color:#eab308; font-weight:bold;');
                 try {
                     const localMenu = await fetchWithTimeout('data/menu.json', 3000);
                     if (localMenu && Array.isArray(localMenu)) {
