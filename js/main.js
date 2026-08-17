@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 5. Menu fetch from MongoDB Admin API
         try {
             console.log('%c🌐 [LITTIWALE] Fetching LIVE MENU directly from Admin MongoDB API: ' + ADMIN_API_BASE_URL + '/menu', 'color:#3b82f6; font-weight:bold;');
-            const apiMenu = await fetchWithTimeout(`${ADMIN_API_BASE_URL}/menu`, 9000);
+            const apiMenu = await fetchWithTimeout(`${ADMIN_API_BASE_URL}/menu`, 15000);
 
             let finalMenu = [];
             let finalMap = {};
@@ -3534,6 +3534,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 address,
                 restaurantNote
             } = orderData;
+
+            const isTakeaway = (orderData.orderType === 'takeaway') || (isDelivery === false);
             
             let itemsList = '';
             let finalCart = [...cart];
@@ -4088,85 +4090,74 @@ document.addEventListener('DOMContentLoaded', () => {
         function renderUpsellItems() {
             const container = document.getElementById('upsell-items-container');
             const btnsContainer = document.getElementById('upsell-buttons-container');
+            if (!container || !btnsContainer) return;
             container.innerHTML = '';
             
-            // Filter out items already shown, in cart, or in excluded categories
-            const excludedCategories = ["Tandoori/Kebabs", "Pre Order Specials"];
-            let suggestionsPool = menuData.filter(item => {
-                const inCart = cart.some(ci => ci.id === item.id || ci.id === item.id + '_half' || ci.id === item.id + '_full');
-                const alreadyShown = upsellShownItems.includes(item.id);
-                const excluded = excludedCategories.includes(item.category);
-                return !inCart && !alreadyShown && !excluded;
+            // Filter available items not currently in cart
+            const currentCartIds = new Set(cart.map(c => String(c.id || c._id)));
+            let suggestionsPool = (menuData || []).filter(item => {
+                const itemId = String(item.id || item._id);
+                if (currentCartIds.has(itemId)) return false;
+                if (item.isAvailable === false || item.inStock === false) return false;
+                if (upsellShownItems.includes(itemId)) return false;
+                return true;
             });
             
-            // Prefer bestsellers or low-price
-            let suggestions = suggestionsPool.filter(item => item.price < 150 || (item.half && item.half < 150) || initialBestsellers.some(b => b.id === item.id));
-            if (suggestions.length < 2) suggestions = suggestionsPool; // fallback
-            
-            // Shuffle
-            suggestions = suggestions.sort(() => 0.5 - Math.random()).slice(0, 3);
-            if (suggestions.length === 0) {
-                // Out of suggestions
-                container.innerHTML = '<p class="text-center" style="color:var(--text-secondary);">No more suggestions available.</p>';
-            } else {
-                suggestions.forEach(item => {
-                    upsellShownItems.push(item.id);
-                    let priceToUse = item.price;
-                    let idToUse = item.id;
-                    let nameToUse = item.name.replace(/'/g, "\\'");
-                    
-                    if (item.half !== undefined) {
-                        priceToUse = item.half;
-                        idToUse = item.id + '_half';
-                        nameToUse = nameToUse + ' Half';
-                    }
-                    
-                    // Is it a bestseller?
-                    const isBestseller = initialBestsellers.some(b => b.id === item.id);
-                    const badgeHtml = isBestseller ? '<div style="font-size:0.75rem; color:#f7a22e; font-weight:bold; margin-bottom:2px;">⭐ Bestseller</div>' : '<div style="font-size:0.75rem; color:#28a745; font-weight:bold; margin-bottom:2px;">🔥 Popular</div>';
-                    
-                    const html = `
-                        <div style="display:flex; justify-content:space-between; align-items:center; background:#1c1c1c; padding:10px 15px; border-radius:10px; border: 1px solid #333; margin-bottom:10px;">
-                            <div style="flex:1;">
-                                ${badgeHtml}
-                                <h4 style="font-size:1rem; margin-bottom:2px; font-family:var(--font-heading); color:#ffffff;">${item.name}</h4>
-                                <div style="color:var(--primary-color); font-weight:bold; font-size:1rem;">₹${priceToUse}</div>
-                            </div>
-                            <button class="btn" style="border: 1px solid var(--primary-color); background:transparent; color:var(--primary-color); padding: 6px 15px; font-size:0.9rem;" onclick="const added = addToCart('${idToUse}', '${nameToUse}', ${priceToUse}, '${item.image}'); if(added) { document.getElementById('upsell-modal').classList.remove('show'); proceedToPaymentModal(); }">+ Add</button>
-                        </div>
-                    `;
-                    container.innerHTML += html;
+            // If pool exhausted after multiple refreshes, reset shown tracker
+            if (suggestionsPool.length === 0) {
+                upsellShownItems = [];
+                suggestionsPool = (menuData || []).filter(item => {
+                    const itemId = String(item.id || item._id);
+                    return !currentCartIds.has(itemId) && item.isAvailable !== false && item.inStock !== false;
                 });
+            }
+            
+            // Prefer appetizing affordable add-ons (sides, drinks, combos, litti)
+            let suggestions = suggestionsPool.filter(item => (Number(item.price) || 0) <= 180);
+            if (suggestions.length < 3) suggestions = suggestionsPool;
+            
+            // Pick up to 3 dishes
+            suggestions = suggestions.sort(() => 0.5 - Math.random()).slice(0, 3);
+            
+            if (suggestions.length === 0) {
+                document.getElementById('upsell-modal')?.classList.remove('show');
+                proceedToPaymentModal();
+                return;
             }
 
-            // Update bottom buttons based on count
-            if (upsellRefreshCount < 2 && suggestions.length > 0) {
-                btnsContainer.innerHTML = `
-                    <button id="btn-upsell-refresh" class="btn btn-outline btn-block mb-2 py-3" style="font-size:1.1rem; border-color:var(--primary-color); color:var(--primary-color);">Show More <i class="fas fa-sync-alt" style="font-size:0.9em; margin-left:5px;"></i></button>
-                    <button id="btn-continue-order" class="btn btn-primary btn-block mb-2 py-3" style="font-size:1.1rem;">Continue with current order</button>
+            suggestions.forEach(item => {
+                const itemId = String(item.id || item._id);
+                upsellShownItems.push(itemId);
+                const priceToUse = Number(item.price) || 0;
+                const nameToUse = (item.name || 'Delicious Dish').replace(/'/g, "\\'");
+                const isVeg = item.dietaryPreference !== 'non-veg' && item.veg !== 'nonveg';
+                const badgeHtml = `<div style="font-size:0.75rem; color:#f59e0b; font-weight:bold; margin-bottom:2px;">${isVeg ? '🟢 Veg Add-on' : '🔴 Special Add-on'}</div>`;
+                
+                const html = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:#1c1c1c; padding:12px 15px; border-radius:12px; border: 1px solid #333; margin-bottom:10px; gap:12px;">
+                        <div style="flex:1;">
+                            ${badgeHtml}
+                            <h4 style="font-size:0.95rem; margin-bottom:2px; font-family:var(--font-heading); color:#ffffff; font-weight:700;">${item.name}</h4>
+                            <div style="color:var(--primary-color); font-weight:800; font-size:1rem;">₹${priceToUse}</div>
+                        </div>
+                        <button class="btn" style="border: 1px solid var(--primary-color); background:rgba(245,158,11,0.15); color:var(--primary-color); padding: 7px 16px; font-size:0.9rem; font-weight:800; border-radius:8px; cursor:pointer;" onclick="const added = addToCart('${itemId}', '${nameToUse}', ${priceToUse}, '${item.image || 'images/logo.png'}'); if(added) { document.getElementById('upsell-modal').classList.remove('show'); proceedToPaymentModal(); }">+ Add</button>
+                    </div>
                 `;
-                document.getElementById('btn-upsell-refresh').addEventListener('click', () => {
-                    upsellRefreshCount++;
-                    renderUpsellItems();
-                });
-            } else {
-                btnsContainer.innerHTML = `
-                    <button id="btn-upsell-menu" class="btn btn-outline btn-block mb-2 py-3" style="font-size:1.1rem; border-color:var(--primary-color); color:var(--primary-color);">View Full Menu</button>
-                    <button id="btn-continue-order" class="btn btn-primary btn-block mb-2 py-3" style="font-size:1.1rem;">Continue with current order</button>
-                `;
-                document.getElementById('btn-upsell-menu').addEventListener('click', () => {
-                    document.getElementById('upsell-modal').classList.remove('show');
-                    document.getElementById('cart-drawer').classList.remove('open');
-                    if (!isMenuExpanded) {
-                        document.getElementById('toggle-full-menu-btn')?.click();
-                    } else {
-                        document.getElementById('menu-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                });
-            }
-            
-            document.getElementById('btn-continue-order').addEventListener('click', () => {
-                document.getElementById('upsell-modal').classList.remove('show');
+                container.innerHTML += html;
+            });
+
+            btnsContainer.innerHTML = `
+                <button id="btn-upsell-refresh" class="btn btn-outline btn-block mb-2 py-3" style="font-size:1rem; border-color:var(--primary-color); color:var(--primary-color); font-weight:700; border-radius:10px; cursor:pointer;">Show More Options <i class="fas fa-sync-alt" style="font-size:0.9em; margin-left:5px;"></i></button>
+                <button id="btn-continue-order" class="btn btn-primary btn-block py-3" style="font-size:1.05rem; font-weight:800; border-radius:10px; cursor:pointer;">Continue with current order &rarr;</button>
+            `;
+
+            document.getElementById('btn-upsell-refresh')?.addEventListener('click', () => {
+                upsellRefreshCount++;
+                renderUpsellItems();
+            });
+
+            document.getElementById('btn-continue-order')?.addEventListener('click', () => {
+                document.getElementById('upsell-modal')?.classList.remove('show');
                 proceedToPaymentModal();
             });
         }
