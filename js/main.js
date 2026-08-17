@@ -2568,11 +2568,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (mobAdd && mobQty) {
                         if (total > 0) {
+                            mobAdd.classList.add('hidden');
                             mobAdd.style.display = 'none';
+                            mobQty.classList.add('active');
                             mobQty.style.display = 'flex';
                             if (mobValSpan) mobValSpan.textContent = total;
                         } else {
+                            mobAdd.classList.remove('hidden');
                             mobAdd.style.display = 'flex';
+                            mobQty.classList.remove('active');
                             mobQty.style.display = 'none';
                             if (mobValSpan) mobValSpan.textContent = '0';
                         }
@@ -2589,6 +2593,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 let fullId = card._mobStdItemId;
                 if (!fullId && deskAdd) {
                     fullId = deskAdd.id.replace('menu-add-btn-', '');
+                }
+                if (!fullId && mobAdd && mobAdd.id) {
+                    fullId = mobAdd.id.replace('mob-add-', '');
                 }
 
                 if (fullId) {
@@ -2610,11 +2617,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Sync Mobile buttons
                     if (mobAdd && mobQty) {
                         if (totalQty > 0) {
+                            mobAdd.classList.add('hidden');
                             mobAdd.style.display = 'none';
+                            mobQty.classList.add('active');
                             mobQty.style.display = 'flex';
                             if (mobValSpan) mobValSpan.textContent = totalQty;
                         } else {
+                            mobAdd.classList.remove('hidden');
                             mobAdd.style.display = 'flex';
+                            mobQty.classList.remove('active');
                             mobQty.style.display = 'none';
                             if (mobValSpan) mobValSpan.textContent = '0';
                         }

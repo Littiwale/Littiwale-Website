@@ -670,11 +670,15 @@ img {
         letter-spacing: 0.5px !important;
         text-transform: uppercase !important;
         cursor: pointer !important;
-        display: flex !important;
+        display: flex;
         align-items: center !important;
         justify-content: center !important;
         box-shadow: 0 3px 10px rgba(0,0,0,0.7) !important;
         white-space: nowrap !important;
+    }
+
+    .mob-add-btn.hidden {
+        display: none !important;
     }
 
     .mob-qty-ctrl {
@@ -684,10 +688,14 @@ img {
         background: #18181b !important;
         border: 1.5px solid #22c55e !important;
         box-shadow: 0 3px 10px rgba(0,0,0,0.7) !important;
-        /* display controlled by JS — do NOT put display:flex here */
+        display: none;
         align-items: center !important;
         justify-content: space-between !important;
         padding: 2px 3px !important;
+    }
+
+    .mob-qty-ctrl.active {
+        display: flex !important;
     }
 
     .mob-qty-ctrl .mq-minus,
