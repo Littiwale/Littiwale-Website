@@ -533,9 +533,11 @@ img {
 }
 
 /* Hide mobile overlay buttons on desktop */
-.mob-add-btn,
-.mob-qty-ctrl {
-    display: none !important;
+@media (min-width: 769px) {
+    .mob-add-btn,
+    .mob-qty-ctrl {
+        display: none !important;
+    }
 }
 
 /* =========================================================
@@ -670,7 +672,7 @@ img {
         letter-spacing: 0.5px !important;
         text-transform: uppercase !important;
         cursor: pointer !important;
-        display: flex;
+        display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         box-shadow: 0 3px 10px rgba(0,0,0,0.7) !important;
@@ -688,7 +690,7 @@ img {
         background: #18181b !important;
         border: 1.5px solid #22c55e !important;
         box-shadow: 0 3px 10px rgba(0,0,0,0.7) !important;
-        display: none;
+        display: none !important;
         align-items: center !important;
         justify-content: space-between !important;
         padding: 2px 3px !important;
