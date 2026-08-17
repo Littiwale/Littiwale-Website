@@ -1958,14 +1958,29 @@ border-right: 1px solid #facc15;
     }
 
     .fab-container {
-        bottom: 20px;
-        right: 20px;
+        bottom: 16px !important;
+        right: 12px !important;
+        gap: 8px !important;
+        z-index: 99 !important;
     }
 
     .fab-btn {
-        width: 45px;
-        height: 45px;
-        font-size: 1.2rem;
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 1.1rem !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.6) !important;
+    }
+
+    .fab-btn .fab-badge, #fab-cart-badge {
+        font-size: 0.68rem !important;
+        width: 18px !important;
+        height: 18px !important;
+        top: -4px !important;
+        right: -4px !important;
     }
 }
 

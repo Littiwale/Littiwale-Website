@@ -655,31 +655,61 @@ document.addEventListener('DOMContentLoaded', () => {
         active.forEach((item, index) => {
             const imgUrl = item.image || item.imageUrl || 'images/logo.png';
             slidesHtml += `
-                <div class="announcement-slide" style="min-width: 100%; box-sizing: border-box; text-align: center; padding: 0 4px;">
-                    <div style="width: 100%; aspect-ratio: 16 / 9; border-radius: 18px; overflow: hidden; border: 1.5px solid rgba(249, 115, 22, 0.3); box-shadow: 0 15px 35px rgba(0,0,0,0.6); background: #0c0c0e;">
-                        <img src="${imgUrl}" alt="Announcement" style="width: 100%; height: 100%; object-fit: cover;">
+                <div class="announcement-slide" style="min-width: 100%; box-sizing: border-box; text-align: center; padding: 0 8px;">
+                    <div style="width: 100%; max-width: 760px; margin: 0 auto; border-radius: 14px; overflow: hidden; border: 1.5px solid rgba(249, 115, 22, 0.4); box-shadow: 0 10px 30px rgba(0,0,0,0.6); background: #0c0c0e;">
+                        <img src="${imgUrl}" alt="Announcement" style="width: 100%; height: auto; max-height: 400px; object-fit: contain; display: block; margin: 0 auto;">
                     </div>
                 </div>
             `;
-            dotsHtml += `<span class="dot ${index === 0 ? 'active' : ''}" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${index === 0 ? '#f97316' : 'rgba(255,255,255,0.3)'}; margin:0 5px; cursor:pointer;"></span>`;
+            dotsHtml += `<span class="dot ${index === 0 ? 'active' : ''}" data-idx="${index}" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${index === 0 ? '#f97316' : 'rgba(255,255,255,0.3)'}; margin:0 5px; cursor:pointer; transition:all 0.2s ease;"></span>`;
         });
 
         carousel.innerHTML = slidesHtml;
-        if (dotsContainer) dotsContainer.innerHTML = dotsHtml;
         section.style.display = 'block';
 
+        let currentIndex = 0;
+        function updateSlide(idx) {
+            currentIndex = (idx + active.length) % active.length;
+            carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
+            if (dotsContainer) {
+                const dots = dotsContainer.querySelectorAll('.dot');
+                dots.forEach((d, i) => {
+                    d.style.background = (i === currentIndex) ? '#f97316' : 'rgba(255,255,255,0.3)';
+                    d.style.transform = (i === currentIndex) ? 'scale(1.25)' : 'scale(1)';
+                });
+            }
+        }
+
+        if (dotsContainer) {
+            dotsContainer.innerHTML = dotsHtml;
+            dotsContainer.querySelectorAll('.dot').forEach((dot, idx) => {
+                dot.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    updateSlide(idx);
+                });
+            });
+        }
+
+        // Touch Swipe Navigation for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        carousel.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        carousel.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchStartX - touchEndX > 50) {
+                updateSlide(currentIndex + 1);
+            } else if (touchEndX - touchStartX > 50) {
+                updateSlide(currentIndex - 1);
+            }
+        }, { passive: true });
+
         if (active.length > 1) {
-            let currentIndex = 0;
             announcementInterval = setInterval(() => {
-                currentIndex = (currentIndex + 1) % active.length;
-                carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
-                if (dotsContainer) {
-                    const dots = dotsContainer.querySelectorAll('.dot');
-                    dots.forEach((d, i) => {
-                        d.style.background = (i === currentIndex) ? 'var(--amber-gold)' : 'rgba(255,255,255,0.3)';
-                    });
-                }
-            }, 4000);
+                updateSlide(currentIndex + 1);
+            }, 4500);
         }
     }
 
@@ -2559,9 +2589,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (valSpans.length === 2) {
                     const v1Id = valSpans[0].id.replace('hf-val-', '');
                     const v2Id = valSpans[1].id.replace('hf-val-', '');
-                    const total = (cart.find(i => i.id === v1Id)?.quantity || 0) + (cart.find(i => i.id === v2Id)?.quantity || 0);
+                    const baseId = v1Id.replace(/-half|_half|-full|_full|-opt1|-opt2/g, '');
+                    
+                    let total = 0;
+                    cart.forEach(item => {
+                        const itId = String(item.id || '');
+                        if (itId === v1Id || itId === v2Id || itId === baseId || itId.startsWith(baseId + '_') || itId.startsWith(baseId + '-')) {
+                            total += Number(item.quantity) || 0;
+                        }
+                    });
+
                     if (total > 0) {
-                        mobBtn.textContent = `${total} ✓`;
+                        mobBtn.textContent = `${total} in Cart ✓`;
                         mobBtn.style.background = '#15803d';
                     } else {
                         mobBtn.textContent = 'ADD +';
