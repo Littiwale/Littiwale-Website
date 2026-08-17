@@ -171,7 +171,13 @@
 
                     <!-- Address Block (Auto hides/changes for Takeaway) -->
                     <div id="checkout-address-block" class="form-group" style="margin-bottom:15px; position:relative;">
+                        <!-- Saved Addresses Pills (populated by JS when phone is recognized) -->
+                        <div id="saved-addresses-container" style="display:none; margin-bottom:10px;">
+                            <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:7px;">📍 Saved Addresses</div>
+                            <div id="saved-address-pills" style="display:flex; flex-wrap:wrap; gap:7px;"></div>
+                        </div>
                         <textarea id="checkout-address" class="form-control" placeholder="Complete Delivery Address" rows="3" style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:8px;"></textarea>
+                        <input type="hidden" id="checkout-landmark" value="">
                         <button type="button" id="btn-gps" style="margin-top:10px; width:100%; padding:10px; background:#1a73e8; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;"><i class="fas fa-map-marker-alt"></i> Use Current Location (Optional)</button>
                     </div>
 

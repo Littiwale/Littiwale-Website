@@ -936,13 +936,15 @@
         function getTargetOrderId() {
             const params = new URLSearchParams(window.location.search);
             const fromQuery = params.get('orderId') || params.get('id');
-            if (fromQuery) return fromQuery;
+            // Guard: never treat literal string 'undefined' or 'null' as a valid ID
+            if (fromQuery && fromQuery !== 'undefined' && fromQuery !== 'null') return fromQuery;
 
             try {
                 const stored = localStorage.getItem('littiWaleActiveOrder');
                 if (stored) {
                     const parsed = JSON.parse(stored);
-                    if (parsed && parsed.id) return parsed.id;
+                    const pid = parsed && (parsed.orderId || parsed.id || parsed._id);
+                    if (pid && pid !== 'undefined' && pid !== 'null') return pid;
                 }
             } catch(e) {}
 
@@ -957,16 +959,21 @@
             }
 
             try {
-                const res = await fetch(`${ADMIN_API_BASE}/orders/${activeOrderId}`, { cache: 'no-store' });
+                const cleanId = String(activeOrderId).replace(/^#/, '').trim();
+                const res = await fetch(`${ADMIN_API_BASE}/orders/${encodeURIComponent(cleanId)}`, { cache: 'no-store' });
                 if (res.ok) {
                     const order = await res.json();
-                    if (order && order._id) {
+                    if (order && (order._id || order.orderId || order.id)) {
                         _fetchErrorCount = 0;
                         if (prevStatus === 'pending' && (order.status === 'accepted' || order.status === 'confirmed')) {
                             playCelebrationSound();
                         }
                         prevStatus = order.status;
                         _orderRendered = true;
+                        // Always update localStorage cache with FRESH live status so refresh shows correct stage
+                        try {
+                            localStorage.setItem('littiWaleActiveOrder', JSON.stringify({ ...order, id: order.orderId || order._id || activeOrderId }));
+                        } catch(e) {}
                         renderOrderView(order);
                     } else {
                         // Malformed response — retry silently
@@ -974,10 +981,34 @@
                         if (_fetchErrorCount >= 3 && !_orderRendered) renderNotFound();
                     }
                 } else if (res.status === 404) {
-                    // Order not found in DB — only show Not Found if we've never successfully rendered
-                    // (gives time for newly created orders to propagate)
                     _fetchErrorCount++;
-                    if (_fetchErrorCount >= 2 && !_orderRendered) renderNotFound();
+                    // Stale/deleted order ID detected — remove dead cache
+                    try { localStorage.removeItem('littiWaleActiveOrder'); } catch(e) {}
+
+                    // Try auto-recovering by looking up customer's latest active order by saved phone
+                    const savedPhone = localStorage.getItem('littiwale_customer_phone');
+                    if (savedPhone) {
+                        try {
+                            const custRes = await fetch(`${ADMIN_API_BASE}/orders/customer/${savedPhone}`, { cache: 'no-store' });
+                            const custData = await custRes.json();
+                            if (custData && custData.hasOrders && custData.orders && custData.orders.length > 0) {
+                                const active = custData.orders.find(o => ['pending','accepted','confirmed','dispatched'].includes((o.status||'').toLowerCase())) || custData.orders[0];
+                                if (active) {
+                                    activeOrderId = active.orderId || active._id || active.id;
+                                    try {
+                                        localStorage.setItem('littiWaleActiveOrder', JSON.stringify({ ...active, id: activeOrderId }));
+                                    } catch(e) {}
+                                    _fetchErrorCount = 0;
+                                    _orderRendered = true;
+                                    renderOrderView(active);
+                                    return;
+                                }
+                            }
+                        } catch(err) {}
+                    }
+
+                    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+                    renderPhoneLookup();
                 } else {
                     // Server error — retry silently, don't flip to Not Found
                     _fetchErrorCount++;
@@ -1093,7 +1124,7 @@
         }
 
         // Clean & High-End Visual Stage Generator for all states
-        function getStageSceneSVG(status) {
+        function getStageSceneSVG(status, isTakeaway) {
             if (status === 'cancelled') {
                 return `
                     <svg class="scene-svg" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1182,6 +1213,31 @@
                     </svg>
                 `;
             } else if (status === 'dispatched') {
+                if (isTakeaway) {
+                    return `
+                        <svg class="scene-svg" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="190" cy="96" rx="140" ry="7" fill="rgba(34,197,94,0.18)" />
+                            
+                            <!-- Takeaway Counter Platform -->
+                            <rect x="110" y="86" width="160" height="12" rx="4" fill="#27272a" stroke="#3f3f46" stroke-width="1.5" />
+                            
+                            <!-- Shopping / Food Delivery Bag -->
+                            <g transform="translate(160, 24)">
+                                <path d="M 12 20 Q 30 2 48 20" stroke="#f59e0b" stroke-width="3" fill="none" stroke-linecap="round" />
+                                <rect x="0" y="18" width="60" height="54" rx="8" fill="#ea580c" stroke="#c2410c" stroke-width="2" />
+                                <path d="M 6 18 L 14 72 M 54 18 L 46 72" stroke="#9a3412" stroke-width="1.5" opacity="0.6" />
+                                <rect x="12" y="32" width="36" height="24" rx="4" fill="#18181b" stroke="#fef08a" stroke-width="1.2" />
+                                <text x="30" y="47" fill="#fde047" font-size="8.5" font-weight="900" text-anchor="middle" font-family="'Space Grotesk', sans-serif">LITTI</text>
+                            </g>
+
+                            <!-- Ready Pulse Rings -->
+                            <g transform="translate(190, 52)">
+                                <circle cx="0" cy="0" r="38" stroke="#22c55e" stroke-width="1.5" class="anim-delivered-pulse-ring" fill="none" />
+                                <circle cx="0" cy="0" r="50" stroke="#4ade80" stroke-width="1.2" class="anim-delivered-pulse-ring" style="animation-delay:0.6s;" fill="none" />
+                            </g>
+                        </svg>
+                    `;
+                }
                 return `
                     <svg class="scene-svg" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <ellipse cx="190" cy="96" rx="150" ry="7" fill="rgba(249,115,22,0.15)" />
@@ -1269,7 +1325,7 @@
             const container = document.getElementById('tracking-main-container');
             const shortId = order._id ? String(order._id).slice(-6).toUpperCase() : 'LW-ORD';
             const status = (order.status || 'pending').toLowerCase();
-            const isTakeaway = (order.orderType === 'takeaway');
+            const isTakeaway = (order.orderType === 'takeaway' || order.orderType === 'pickup' || (order.customerAddress && /takeaway|self-pickup|pickup/i.test(order.customerAddress)));
             const finalTotal = order.finalTotal || order.subtotal || 0;
             const delFee = isTakeaway ? 0 : Number(order.deliveryCharge || 0);
             const subtotal = Number(order.subtotal || (finalTotal - delFee));
@@ -1282,9 +1338,11 @@
 
             let statusBadgeClass = 'pending';
             let dotClass = 'yellow';
-            let statusBadgeText = 'Pending Confirmation';
-            let statusTitle = 'Order Placed';
-            let statusDesc = 'We have received your order. The kitchen is currently reviewing your items.';
+            let statusBadgeText = isTakeaway ? 'Pending Takeaway Confirmation' : 'Pending Confirmation';
+            let statusTitle = isTakeaway ? 'Takeaway Order Placed' : 'Order Placed';
+            let statusDesc = isTakeaway
+                ? 'We have received your takeaway order. The kitchen is reviewing items for counter preparation.'
+                : 'We have received your order. The kitchen is currently reviewing your items.';
 
             if (status === 'accepted' || status === 'confirmed') {
                 statusBadgeClass = 'confirmed';
@@ -1392,7 +1450,7 @@
                     <div class="track-col-left">
                         <div class="delivery-anim-card">
                             <div class="anim-scene-stage">
-                                ${getStageSceneSVG(status)}
+                                ${getStageSceneSVG(status, isTakeaway)}
                             </div>
 
                             <!-- Status Text Header -->
@@ -1660,10 +1718,16 @@
             const stored = localStorage.getItem('littiWaleActiveOrder');
             if (stored) {
                 const cachedOrder = JSON.parse(stored);
-                if (cachedOrder && (!activeOrderId || activeOrderId === cachedOrder._id || activeOrderId === cachedOrder.id || activeOrderId === cachedOrder.shortId)) {
-                    activeOrderId = cachedOrder._id || cachedOrder.id;
+                // IMPORTANT: Only use cache for fast display if it EXACTLY matches the current URL order.
+                // Never override activeOrderId with a different cached order (avoids showing old delivered order).
+                const cachedId = cachedOrder._id || cachedOrder.id;
+                if (cachedOrder && activeOrderId && String(cachedId) === String(activeOrderId)) {
                     _orderRendered = true;
                     renderOrderView(cachedOrder);
+                }
+                // If no activeOrderId from URL/params, allow cache as fallback
+                if (!activeOrderId && cachedId) {
+                    activeOrderId = cachedId;
                 }
             }
         } catch(e) {}

@@ -153,9 +153,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const grid = document.createElement('div');
             grid.className = 'food-grid';
             
-            sec.items.forEach(item => {
-                grid.appendChild(createMenuCard(item));
-            });
+            sec.items
+                .sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0))
+                .forEach(item => {
+                    grid.appendChild(createMenuCard(item));
+                });
 
             section.appendChild(grid);
             menuContent.appendChild(section);

@@ -1,3 +1,9 @@
+window.ADMIN_SERVER_ORIGIN = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+    ? 'http://localhost:5001' 
+    : 'https://littiwale-admin.vercel.app';
+
+window.ADMIN_API_BASE_URL = `${window.ADMIN_SERVER_ORIGIN}/api`;
+
 document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener("error", (e) => console.error("Global Error:", e.message));
 
@@ -315,6 +321,10 @@ document.addEventListener('DOMContentLoaded', () => {
         ? 'http://localhost:5001/api' 
         : 'https://littiwale-admin.vercel.app/api';
 
+    const ADMIN_SERVER_ORIGIN = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+        ? 'http://localhost:5001' 
+        : 'https://littiwale-admin.vercel.app';
+
     async function fetchWithTimeout(url, timeoutMs = 8000) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -364,21 +374,41 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }).catch(() => {});
 
-        // 3. Coupons fetch
-        fetchWithTimeout(`${ADMIN_API_BASE_URL}/coupons`, 5000).then(apiCoupons => {
-            if (apiCoupons && Array.isArray(apiCoupons)) {
-                availableCoupons = apiCoupons.map(c => ({
-                    code: c.code,
-                    type: c.discountType === 'percentage' ? 'PERCENT' : 'FLAT',
-                    discount: Number(c.discountValue) || 0,
-                    discountPercent: Number(c.discountValue) || 0,
-                    maxDiscount: Number(c.discountValue) || 0,
-                    minOrder: Number(c.minOrderValue) || 0,
-                    active: c.isActive !== false
-                }));
-                window.liveCoupons = availableCoupons;
+        // 3. Live Coupons Loader (Supports % Percentage & ₹ Flat discounts)
+        window.loadLiveCoupons = async function() {
+            try {
+                const apiCoupons = await fetchWithTimeout(`${ADMIN_API_BASE_URL}/coupons`, 5000);
+                if (apiCoupons && Array.isArray(apiCoupons)) {
+                    availableCoupons = apiCoupons.map(c => {
+                        const isPct = (c.discountType || 'percentage').toLowerCase() === 'percentage' || (c.type || '').toLowerCase() === 'percent';
+                        const discVal = Number(c.discount || c.discountValue || 0);
+                        const minOrd = Number(c.minOrder || c.minOrderValue || 0);
+                        const maxCap = isPct ? Number(c.maxDiscount || c.maxDiscountAmount || 0) : 0;
+                        const desc = c.description || (isPct 
+                            ? `Get upto ${discVal}% OFF on orders above ₹${minOrd}` 
+                            : `Flat ₹${discVal} OFF on orders above ₹${minOrd}`);
+
+                        return {
+                            _id: c._id || c.id,
+                            code: (c.code || '').toUpperCase().trim(),
+                            discountType: isPct ? 'percentage' : 'flat',
+                            type: isPct ? 'PERCENT' : 'FLAT',
+                            discount: discVal,
+                            minOrder: minOrd,
+                            maxDiscount: maxCap,
+                            description: desc,
+                            active: c.isActive !== false && c.isAvailable !== false
+                        };
+                    });
+                    window.liveCoupons = availableCoupons;
+                }
+            } catch (e) {
+                console.warn("Could not fetch live coupons:", e);
             }
-        }).catch(() => {});
+            return availableCoupons;
+        };
+
+        window.loadLiveCoupons().catch(() => {});
 
         // 4. Categories fetch
         fetchWithTimeout(`${ADMIN_API_BASE_URL}/categories`, 5000).then(apiCategories => {
@@ -387,17 +417,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }).catch(() => {});
 
-        // 5. Menu fetch from MongoDB Admin API
+        // 5. Menu fetch from Supabase Admin API
         try {
             const menuFetchStart = Date.now();
-            console.log('%c🌐 [LITTIWALE] Fetching LIVE MENU directly from Admin MongoDB API: ' + ADMIN_API_BASE_URL + '/menu', 'color:#3b82f6; font-weight:bold;');
+            console.log('%c🌐 [LITTIWALE] Fetching LIVE MENU directly from Admin Supabase API: ' + ADMIN_API_BASE_URL + '/menu', 'color:#3b82f6; font-weight:bold;');
             const apiMenu = await fetchWithTimeout(`${ADMIN_API_BASE_URL}/menu`, 15000);
 
             let finalMenu = [];
             let finalMap = {};
             
             if (apiMenu && Array.isArray(apiMenu) && apiMenu.length > 0) {
-                console.log(`%c✅ [LITTIWALE] LIVE MENU LOADED FROM API (MongoDB) in ${Date.now() - menuFetchStart}ms (${apiMenu.length} items)`, 'color:#22c55e; font-weight:bold; font-size:12px;');
+                console.log(`%c⚡ [LITTIWALE] LIVE MENU LOADED FROM SUPABASE in ${Date.now() - menuFetchStart}ms (${apiMenu.length} items)`, 'color:#22c55e; font-weight:bold; font-size:12px;');
                 apiMenu.forEach(item => {
                     const id = item._id || item.id;
                     const norm = getNormalizedName(item.name);
@@ -411,10 +441,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         avail = 'both';
                     }
 
-                    // Preserve and prioritize item image from MongoDB, fallback to DEFAULT_IMAGE_MAP
-                    const resolvedImage = (item.image && item.image !== 'images/logo.png' && item.image.trim() !== '') 
+                    // Preserve and prioritize item image from API, fallback to DEFAULT_IMAGE_MAP
+                    let resolvedImage = (item.image && item.image !== 'images/logo.png' && item.image.trim() !== '') 
                         ? item.image 
                         : (DEFAULT_IMAGE_MAP[norm] || 'images/logo.png');
+
+                    if (resolvedImage && resolvedImage.startsWith('/api/assets/')) {
+                        resolvedImage = `${ADMIN_SERVER_ORIGIN}${resolvedImage}`;
+                    }
 
                     if (resolvedImage) {
                         finalMap[norm] = resolvedImage;
@@ -518,15 +552,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const badgeSubtext = document.querySelector('.floating-food-badge span:nth-of-type(2)');
         if (badgeSubtext && setting.heroBadgeSubtext) badgeSubtext.textContent = setting.heroBadgeSubtext;
 
+        const navLogos = document.querySelectorAll('.nav-brand img, .footer-brand img, .logo img');
+        if (navLogos && setting.logoImage) {
+            let logoSrc = setting.logoImage;
+            if (logoSrc && logoSrc.startsWith('/api/assets/')) logoSrc = `${ADMIN_SERVER_ORIGIN}${logoSrc}`;
+            navLogos.forEach(img => { img.src = logoSrc; });
+        }
+
         const heroImg = document.querySelector('.hero-food-presentation img.hero-food-plate');
         if (heroImg) {
             heroImg.onerror = () => {
                 heroImg.onerror = null;
                 heroImg.src = 'images/logo.png';
             };
-            if (setting.heroImage) {
-                heroImg.src = setting.heroImage;
+            if (setting.logoImage) {
+                let logoSrc = setting.logoImage;
+                if (logoSrc && logoSrc.startsWith('/api/assets/')) logoSrc = `${ADMIN_SERVER_ORIGIN}${logoSrc}`;
+                heroImg.src = logoSrc;
             }
+        }
+
+        const heroHeader = document.querySelector('header.hero-section') || document.querySelector('header');
+        if (heroHeader && setting.heroImage) {
+            let heroSrc = setting.heroImage;
+            if (heroSrc && heroSrc.startsWith('/api/assets/')) heroSrc = `${ADMIN_SERVER_ORIGIN}${heroSrc}`;
+            heroHeader.style.backgroundImage = `radial-gradient(circle at 70% 50%, rgba(30, 25, 15, 0.85) 0%, rgba(13, 13, 15, 0.95) 70%), url('${heroSrc}')`;
         }
     }
 
@@ -562,7 +612,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const aboutImg = document.querySelector('.about-ambience-card img');
-        if (aboutImg && setting.aboutImage) aboutImg.src = setting.aboutImage;
+        if (aboutImg && setting.aboutImage) {
+            let aboutSrc = setting.aboutImage;
+            if (aboutSrc && aboutSrc.startsWith('/api/assets/')) aboutSrc = `${ADMIN_SERVER_ORIGIN}${aboutSrc}`;
+            aboutImg.src = aboutSrc;
+        }
 
         const statNum = document.querySelector('.ambience-stat-badge .stat-num');
         if (statNum && setting.statNum) statNum.textContent = setting.statNum;
@@ -709,12 +763,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!list || !Array.isArray(list) || list.length === 0) list = defaultReels;
 
-        grid.innerHTML = list.map(item => `
+        grid.innerHTML = list.map(item => {
+            let reelImg = item.image || item.thumbnail || 'images/logo.png';
+            if (reelImg && reelImg.startsWith('/api/assets/')) {
+                reelImg = `${ADMIN_SERVER_ORIGIN}${reelImg}`;
+            }
+            return `
             <a href="${item.link || item.url || '#'}" target="_blank" class="reel-card" title="Watch on Instagram">
                 <span class="reel-badge ${item.badgeClass || (item.badge === 'Loved' ? 'loved' : 'popular')}">${item.badge || 'Popular'}</span>
-                <img src="${item.image || item.thumbnail || 'images/logo.png'}" alt="Littiwale Customer Review Reel" onerror="this.src='images/logo.png'">
+                <img src="${reelImg}" alt="Littiwale Customer Review Reel" onerror="this.src='images/logo.png'">
             </a>
-        `).join('');
+            `;
+        }).join('');
     }
 
     // Helper: Normalize item name for image lookup
@@ -804,7 +864,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const active = announcements.filter(a => a.isActive !== false);
+        const active = announcements.filter(a => (a.isAvailable !== false && a.isActive !== false) && a.image && a.image.trim() !== '' && !a.image.includes('logo.png'));
         if (active.length === 0) {
             section.style.display = 'none';
             return;
@@ -814,7 +874,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let dotsHtml = '';
 
         active.forEach((item, index) => {
-            const imgUrl = item.image || item.imageUrl || 'images/logo.png';
+            let imgUrl = item.image || item.imageUrl;
+            if (imgUrl && imgUrl.startsWith('/api/assets/')) {
+                imgUrl = `${ADMIN_SERVER_ORIGIN}${imgUrl}`;
+            }
             slidesHtml += `
                 <div class="announcement-slide" style="min-width: 100%; box-sizing: border-box; text-align: center; padding: 0 8px;">
                     <div style="width: 100%; max-width: 760px; margin: 0 auto; border-radius: 14px; overflow: hidden; border: 1.5px solid rgba(249, 115, 22, 0.4); box-shadow: 0 10px 30px rgba(0,0,0,0.6); background: #0c0c0e;">
@@ -1757,9 +1820,15 @@ document.addEventListener('DOMContentLoaded', () => {
             catHeader.innerHTML = `<h2 style="font-family: var(--font-heading); color: var(--primary-color); border-bottom: 2px solid var(--primary-color); display: inline-block; padding-bottom: 5px;">${category}</h2>`;
             menuGrid.appendChild(catHeader);
 
-            groupedByCategory[category].forEach(group => {
-                menuGrid.appendChild(createMenuCard(group));
-            });
+            groupedByCategory[category]
+                .sort((a, b) => {
+                    const priceA = (a.variants && a.variants.length > 0) ? Math.min(...a.variants.map(v => v.price)) : (a.price || 0);
+                    const priceB = (b.variants && b.variants.length > 0) ? Math.min(...b.variants.map(v => v.price)) : (b.price || 0);
+                    return (Number(priceA) || 0) - (Number(priceB) || 0);
+                })
+                .forEach(group => {
+                    menuGrid.appendChild(createMenuCard(group));
+                });
         });
         
         if (isMenuExpanded) {
@@ -2583,11 +2652,28 @@ document.addEventListener('DOMContentLoaded', () => {
             let eligibilitySubtotal = cart.reduce((sum, item) => sum + (Number(item.price) * Number(item.quantity)), 0);
 
             if (appliedCoupon) {
-                if (appliedCoupon.type === 'PEPSI') {
+                const minOrd = Number(appliedCoupon.minOrder || 0);
+                if (minOrd > 0 && eligibilitySubtotal < minOrd) {
+                    // Cart subtotal dropped below minOrder requirement
+                    appliedCoupon = null;
                     discountAmount = 0;
+                    localStorage.removeItem('littiWaleAppliedCoupon');
+                    localStorage.removeItem('littiWaleDiscountAmount');
+                    if (msgEl) {
+                        msgEl.textContent = `Coupon removed: min order ₹${minOrd} required`;
+                        msgEl.style.color = '#dc3545';
+                    }
                 } else {
-                    const pct = appliedCoupon.discount || appliedCoupon.discountPercent || 0;
-                    discountAmount = Math.min((baseTotalAmount * pct) / 100, appliedCoupon.maxDiscount || 0);
+                    const isFlat = (appliedCoupon.discountType || '').toLowerCase() === 'flat' || (appliedCoupon.type || '').toLowerCase() === 'flat';
+                    if (isFlat) {
+                        const flatVal = Number(appliedCoupon.discount || 0);
+                        discountAmount = Math.min(flatVal, eligibilitySubtotal);
+                    } else {
+                        const pct = Number(appliedCoupon.discount || 0);
+                        const maxCap = Number(appliedCoupon.maxDiscount || 0);
+                        const calculatedDiscount = (eligibilitySubtotal * pct) / 100;
+                        discountAmount = maxCap > 0 ? Math.min(calculatedDiscount, maxCap) : calculatedDiscount;
+                    }
                     discountAmount = Math.round(discountAmount);
                 }
             } else {
@@ -2599,7 +2685,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalTotalLabel = document.getElementById('cart-final-total-label');
             const cartBaseTotalAmount = document.getElementById('cart-base-total-amount');
 
-            if (appliedCoupon) {
+            if (appliedCoupon && discountAmount > 0) {
                 finalTotal -= discountAmount;
                 if (finalTotal < 0) finalTotal = 0;
                 
@@ -2607,19 +2693,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (appliedDisplay) {
                     appliedDisplay.style.display = 'flex';
                     document.getElementById('applied-code-text').textContent = appliedCoupon.code;
-                    let pct = appliedCoupon.discount || appliedCoupon.discountPercent || 0;
-                    let desc = appliedCoupon.type === 'PEPSI' ? 'Free Pepsi added to your order' : `${pct}% OFF (Upto ₹${appliedCoupon.maxDiscount || 0})`;
+                    const isFlat = (appliedCoupon.discountType || '').toLowerCase() === 'flat';
+                    let desc = isFlat 
+                        ? `Flat ₹${appliedCoupon.discount} OFF` 
+                        : (appliedCoupon.maxDiscount > 0 ? `${appliedCoupon.discount}% OFF (Upto ₹${appliedCoupon.maxDiscount})` : `${appliedCoupon.discount}% OFF`);
                     document.getElementById('applied-discount-text').textContent = desc;
                 }
                 
                 if (couponInfoContainer) {
                     couponInfoContainer.style.display = 'flex';
                     document.getElementById('cart-coupon-code-text').textContent = appliedCoupon.code;
-                    if (appliedCoupon.type === 'PEPSI') {
-                        document.getElementById('cart-discount-amount').textContent = `-₹${discountAmount} (Free Pepsi)`;
-                    } else {
-                        document.getElementById('cart-discount-amount').textContent = `-₹${discountAmount}`;
-                    }
+                    document.getElementById('cart-discount-amount').textContent = `-₹${discountAmount}`;
                 }
                 
                 if (baseTotalRow) baseTotalRow.style.display = 'flex';
@@ -2927,13 +3011,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
 
-            <!-- Coupons Modal -->
-            <div id="coupons-modal" class="payment-modal">
-                <div class="payment-modal-content" style="max-height: 80vh; overflow-y: auto;">
-                    <span id="close-coupons-modal" class="close-btn" style="position: absolute; right: 15px; top: 15px;">&times;</span>
-                    <h3 class="text-center mb-2" style="font-family: var(--font-heading); font-size: 1.4rem;"><i class="fas fa-ticket-alt"></i> Available Coupons</h3>
-                    <div class="divider" style="margin-bottom:1.5rem;"></div>
-                    <div id="all-coupons-container" style="display: flex; flex-direction: column; gap: 15px;">
+            <!-- Coupons Modal (High Z-Index above Cart Drawer) -->
+            <div id="coupons-modal" class="payment-modal" style="z-index: 100000; display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 16px; box-sizing: border-box;">
+                <div class="payment-modal-content" style="max-height: 85vh; overflow-y: auto; max-width: 480px; width: 100%; border-radius: 20px; background: #14141c; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 25px 70px rgba(0,0,0,0.95); padding: 24px; position: relative;">
+                    <span id="close-coupons-modal" class="close-btn" style="position: absolute; right: 18px; top: 18px; font-size: 24px; cursor: pointer; color: #94a3b8;">&times;</span>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                        <span style="font-size: 24px;">🏷️</span>
+                        <div>
+                            <h3 style="font-family: var(--font-heading); font-size: 1.25rem; color: #fff; margin: 0;">Available Coupons</h3>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Apply exclusive discount codes for your order</div>
+                        </div>
+                    </div>
+                    <div class="divider" style="margin-bottom: 16px;"></div>
+                    <div id="all-coupons-container" style="display: flex; flex-direction: column; gap: 12px;">
                         <!-- Coupons injected here -->
                     </div>
                 </div>
@@ -3022,33 +3112,40 @@ document.addEventListener('DOMContentLoaded', () => {
         // Coupon Handlers
         document.getElementById('apply-coupon-btn')?.addEventListener('click', async () => {
             const codeInput = document.getElementById('coupon-input');
-            const code = codeInput.value.trim().toUpperCase();
+            const code = (codeInput?.value || '').trim().toUpperCase();
             if (!code) return;
             
             const msgEl = document.getElementById('coupon-message');
-            msgEl.textContent = 'Applying...';
-            msgEl.style.color = 'var(--text-secondary)';
+            if (msgEl) {
+                msgEl.textContent = 'Applying...';
+                msgEl.style.color = 'var(--text-secondary)';
+            }
             
             console.log("Applying coupon code:", code);
             
             // Ensure live coupons are loaded from Admin API
             if (!availableCoupons || availableCoupons.length === 0) {
-                await loadLiveCoupons();
+                await window.loadLiveCoupons();
             }
 
-            const coupon = (availableCoupons || []).find(c => c.code === code && c.active === true);
+            const coupon = (availableCoupons || []).find(c => c.code.toUpperCase() === code && c.active === true);
             
             if (!coupon) {
-                msgEl.textContent = 'Invalid or Inactive Coupon';
-                msgEl.style.color = '#dc3545';
+                if (msgEl) {
+                    msgEl.textContent = 'Invalid or Inactive Coupon Code';
+                    msgEl.style.color = '#dc3545';
+                }
                 return;
             }
             
-            // Check minOrder if present
+            // Check minOrder requirement against items subtotal
             const subtotal = cart.reduce((sum, item) => sum + (Number(item.price) * Number(item.quantity)), 0);
             if (coupon.minOrder && subtotal < coupon.minOrder) {
-                msgEl.textContent = `Min order ₹${coupon.minOrder} required`;
-                msgEl.style.color = '#dc3545';
+                const diff = coupon.minOrder - subtotal;
+                if (msgEl) {
+                    msgEl.textContent = `Min order ₹${coupon.minOrder} required. Add ₹${diff} more to apply ${coupon.code}!`;
+                    msgEl.style.color = '#dc3545';
+                }
                 return;
             }
 
@@ -3058,11 +3155,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // Persist coupon state
             localStorage.setItem('littiWaleAppliedCoupon', JSON.stringify(coupon));
             
-            codeInput.value = '';
-            msgEl.textContent = 'Applied!';
-            msgEl.style.color = '#4ade80';
+            if (codeInput) codeInput.value = '';
             updateCartUI();
             localStorage.setItem('littiWaleDiscountAmount', discountAmount);
+
+            if (msgEl) {
+                msgEl.textContent = `🎉 ${coupon.code} applied! You saved ₹${discountAmount}!`;
+                msgEl.style.color = '#4ade80';
+            }
         });
         
         document.getElementById('remove-coupon-btn')?.addEventListener('click', () => {
@@ -3080,36 +3180,54 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('view-all-coupons-btn')?.addEventListener('click', async () => {
             if (!couponsModal) return;
             const container = document.getElementById('all-coupons-container');
-            container.innerHTML = '<p class="text-center" style="color: var(--text-secondary);">Loading coupons...</p>';
+            if (container) container.innerHTML = '<p class="text-center" style="color: var(--text-secondary); padding: 15px;">Loading available coupons...</p>';
+            
+            couponsModal.style.display = 'flex';
             couponsModal.classList.add('show');
             
             console.log("Fetching all live coupons from Admin API for modal...");
             if (!availableCoupons || availableCoupons.length === 0) {
-                await loadLiveCoupons();
+                await window.loadLiveCoupons();
             }
 
+            if (!container) return;
             container.innerHTML = '';
             const activeCoupons = (availableCoupons || []).filter(c => c.active === true);
+            const subtotal = cart.reduce((sum, item) => sum + (Number(item.price) * Number(item.quantity)), 0);
             
             if (activeCoupons.length === 0) {
-                console.warn("No active coupons found");
-                container.innerHTML = '<p class="text-center" style="color: var(--text-secondary);">No coupons available currently</p>';
+                container.innerHTML = '<p class="text-center" style="color: var(--text-secondary); padding:20px;">No promotional coupons available currently</p>';
             } else {
                 activeCoupons.forEach(coupon => {
-                    const btnHtml = `<button class="btn btn-primary select-modal-coupon-btn" data-code="${coupon.code}" style="padding: 5px 15px; font-size:0.85rem;">Select</button>`;
-                    const discountDesc = coupon.type === 'PERCENT' 
-                        ? `${coupon.discount}% OFF (Upto ₹${coupon.maxDiscount || coupon.discount})`
-                        : `Flat ₹${coupon.discount} OFF`;
+                    const isPct = (coupon.discountType || '').toLowerCase() === 'percentage' || (coupon.type || '').toLowerCase() === 'percent';
+                    const isEligible = (!coupon.minOrder || subtotal >= coupon.minOrder);
+                    const diff = coupon.minOrder ? Math.max(0, coupon.minOrder - subtotal) : 0;
+
+                    const discountBadge = isPct
+                        ? `<span style="background:rgba(240,78,35,0.15); color:var(--brand-orange,#f97316); border:1px solid rgba(240,78,35,0.3); padding:2px 8px; border-radius:4px; font-weight:800; font-size:11px;">% ${coupon.discount}% OFF${coupon.maxDiscount > 0 ? ` (UPTO ₹${coupon.maxDiscount})` : ''}</span>`
+                        : `<span style="background:rgba(34,197,94,0.15); color:#4ade80; border:1px solid rgba(34,197,94,0.3); padding:2px 8px; border-radius:4px; font-weight:800; font-size:11px;">₹ FLAT ₹${coupon.discount} OFF</span>`;
+
+                    const desc = coupon.description || (isPct 
+                        ? `Get upto ${coupon.discount}% OFF on orders above ₹${coupon.minOrder || 0}`
+                        : `Flat ₹${coupon.discount} OFF on orders above ₹${coupon.minOrder || 0}`);
+
+                    const btnHtml = isEligible
+                        ? `<button class="btn btn-primary select-modal-coupon-btn" data-code="${coupon.code}" style="padding: 7px 18px; font-size:0.85rem; font-weight:800; cursor:pointer; background:var(--brand-orange,#f97316); border:none; border-radius:8px; color:#fff;">APPLY</button>`
+                        : `<button class="btn btn-outline select-modal-coupon-btn" data-code="${coupon.code}" style="padding: 7px 12px; font-size:0.8rem; font-weight:700; border-color:rgba(255,255,255,0.2); color:#9ca3af; border-radius:8px; cursor:pointer;" title="Add ₹${diff} more to cart">Add +₹${diff}</button>`;
+
                     const html = `
-                        <div style="border: 1px dashed var(--primary-color); background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <div>
-                                <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; color: var(--primary-color);">${coupon.code}</div>
-                                <div style="color: var(--text-secondary); font-size: 0.9rem;">
-                                    ${discountDesc}
+                        <div style="border: 1px dashed ${isEligible ? 'var(--primary-color, #f4b400)' : 'rgba(255,255,255,0.15)'}; background: rgba(255,255,255,0.03); padding: 14px 16px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; gap:12px;">
+                            <div style="flex:1;">
+                                <div style="display:flex; align-items:center; gap:8px; margin-bottom: 4px;">
+                                    <span style="font-weight: 900; font-size: 1.1rem; font-family:monospace; color: var(--primary-color, #f4b400); letter-spacing:0.5px;">${coupon.code}</span>
+                                    ${discountBadge}
                                 </div>
-                                ${coupon.minOrder ? `<div style="color: #888; font-size: 0.75rem; margin-top: 5px;">Min Order: ₹${coupon.minOrder}</div>` : ''}
+                                <div style="color: #cbd5e1; font-size: 0.85rem; line-height:1.4;">
+                                    ${desc}
+                                </div>
+                                ${coupon.minOrder ? `<div style="color: #94a3b8; font-size: 0.75rem; margin-top: 4px;">Min Order Requirement: ₹${coupon.minOrder}</div>` : ''}
                             </div>
-                            <div>
+                            <div style="flex-shrink:0;">
                                 ${btnHtml}
                             </div>
                         </div>
@@ -3119,23 +3237,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 document.querySelectorAll('.select-modal-coupon-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
-                        const code = e.target.getAttribute('data-code');
+                        const code = e.currentTarget.getAttribute('data-code');
                         console.log("Coupon selected from modal:", code);
                         
                         const codeInput = document.getElementById('coupon-input');
                         if (codeInput) {
                             codeInput.value = code;
-                            codeInput.focus();
                         }
                         
-                        if (couponsModal) couponsModal.classList.remove('show');
+                        if (couponsModal) {
+                            couponsModal.style.display = 'none';
+                            couponsModal.classList.remove('show');
+                        }
+
+                        // Automatically trigger apply
+                        const applyBtn = document.getElementById('apply-coupon-btn');
+                        if (applyBtn) applyBtn.click();
                     });
                 });
             }
         });
         
-        document.getElementById('close-coupons-modal')?.addEventListener('click', () => {
-            if (couponsModal) couponsModal.classList.remove('show');
+        const closeCouponsModal = () => {
+            if (couponsModal) {
+                couponsModal.style.display = 'none';
+                couponsModal.classList.remove('show');
+            }
+        };
+
+        document.getElementById('close-coupons-modal')?.addEventListener('click', closeCouponsModal);
+        couponsModal?.addEventListener('click', (e) => {
+            if (e.target === couponsModal) closeCouponsModal();
         });
 
         const closeBtn = document.getElementById('close-cart-btn');
@@ -3629,12 +3761,8 @@ document.addEventListener('DOMContentLoaded', () => {
             msg += `-----------------------\n\n`;
             msg += `💰 Bill Summary:\n`;
             msg += `• Subtotal: ₹${subtotalAmount}\n`;
-            if (appliedCoupon) {
-                if (appliedCoupon.type === 'PEPSI') {
-                    msg += `• Discount: -₹${discountAmount} (Free Pepsi Offer)\n`;
-                } else {
-                    msg += `• Discount: -₹${discountAmount}\n`;
-                }
+            if (appliedCoupon && discountAmount > 0) {
+                msg += `• Discount (${appliedCoupon.code}): -₹${discountAmount}\n`;
             }
             msg += `• Delivery: ${deliveryText}\n`;
             msg += `• Total Payable: ₹${finalTotal}\n\n`;
@@ -3787,7 +3915,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 finalTotal: computedFinalTotal,
                 paymentMethod: isCOD ? 'COD' : 'UPI',
                 paymentMode: selectedPaymentMode || 'full',
-                notes: restaurantNote || '',
+                notes: ((document.getElementById('checkout-notes')?.value || restaurantNote || '')).trim(),
                 orderSource: 'website',
                 status: 'pending',
                 createdAt: new Date().toISOString()
@@ -3808,21 +3936,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Save active order to localStorage for live customer status tracking
             const createdOrder = saveRes.data?.order || saveRes.data;
-            if (createdOrder && createdOrder._id) {
+            const trackingId = createdOrder?._id || createdOrder?.orderId || createdOrder?.id || saveRes.data?.orderId || saveRes.data?._id;
+            if (trackingId) {
                 const cleanCustPhone = String(phone || '').replace(/\D/g, '').slice(-10);
                 localStorage.setItem('littiWaleActiveOrder', JSON.stringify({
-                    _id: createdOrder._id,
-                    id: createdOrder._id,
-                    shortId: String(createdOrder._id).slice(-6).toUpperCase(),
+                    _id: trackingId,
+                    id: trackingId,
+                    orderId: trackingId,
+                    shortId: String(trackingId).slice(-6).toUpperCase(),
                     status: 'pending',
-                    customerName: createdOrder.customerName || name,
+                    customerName: createdOrder?.customerName || name,
                     customerPhone: cleanCustPhone,
                     deliveryAddress: address,
                     items: cart.map(i => ({ name: i.name, quantity: i.quantity, price: i.price, subtotal: i.price * i.quantity })),
-                    subtotal: createdOrder.subtotal || subtotalAmount,
+                    subtotal: createdOrder?.subtotal || subtotalAmount,
                     discount: currentDiscount,
-                    deliveryCharge: createdOrder.deliveryCharge || 0,
-                    finalTotal: createdOrder.finalTotal || computedFinalTotal,
+                    deliveryCharge: createdOrder?.deliveryCharge || 0,
+                    finalTotal: createdOrder?.finalTotal || computedFinalTotal,
                     paymentMethod: isCOD ? 'COD' : 'UPI',
                     orderType: isDelivery ? 'delivery' : 'takeaway',
                     createdAt: new Date().toISOString()
@@ -3836,12 +3966,46 @@ document.addEventListener('DOMContentLoaded', () => {
             const cleanCustPhone = String(phone || '').replace(/\D/g, '').slice(-10);
             if (cleanCustPhone) {
                 localStorage.setItem('littiwale_customer_phone', cleanCustPhone);
-                localStorage.setItem('littiwale_customer_profile', JSON.stringify({
-                    name: name,
-                    phone: cleanCustPhone,
-                    address: address,
-                    landmark: landmark || ''
-                }));
+                if (isDelivery && address && !address.toLowerCase().includes('self pickup')) {
+                    localStorage.setItem('littiwale_customer_profile', JSON.stringify({
+                        name: name,
+                        phone: cleanCustPhone,
+                        address: address,
+                        landmark: landmark || ''
+                    }));
+                } else {
+                    // For takeaway, update name and phone, but preserve existing real delivery address!
+                    const existingProfile = JSON.parse(localStorage.getItem('littiwale_customer_profile') || '{}');
+                    const prevRealAddr = (existingProfile.address && !existingProfile.address.toLowerCase().includes('self pickup')) ? existingProfile.address : '';
+                    localStorage.setItem('littiwale_customer_profile', JSON.stringify({
+                        name: name,
+                        phone: cleanCustPhone,
+                        address: prevRealAddr,
+                        landmark: existingProfile.landmark || ''
+                    }));
+                }
+
+                // Also save to Supabase customers table (upsert name + save new address)
+                const apiBase = window.ADMIN_API_BASE_URL || 'http://localhost:5001/api';
+                try {
+                    // Upsert customer name
+                    await fetch(`${apiBase}/customers/${cleanCustPhone}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, whatsapp_phone: whatsappPhone || phone })
+                    });
+                    // Add address if it's a delivery order (with dedup check server-side)
+                    if (isDelivery && address && !address.toLowerCase().includes('self pickup')) {
+                        await fetch(`${apiBase}/customers/${cleanCustPhone}/addresses`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ address, landmark: landmark || '' })
+                        });
+                    }
+                } catch(e) {
+                    // Non-fatal: silently fail, localStorage backup exists
+                    console.warn('Customer profile sync failed (non-fatal):', e.message);
+                }
             }
 
             // Restore button state
@@ -3912,18 +4076,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Robust WhatsApp Launch for Mobile & Desktop (Bypasses popup blocker)
             const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const redirectTrackingId = trackingId || (createdOrder && (createdOrder.orderId || createdOrder._id || createdOrder.id));
+            const trackUrl = redirectTrackingId ? `track.html?id=${encodeURIComponent(redirectTrackingId)}` : 'track.html';
             
             if (isMobileDevice) {
-                // On mobile, window.location.href triggers native WhatsApp app instantly
-                window.location.href = whatsappUrl;
-            } else {
-                // On desktop, open in new tab and navigate current page to track
+                // On mobile: open WhatsApp in new tab, then redirect THIS page to track
                 window.open(whatsappUrl, '_blank');
-                if (createdOrder && createdOrder._id) {
-                    setTimeout(() => {
-                        window.location.href = `track.html?orderId=${createdOrder._id}`;
-                    }, 600);
-                }
+                setTimeout(() => {
+                    window.location.href = trackUrl;
+                }, 800);
+            } else {
+                // On desktop: open WhatsApp in new tab, redirect current page to track
+                window.open(whatsappUrl, '_blank');
+                setTimeout(() => {
+                    window.location.href = trackUrl;
+                }, 600);
             }
         }
 
@@ -4282,7 +4449,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(res => res.json())
             .then(full => {
                 const activeImages = (full && Array.isArray(full) ? full : [])
-                    .filter(a => a.isActive !== false && a.image)
+                    .filter(a => (a.isAvailable !== false && a.isActive !== false) && a.image && a.image.trim() !== '' && !a.image.includes('logo.png'))
                     .map(a => a.image);
                 if (activeImages.length > 0) {
                     setupCarousel(activeImages);
@@ -4656,9 +4823,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (checkoutTypeDel && checkoutTypeTake) {
         const savedOrderType = localStorage.getItem('littiWaleOrderType') || 'delivery';
-        
+        let cachedUserDeliveryAddress = '';
+
         const updateAddressVisibility = () => {
+            const addrInput = document.getElementById('checkout-address');
             if (checkoutTypeTake.checked) {
+                if (addrInput && addrInput.value.trim() && !addrInput.value.toLowerCase().includes('self pickup')) {
+                    cachedUserDeliveryAddress = addrInput.value.trim();
+                }
                 if (checkoutAddressBlock) checkoutAddressBlock.style.display = 'none';
                 if (takeawayInfoBlock) takeawayInfoBlock.style.display = 'block';
                 localStorage.setItem('littiWaleOrderType', 'takeaway');
@@ -4666,6 +4838,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (checkoutAddressBlock) checkoutAddressBlock.style.display = 'block';
                 if (takeawayInfoBlock) takeawayInfoBlock.style.display = 'none';
                 localStorage.setItem('littiWaleOrderType', 'delivery');
+                
+                // If address input is empty or polluted with 'Self Pickup', restore the real address
+                if (addrInput) {
+                    const currentVal = addrInput.value.trim();
+                    if (!currentVal || currentVal.toLowerCase().includes('self pickup')) {
+                        const fallbackProfile = JSON.parse(localStorage.getItem('littiwale_customer_profile') || '{}');
+                        const realProfileAddr = (fallbackProfile.address && !fallbackProfile.address.toLowerCase().includes('self pickup')) ? fallbackProfile.address : '';
+                        addrInput.value = cachedUserDeliveryAddress || realProfileAddr || '';
+                    }
+                }
             }
             if (typeof updateCartUI === 'function') updateCartUI();
         };
@@ -5303,21 +5485,27 @@ window.fetchCustomerOrders = async function(phone) {
     `;
 
     try {
-        const res = await fetch(`${CUSTOMER_API_BASE_URL}/orders/customer/${phone}`);
+        const apiBase = window.ADMIN_API_BASE_URL || 'http://localhost:5001/api';
+        const res = await fetch(`${apiBase}/orders/customer/${phone}`);
         const data = await res.json();
 
-        if (!data || !data.success) {
-            throw new Error(data.error || 'Failed to fetch orders');
+        let orders = [];
+        let customer = null;
+        if (Array.isArray(data)) {
+            orders = data;
+        } else if (data && data.orders) {
+            orders = data.orders;
+            customer = data.customer;
         }
 
-        window.cachedCustomerOrders = data.orders || [];
+        window.cachedCustomerOrders = orders;
 
-        if (data.customer) {
-            localStorage.setItem('littiwale_customer_profile', JSON.stringify(data.customer));
-            autoFillCheckoutFromSavedProfile(data.customer);
+        if (customer) {
+            localStorage.setItem('littiwale_customer_profile', JSON.stringify(customer));
+            autoFillCheckoutFromSavedProfile(customer);
         }
 
-        if (!data.hasOrders || data.orders.length === 0) {
+        if (orders.length === 0) {
             // New Customer View
             container.innerHTML = `
                 <div class="cust-profile-header-card">
@@ -5348,7 +5536,8 @@ window.fetchCustomerOrders = async function(phone) {
 
         let liveOrderHtml = '';
         if (activeOrder) {
-            const shortId = activeOrder._id ? String(activeOrder._id).slice(-6).toUpperCase() : 'LW';
+            const activeTrackId = activeOrder.orderId || activeOrder._id || activeOrder.id || '';
+            const shortId = activeTrackId ? String(activeTrackId).slice(-6).toUpperCase() : 'LW';
             const statusLabel = activeOrder.status === 'dispatched' ? 'Out for Delivery' : (activeOrder.status === 'accepted' || activeOrder.status === 'confirmed' ? 'Preparing in Kitchen' : 'Order Placed (Pending)');
             liveOrderHtml = `
                 <div class="cust-live-order-banner">
@@ -5359,7 +5548,7 @@ window.fetchCustomerOrders = async function(phone) {
                             <div class="cust-live-order-sub">${statusLabel} • ${(activeOrder.items || []).map(i => `${i.quantity}x ${i.name}`).join(', ')}</div>
                         </div>
                     </div>
-                    <a href="track.html?id=${activeOrder._id}" class="cust-live-order-btn">Track Live Status →</a>
+                    <a href="track.html?id=${activeTrackId}" class="cust-live-order-btn">Track Live Status →</a>
                 </div>
             `;
         }
@@ -5380,7 +5569,8 @@ window.fetchCustomerOrders = async function(phone) {
         }
 
         const ordersListHtml = data.orders.map(ord => {
-            const shortId = ord._id ? String(ord._id).slice(-6).toUpperCase() : 'LW-ORD';
+            const trackId = ord.orderId || ord._id || ord.id || '';
+            const shortId = trackId ? String(trackId).slice(-6).toUpperCase() : 'LW-ORD';
             const dateStr = ord.createdAt ? new Date(ord.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent';
             const total = ord.finalTotal || ord.subtotal || 0;
             const itemsStr = (ord.items || []).map(i => `${i.quantity}x ${i.name}`).join(', ');
@@ -5394,7 +5584,7 @@ window.fetchCustomerOrders = async function(phone) {
             let actionButtons = '';
             if (isLive) {
                 actionButtons = `
-                    <a href="track.html?id=${ord._id}" class="cust-live-order-btn" style="padding:7px 14px; font-size:12px; font-weight:800; border-radius:8px; text-decoration:none;">
+                    <a href="track.html?id=${trackId}" class="cust-live-order-btn" style="padding:7px 14px; font-size:12px; font-weight:800; border-radius:8px; text-decoration:none;">
                         <span>📍 Track Order →</span>
                     </a>
                 `;
@@ -5472,6 +5662,23 @@ window.switchCustomerAccount = function() {
     localStorage.removeItem('littiwale_customer_profile');
     window.renderCustomerPhoneLookupView();
 };
+
+function getTargetOrderId() {
+    const params = new URLSearchParams(window.location.search);
+    const fromQuery = params.get('orderId') || params.get('id');
+    // Guard: never treat literal string 'undefined' or 'null' as a valid ID
+    if (fromQuery && fromQuery !== 'undefined' && fromQuery !== 'null') return fromQuery;
+
+    try {
+        const stored = localStorage.getItem('littiWaleActiveOrder');
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed && parsed.id && parsed.id !== 'undefined' && parsed.id !== 'null') return parsed.id;
+        }
+    } catch(e) {}
+
+    return null;
+}
 
 window.reorderPastOrder = function(orderId) {
     const ord = (window.cachedCustomerOrders || []).find(o => o._id === orderId);
@@ -5562,6 +5769,158 @@ window.reorderPastOrder = function(orderId) {
     }
 };
 
+// ==========================================================================
+// SAVED ADDRESSES & CUSTOMER PROFILE CONTROLLER (Multi-Address System)
+// ==========================================================================
+let customerSavedAddressesCache = [];
+let selectedSavedAddressId = null;
+
+function getAddressIcon(label) {
+    const l = (label || '').toLowerCase();
+    if (l.includes('home')) return '🏠';
+    if (l.includes('office') || l.includes('work')) return '🏢';
+    return '📍';
+}
+
+function renderSavedAddressPills(addresses) {
+    const container = document.getElementById('saved-addresses-container');
+    const pillsWrap = document.getElementById('saved-address-pills');
+    if (!container || !pillsWrap) return;
+
+    if (!Array.isArray(addresses) || addresses.length === 0) {
+        container.style.display = 'none';
+        pillsWrap.innerHTML = '';
+        return;
+    }
+
+    container.style.display = 'block';
+    pillsWrap.innerHTML = '';
+
+    // Find default or first address to select if none selected
+    if (!selectedSavedAddressId && addresses.length > 0) {
+        const defaultAddr = addresses.find(a => a.isDefault) || addresses[0];
+        selectedSavedAddressId = defaultAddr.id;
+    }
+
+    addresses.forEach(addr => {
+        const isSelected = addr.id === selectedSavedAddressId;
+        const pill = document.createElement('button');
+        pill.type = 'button';
+        pill.className = `addr-pill ${isSelected ? 'active' : ''}`;
+        pill.style.cssText = `
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: ${isSelected ? 'rgba(249,115,22,0.2)' : 'rgba(255,255,255,0.06)'};
+            color: ${isSelected ? '#f97316' : '#cbd5e1'};
+            border: 1.5px solid ${isSelected ? '#f97316' : 'rgba(255,255,255,0.15)'};
+        `;
+        pill.innerHTML = `<span>${getAddressIcon(addr.label)}</span> <span>${addr.label || 'Saved'}</span>`;
+        pill.title = `${addr.address}${addr.landmark ? ' (' + addr.landmark + ')' : ''}`;
+
+        pill.onclick = () => {
+            selectedSavedAddressId = addr.id;
+            renderSavedAddressPills(customerSavedAddressesCache);
+
+            const addressInputs = [document.getElementById('checkout-address'), document.getElementById('cust-address'), document.getElementById('address')];
+            const landmarkInputs = [document.getElementById('checkout-landmark'), document.getElementById('cust-landmark'), document.getElementById('landmark')];
+
+            addressInputs.forEach(i => { if (i) i.value = addr.address; });
+            landmarkInputs.forEach(i => { if (i) i.value = addr.landmark || ''; });
+        };
+
+        pillsWrap.appendChild(pill);
+    });
+
+    // ➕ Add New Address Pill
+    const isNewActive = selectedSavedAddressId === 'NEW_ADDRESS';
+    const newPill = document.createElement('button');
+    newPill.type = 'button';
+    newPill.className = `addr-pill ${isNewActive ? 'active' : ''}`;
+    newPill.style.cssText = `
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: ${isNewActive ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.04)'};
+        color: ${isNewActive ? '#22c55e' : '#94a3b8'};
+        border: 1.5px dashed ${isNewActive ? '#22c55e' : 'rgba(255,255,255,0.25)'};
+    `;
+    newPill.innerHTML = `<span>➕</span> <span>Add New</span>`;
+    newPill.title = 'Type a new delivery address';
+
+    newPill.onclick = () => {
+        selectedSavedAddressId = 'NEW_ADDRESS';
+        renderSavedAddressPills(customerSavedAddressesCache);
+
+        const addressInputs = [document.getElementById('checkout-address'), document.getElementById('cust-address'), document.getElementById('address')];
+        const landmarkInputs = [document.getElementById('checkout-landmark'), document.getElementById('cust-landmark'), document.getElementById('landmark')];
+
+        addressInputs.forEach(i => { 
+            if (i) {
+                i.value = '';
+                i.focus();
+                i.placeholder = 'Enter new delivery address...';
+            }
+        });
+        landmarkInputs.forEach(i => { if (i) i.value = ''; });
+    };
+
+    pillsWrap.appendChild(newPill);
+}
+
+window.loadCustomerProfileAndAddresses = async function(phone) {
+    if (!phone) return;
+    const cleanPhone = String(phone).replace(/\D/g, '').slice(-10);
+    if (cleanPhone.length !== 10) return;
+
+    try {
+        const apiBase = window.ADMIN_API_BASE_URL || 'http://localhost:5001/api';
+        const res = await fetch(`${apiBase}/customers/${cleanPhone}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && data.success) {
+            // Auto fill name if currently empty
+            if (data.name) {
+                const nameInputs = [document.getElementById('checkout-name'), document.getElementById('cust-name'), document.getElementById('name')];
+                nameInputs.forEach(i => {
+                    if (i && !i.value.trim()) i.value = data.name;
+                });
+            }
+
+            customerSavedAddressesCache = Array.isArray(data.addresses) ? data.addresses : [];
+            if (customerSavedAddressesCache.length > 0) {
+                // Find default address
+                const defaultAddr = customerSavedAddressesCache.find(a => a.isDefault) || customerSavedAddressesCache[0];
+                if (defaultAddr && (!selectedSavedAddressId || selectedSavedAddressId === 'NEW_ADDRESS')) {
+                    selectedSavedAddressId = defaultAddr.id;
+                    const addressInputs = [document.getElementById('checkout-address'), document.getElementById('cust-address'), document.getElementById('address')];
+                    const landmarkInputs = [document.getElementById('checkout-landmark'), document.getElementById('cust-landmark'), document.getElementById('landmark')];
+                    addressInputs.forEach(i => { if (i && !i.value.trim()) i.value = defaultAddr.address; });
+                    landmarkInputs.forEach(i => { if (i && !i.value.trim()) i.value = defaultAddr.landmark || ''; });
+                }
+                renderSavedAddressPills(customerSavedAddressesCache);
+            } else {
+                const container = document.getElementById('saved-addresses-container');
+                if (container) container.style.display = 'none';
+            }
+        }
+    } catch(e) {
+        console.warn('Could not load customer saved addresses:', e.message);
+    }
+};
+
 function autoFillCheckoutFromSavedProfile(profile) {
     if (!profile) {
         try {
@@ -5569,6 +5928,12 @@ function autoFillCheckoutFromSavedProfile(profile) {
             if (raw) profile = JSON.parse(raw);
         } catch(e) {}
     }
+    
+    const savedPhone = localStorage.getItem('littiwale_customer_phone') || (profile ? profile.phone : null);
+    if (savedPhone) {
+        window.loadCustomerProfileAndAddresses(savedPhone);
+    }
+
     if (!profile) return;
 
     const nameInputs = [document.getElementById('checkout-name'), document.getElementById('cust-name'), document.getElementById('name')];
@@ -5587,16 +5952,37 @@ function autoFillCheckoutFromSavedProfile(profile) {
         if (input && (profile.whatsapp || profile.phone)) input.value = profile.whatsapp || profile.phone;
     });
     addressInputs.forEach(input => {
-        if (input && profile.address) input.value = profile.address;
+        if (input && profile.address && !input.value.trim()) {
+            if (!profile.address.toLowerCase().includes('self pickup') && !profile.address.toLowerCase().includes('takeaway')) {
+                input.value = profile.address;
+            }
+        }
     });
     landmarkInputs.forEach(input => {
-        if (input && profile.landmark) input.value = profile.landmark;
+        if (input && profile.landmark && !input.value.trim()) input.value = profile.landmark;
     });
 }
 
-// Auto-fill checkout on initial DOM load if profile exists
+// Auto-fill checkout and attach phone input listeners on DOM load
 document.addEventListener('DOMContentLoaded', () => {
     autoFillCheckoutFromSavedProfile();
+
+    const phoneInputs = [document.getElementById('checkout-phone'), document.getElementById('cust-phone'), document.getElementById('phone')];
+    phoneInputs.forEach(input => {
+        if (input) {
+            const checkAndLoad = () => {
+                const val = input.value.replace(/\D/g, '').slice(-10);
+                if (val.length === 10) {
+                    window.loadCustomerProfileAndAddresses(val);
+                }
+            };
+            input.addEventListener('blur', checkAndLoad);
+            input.addEventListener('input', () => {
+                const val = input.value.replace(/\D/g, '').slice(-10);
+                if (val.length === 10) checkAndLoad();
+            });
+        }
+    });
 });
 
 // ==========================================================================
