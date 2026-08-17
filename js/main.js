@@ -794,8 +794,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const toggleContainer = document.getElementById('menu-toggle-container');
             if (toggleContainer) toggleContainer.style.display = 'none';
         } else {
-            if (initialBestsellers && initialBestsellers.length > 0) {
-                const availableCloudItems = initialBestsellers.filter(item => {
+            const itemsPool = (menuData && Array.isArray(menuData) && menuData.length > 0) ? menuData : initialBestsellers;
+            if (itemsPool && itemsPool.length > 0) {
+                const availableCloudItems = itemsPool.filter(item => {
                     const isInStock = item.inStock !== false;
                     const avail = (item.availability || item.locationAvailability || 'both').toLowerCase();
                     const isCloudAvailable = avail === 'both' || avail.includes('cloud');
@@ -1199,24 +1200,51 @@ document.addEventListener('DOMContentLoaded', () => {
         const imgContainer = card.querySelector('.menu-img-container');
         if (imgContainer) {
             if (v1 && v2 && !allOutOfStock) {
-                // Dual Variants (Half/Full or Sweet/Salted): single ADD+ that opens bottom sheet
+                // Dual Variants (Half/Full or Options)
                 const v1Qty = getCartQty(v1.id);
                 const v2Qty = getCartQty(v2.id);
                 const totalInCart = v1Qty + v2Qty;
 
                 const mobAddBtn = document.createElement('button');
                 mobAddBtn.className = 'mob-add-btn';
+                mobAddBtn.textContent = 'ADD +';
+
+                const mobQty = document.createElement('div');
+                mobQty.className = 'mob-qty-ctrl';
+                mobQty.innerHTML = `
+                    <button class="mq-minus sq-btn">−</button>
+                    <span class="mq-val">${totalInCart > 0 ? totalInCart : 1}</span>
+                    <button class="mq-plus sq-btn">+</button>
+                `;
+
                 if (totalInCart > 0) {
-                    mobAddBtn.textContent = `${totalInCart} ✓`;
-                    mobAddBtn.style.background = '#15803d';
+                    mobAddBtn.style.display = 'none';
+                    mobQty.style.display = 'flex';
                 } else {
-                    mobAddBtn.textContent = 'ADD +';
+                    mobAddBtn.style.display = 'flex';
+                    mobQty.style.display = 'none';
                 }
+
                 mobAddBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     openHFVariantSheet(group.displayName, v1, v2, itemImg, mobAddBtn, v1Label, v2Label);
                 });
+
+                mobQty.querySelector('.mq-plus').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openHFVariantSheet(group.displayName, v1, v2, itemImg, mobAddBtn, v1Label, v2Label);
+                });
+                mobQty.querySelector('.mq-minus').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openHFVariantSheet(group.displayName, v1, v2, itemImg, mobAddBtn, v1Label, v2Label);
+                });
+                mobQty.querySelector('.mq-val').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openHFVariantSheet(group.displayName, v1, v2, itemImg, mobAddBtn, v1Label, v2Label);
+                });
+
                 imgContainer.appendChild(mobAddBtn);
+                imgContainer.appendChild(mobQty);
 
             } else if (card._mobStdItemId) {
                 // Standard item: ADD+ → qty ctrl inline
@@ -1251,10 +1279,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 mobAdd.addEventListener('click', (e) => {
                     e.stopPropagation();
                     addToCart(id, name, price, img);
-                    mobAdd.style.display = 'none';
-                    mobQty.style.display = 'flex';
-                    const valEl = document.getElementById(`mob-qval-${id}`);
-                    if (valEl) valEl.textContent = getCartQty(id);
                 });
 
                 imgContainer.appendChild(mobAdd);
@@ -2542,13 +2566,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     });
 
-                    if (mobAdd) {
+                    if (mobAdd && mobQty) {
                         if (total > 0) {
-                            mobAdd.textContent = `${total} in Cart ✓`;
-                            mobAdd.style.background = '#15803d';
+                            mobAdd.style.display = 'none';
+                            mobQty.style.display = 'flex';
+                            if (mobValSpan) mobValSpan.textContent = total;
                         } else {
-                            mobAdd.textContent = 'ADD +';
-                            mobAdd.style.background = '#16a34a';
+                            mobAdd.style.display = 'flex';
+                            mobQty.style.display = 'none';
+                            if (mobValSpan) mobValSpan.textContent = '0';
                         }
                     }
                 }
