@@ -178,12 +178,138 @@ document.addEventListener('DOMContentLoaded', () => {
     let menuImageMap = {};
     const menuGrid = document.getElementById('menu-grid');
     const categoryFilters = document.getElementById('category-filters');
+
+    // Default bundled image map (100% verified dish images from /images/menu/Full Menu/)
+    const DEFAULT_IMAGE_MAP = {
+        "mumbai street vada pav": "images/menu/Full Menu/Star Special/vadapav.webp",
+        "authentic bihari litti chokha": "images/menu/Full Menu/Star Special/littichokha.webp",
+        "desi delight chick-a-litti": "images/menu/Full Menu/Star Special/littichicken.webp",
+        "a1 swag combo - veg": "images/menu/Full Menu/Star Special/swagveg.webp",
+        "a1 swag combo - non veg": "images/menu/Full Menu/Star Special/swagnonveg.webp",
+        "a1 punjab da swag": "images/menu/Full Menu/Star Special/punjabswag.webp",
+        "masterchef special thecha chowmein": "images/menu/Full Menu/Star Special/thechachowmein.webp",
+        "mumbai butter pav bhaji": "images/menu/Full Menu/Star Special/pavbhaji.webp",
+        "veg pizza": "images/menu/Full Menu/Pizza/vp.webp",
+        "corn pizza": "images/menu/Full Menu/Pizza/cp.webp",
+        "paneer pizza": "images/menu/Full Menu/Pizza/pp.webp",
+        "chicken pizza": "images/menu/Full Menu/Pizza/chickenpizza.webp",
+        "red sauce pasta": "images/menu/Full Menu/Pasta/rsp.webp",
+        "white sauce pasta": "images/menu/Full Menu/Pasta/wsp.webp",
+        "rajma chawal": "images/menu/Full Menu/Littiwale Rice Bowl Combos/rajmachawal.webp",
+        "chole chawal": "images/menu/Full Menu/Littiwale Rice Bowl Combos/cholechawal.webp",
+        "kadhi chawal": "images/menu/Full Menu/Littiwale Rice Bowl Combos/kadhichawal.webp",
+        "kadi chawal": "images/menu/Full Menu/AI_Generated/kadi_chawal.webp",
+        "veg maggie": "images/menu/Full Menu/Maggi/vegmaggi.webp",
+        "cheese maggie": "images/menu/Full Menu/Maggi/cheesemaggi.webp",
+        "dal tadka": "images/menu/Full Menu/Main Course/eggtadka.webp",
+        "dal makhani": "images/menu/Full Menu/Main Course/eggtadka.webp",
+        "paneer butter masala": "images/menu/Full Menu/Main Course/paneerbuttermasala.webp",
+        "paneer masala": "images/menu/Full Menu/Main Course/paneermasala.webp",
+        "palak paneer": "images/menu/Full Menu/Main Course/palakpaneer.webp",
+        "chicken chatpata": "images/menu/Full Menu/Main Course/chickenchatpata.webp",
+        "chicken masala": "images/menu/Full Menu/Main Course/chickenkadhai.webp",
+        "chicken handi": "images/menu/Full Menu/Main Course/chickenhandi.webp",
+        "chicken champaran": "images/menu/Full Menu/Main Course/champaranchicken.webp",
+        "egg tadka": "images/menu/Full Menu/Main Course/eggtadka.webp",
+        "fish curry": "images/menu/Full Menu/Main Course/fishcurry.webp",
+        "mix veg": "images/menu/Full Menu/Main Course/mixveg.webp",
+        "mushroom masala": "images/menu/Full Menu/Main Course/mushroommasala.webp",
+        "kofta malai": "images/menu/Full Menu/Main Course/koftamalai.webp",
+        "veg noodles": "images/menu/Full Menu/Noodles/vegnoodles.webp",
+        "egg noodles": "images/menu/Full Menu/Noodles/eggnoodles.webp",
+        "chicken noodles": "images/menu/Full Menu/Noodles/chickennoodles.webp",
+        "mix veg noodles": "images/menu/Full Menu/Noodles/mixvegnoodles.webp",
+        "mix non veg noodles": "images/menu/Full Menu/Noodles/mixnonvegnoodles.webp",
+        "veg fried rice": "images/menu/Full Menu/Noodles/Rice/vfr.webp",
+        "egg fried rice": "images/menu/Full Menu/Noodles/Rice/efr.webp",
+        "chicken fried rice": "images/menu/Full Menu/Noodles/Rice/cfr.webp",
+        "veg sandwich": "images/menu/Full Menu/Sandwiches/vs.webp",
+        "cheese veg grilled sandwich": "images/menu/Full Menu/Sandwiches/vgs.webp",
+        "veg sandwich clubbed": "images/menu/Full Menu/Sandwiches/vcs.webp",
+        "mix veg sandwich clubbed": "images/menu/Full Menu/Sandwiches/vcs.webp",
+        "chicken clubbed sandwich": "images/menu/Full Menu/Sandwiches/ccs.webp",
+        "corn cheese sandwich grilled": "images/menu/Full Menu/Sandwiches/cornsandwich.webp",
+        "corn sandwich clubbed": "images/menu/Full Menu/Sandwiches/clubbedcorn.webp",
+        "paneer sandwich clubbed": "images/menu/Full Menu/Sandwiches/paneerclubbedsandwich.webp",
+        "cheese chicken sandwich": "images/menu/Full Menu/Sandwiches/cheesechickensandwich.webp",
+        "chilly chicken": "images/menu/Full Menu/Starters/chillychicken.webp",
+        "chilly paneer": "images/menu/Full Menu/Starters/paneerchilly.webp",
+        "mushroom chilly": "images/menu/Full Menu/Starters/mushroomchilly.webp",
+        "veg manchurian": "images/menu/Full Menu/Starters/vegmanchurian.webp",
+        "chilly gobi": "images/menu/Full Menu/Starters/gobic.webp",
+        "veg thali": "images/menu/Full Menu/Thali/veg.webp",
+        "paneer thali": "images/menu/Full Menu/Thali/veg.webp",
+        "egg thali": "images/menu/Full Menu/Thali/egg.webp",
+        "fish thali": "images/menu/Full Menu/Thali/fish.webp",
+        "chicken thali": "images/menu/Full Menu/Thali/chicken.webp",
+        "mutton thali": "images/menu/Full Menu/Thali/mutton.webp",
+        "meals for one - chicken fried rice chilly chicken": "images/menu/Full Menu/Littiwale Meal for One/cccf.webp",
+        "meals for one - chicken noodles chilly chicken": "images/menu/Full Menu/Littiwale Meal for One/cccn.webp",
+        "meals for one - egg fried rice chilly chicken": "images/menu/Full Menu/Littiwale Meal for One/ccef.webp",
+        "meals for one - egg noodles chilly chicken": "images/menu/Full Menu/Littiwale Meal for One/ccen.webp",
+        "meals for one - lacha paratha chicken chilly": "images/menu/Full Menu/Littiwale Meal for One/cclp.webp",
+        "meals for one - veg fried rice chicken chilly": "images/menu/Full Menu/Littiwale Meal for One/ccvf.webp",
+        "meals for one - veg noodles chicken chilly": "images/menu/Full Menu/Littiwale Meal for One/ccvn.webp",
+        "meals for one - veg fried rice paneer chilly": "images/menu/Full Menu/Littiwale Meal for One/pcvf.webp",
+        "meals for one - veg noodles paneer chilly": "images/menu/Full Menu/Littiwale Meal for One/pcvn.webp",
+        "meals for one - lacha paratha paneer chilly": "images/menu/Full Menu/Littiwale Meal for One/pclp.webp",
+        "littiwale mega feast - chilly chicken chicken fried rice lacha paratha": "images/menu/Full Menu/Littiwale Mega Feast/cccflp.webp",
+        "littiwale mega feast - chilly chicken egg fried rice lacha paratha": "images/menu/Full Menu/Littiwale Mega Feast/cceflp.webp",
+        "littiwale mega feast - chilly chicken veg fried rice lacha paratha": "images/menu/Full Menu/Littiwale Mega Feast/ccvflp.webp",
+        "littiwale mega feast - chilly paneer veg fried rice lacha paratha": "images/menu/Full Menu/Littiwale Mega Feast/pcvflp.webp",
+        "veg hot n sour soup": "images/menu/Full Menu/Soup/soup.webp",
+        "veg manchow soup": "images/menu/Full Menu/Soup/soup.webp",
+        "chicken hot n sour soup": "images/menu/Full Menu/Soup/soup.webp",
+        "chicken manchow soup": "images/menu/Full Menu/Soup/soup.webp",
+        "laccha paratha": "images/menu/Full Menu/Breads/lacchaparatha.webp",
+        "butter naan": "images/menu/Full Menu/Breads/lacchaparatha.webp",
+        "tawa roti": "images/menu/Full Menu/Breads/tawaroti.webp",
+        "garam gobi gully paratha": "images/menu/Full Menu/Breads/gobiparatha.webp",
+        "punjabi patiala aloo paratha": "images/menu/Full Menu/Breads/alooparatha.webp",
+        "dil se paneer paratha": "images/menu/Full Menu/Breads/paneerparatha.webp",
+        "cheesy corn chulbuli paratha": "images/menu/Full Menu/Breads/cheesecornparatha.webp",
+        "littiwale loaded paratha": "images/menu/Full Menu/Breads/littiwaleloadedparatha.webp",
+        "makke di roti": "images/menu/Full Menu/Breads/makkediroti.webp",
+        "aloo paratha": "images/menu/Full Menu/Breads/alooparatha.webp",
+        "gobi paratha": "images/menu/Full Menu/Breads/gobiparatha.webp",
+        "paneer paratha": "images/menu/Full Menu/Breads/paneerparatha.webp",
+        "steam veg momo": "images/menu/Full Menu/AI_Generated/steamed_momos.webp",
+        "steam paneer momo": "images/menu/Full Menu/AI_Generated/steamed_momos.webp",
+        "kurkure veg momo": "images/menu/Full Menu/AI_Generated/kurkure_momos.webp",
+        "paneer kurkure momo": "images/menu/Full Menu/AI_Generated/kurkure_momos.webp",
+        "fried veg momo": "images/menu/Full Menu/AI_Generated/fried_momos.webp",
+        "fried paneer momo": "images/menu/Full Menu/AI_Generated/fried_momos.webp",
+        "pan fried veg momo": "images/menu/Full Menu/AI_Generated/fried_momos.webp",
+        "pan fried paneer momo": "images/menu/Full Menu/AI_Generated/fried_momos.webp",
+        "chakuli pitha with sabzi": "images/menu/Full Menu/AI_Generated/chakuli_pitha.webp",
+        "chakuli pitha": "images/menu/Full Menu/AI_Generated/chakuli_pitha.webp",
+        "dahi bara aloo dum": "images/menu/Full Menu/AI_Generated/dahi_bara_aloo_dum.webp",
+        "idli": "images/menu/Full Menu/AI_Generated/idli_sambar.webp",
+        "dhokla": "images/menu/Full Menu/AI_Generated/khaman_dhokla.webp",
+        "puri sabzi": "images/menu/Full Menu/AI_Generated/puri_sabzi.webp",
+        "sabzi": "images/menu/Full Menu/AI_Generated/puri_sabzi.webp",
+        "chole bhature": "images/menu/Full Menu/AI_Generated/chole_bhature.webp",
+        "upma": "images/menu/Full Menu/AI_Generated/rava_upma.webp",
+        "lassi": "images/menu/Full Menu/AI_Generated/punjabi_lassi.webp",
+        "mango shake": "images/menu/Full Menu/AI_Generated/fruit_shakes.webp",
+        "chocolate shake": "images/menu/Full Menu/AI_Generated/fruit_shakes.webp",
+        "pineapple shake": "images/menu/Full Menu/AI_Generated/fruit_shakes.webp",
+        "butterscotch shake": "images/menu/Full Menu/AI_Generated/fruit_shakes.webp",
+        "cold coffee": "images/menu/Full Menu/AI_Generated/cold_coffee.webp",
+        "buttermilk": "images/menu/Full Menu/AI_Generated/punjabi_lassi.webp",
+        "banana shake": "images/menu/Full Menu/AI_Generated/fruit_shakes.webp",
+        "oreo shake": "images/menu/Full Menu/AI_Generated/fruit_shakes.webp",
+        "oreo banana shake": "images/menu/Full Menu/AI_Generated/fruit_shakes.webp",
+        "dahi": "images/menu/Full Menu/AI_Generated/punjabi_lassi.webp",
+        "rice": "images/menu/Full Menu/AI_Generated/plain_rice.webp"
+    };
+    menuImageMap = Object.assign({}, DEFAULT_IMAGE_MAP);
     
     const ADMIN_API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
         ? 'http://localhost:5001/api' 
         : 'https://littiwale-admin.vercel.app/api';
 
-    async function fetchWithTimeout(url, timeoutMs = 12000) {
+    async function fetchWithTimeout(url, timeoutMs = 8000) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
         try {
@@ -202,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function initMenu() {
-        // Fast Cache-First Load for Instant UI Display (0ms delay)
+        // 1. Fast Cache-First Load for Instant UI Display (0ms delay on all devices)
         try {
             const cachedAnnouncementsRaw = localStorage.getItem('lw_cached_announcements');
             if (cachedAnnouncementsRaw) {
@@ -227,18 +353,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const cachedMenuRaw = localStorage.getItem('lw_cached_menu') || sessionStorage.getItem('littiWaleCachedMenu');
             if (cachedMenuRaw) {
-                menuData = JSON.parse(cachedMenuRaw);
-                isMenuDataLoaded = true;
-                initMenuDisplay();
+                const parsedCachedMenu = JSON.parse(cachedMenuRaw);
+                if (Array.isArray(parsedCachedMenu) && parsedCachedMenu.length > 0) {
+                    menuData = parsedCachedMenu;
+                    // Restore menuImageMap from cached items and default map
+                    menuData.forEach(item => {
+                        if (item.name) {
+                            const norm = getNormalizedName(item.name);
+                            if (item.image && item.image !== 'images/logo.png') {
+                                menuImageMap[norm] = item.image;
+                            } else if (DEFAULT_IMAGE_MAP[norm]) {
+                                menuImageMap[norm] = DEFAULT_IMAGE_MAP[norm];
+                            }
+                        }
+                    });
+                    isMenuDataLoaded = true;
+                    initMenuDisplay();
+                }
             }
         } catch (e) {
             console.warn('Cache load notice:', e);
         }
 
-        // Parallel Independent Async Network Fetching (Never blocks each other)
+        // Parallel Independent Async Network Fetching (Never blocks UI)
         
         // 1. Announcements fetch (Instant background update)
-        fetchWithTimeout(`${ADMIN_API_BASE_URL}/announcements`, 6000).then(apiAnnouncements => {
+        fetchWithTimeout(`${ADMIN_API_BASE_URL}/announcements`, 5000).then(apiAnnouncements => {
             if (apiAnnouncements && Array.isArray(apiAnnouncements) && apiAnnouncements.length > 0) {
                 window.liveAnnouncements = apiAnnouncements;
                 localStorage.setItem('lw_cached_announcements', JSON.stringify(apiAnnouncements));
@@ -279,17 +419,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }).catch(() => {});
 
-        // 5. Menu fetch
+        // 5. Menu fetch from MongoDB Admin API
         try {
-            const apiMenu = await fetchWithTimeout(`${ADMIN_API_BASE_URL}/menu`, 10000);
+            const apiMenu = await fetchWithTimeout(`${ADMIN_API_BASE_URL}/menu`, 9000);
 
             let finalMenu = [];
             let finalMap = {};
             
             if (apiMenu && Array.isArray(apiMenu) && apiMenu.length > 0) {
                 apiMenu.forEach(item => {
-                    const id = item._id;
-                    let avail = item.locationAvailability || 'both';
+                    const id = item._id || item.id;
+                    const norm = getNormalizedName(item.name);
+                    let avail = item.locationAvailability || item.availability || 'both';
 
                     // Category Mappings:
                     if (item.category === 'Tiffin Specials' || item.category === 'Daily Meal Specials' || (item.name && /upma|dhokla|idli|puri sabzi|chakuli/i.test(item.name))) {
@@ -299,32 +440,62 @@ document.addEventListener('DOMContentLoaded', () => {
                         avail = 'both';
                     }
 
+                    // Preserve and prioritize item image from MongoDB, fallback to DEFAULT_IMAGE_MAP
+                    const resolvedImage = (item.image && item.image !== 'images/logo.png' && item.image.trim() !== '') 
+                        ? item.image 
+                        : (DEFAULT_IMAGE_MAP[norm] || 'images/logo.png');
+
+                    if (resolvedImage) {
+                        finalMap[norm] = resolvedImage;
+                    }
+
                     finalMenu.push({
                         id: id,
+                        _id: id,
                         name: item.name,
                         category: item.category,
-                        price: item.price,
-                        description: item.description || 'nan',
-                        veg: item.dietaryPreference === 'non-veg' ? 'nonveg' : 'veg',
-                        inStock: item.isAvailable !== false,
+                        price: Number(item.price) || 0,
+                        originalPrice: item.originalPrice ? Number(item.originalPrice) : undefined,
+                        description: (item.description && item.description !== 'nan' && item.description !== 'undefined') ? item.description : '',
+                        note: item.note || item.description || '',
+                        veg: (item.dietaryPreference === 'non-veg' || item.veg === 'nonveg') ? 'nonveg' : 'veg',
+                        dietaryPreference: item.dietaryPreference || ((item.veg === 'nonveg') ? 'non-veg' : 'veg'),
+                        inStock: item.isAvailable !== false && item.inStock !== false,
+                        isAvailable: item.isAvailable !== false && item.inStock !== false,
                         availability: avail,
+                        locationAvailability: avail,
                         isSpicy: item.isSpicy || false,
-                        spicyLevel: item.spicyLevel || ((item.name && /thecha/i.test(item.name)) ? 3 : (item.isSpicy ? 1 : 0))
+                        spicyLevel: item.spicyLevel || ((item.name && /thecha/i.test(item.name)) ? 3 : (item.isSpicy ? 1 : 0)),
+                        image: resolvedImage,
+                        isCraziestDeal: item.isCraziestDeal === true || item.category === 'Craziest Deals of the Hour' || (item.category && item.category.toLowerCase().includes('craziest deal')),
+                        isCombo: item.isCombo || false
                     });
-                    if (item.image) {
-                        finalMap[getNormalizedName(item.name)] = item.image;
-                    }
                 });
+
                 menuData = finalMenu;
+                menuImageMap = Object.assign({}, DEFAULT_IMAGE_MAP, finalMap);
                 localStorage.setItem('lw_cached_menu', JSON.stringify(finalMenu));
                 sessionStorage.setItem('littiWaleCachedMenu', JSON.stringify(finalMenu));
+                isMenuDataLoaded = true;
+                initMenuDisplay();
             } else if (!menuData || menuData.length === 0) {
-                console.warn("⚠️ Live Admin Panel API menu empty or unreachable.");
+                // If API is empty/unreachable and no cache, try loading local data/menu.json
+                console.warn("Live Admin Panel API menu empty or unreachable, trying local fallback.");
+                try {
+                    const localMenu = await fetchWithTimeout('data/menu.json', 3000);
+                    if (localMenu && Array.isArray(localMenu)) {
+                        menuData = localMenu.map(it => {
+                            const norm = getNormalizedName(it.name);
+                            const img = it.image || DEFAULT_IMAGE_MAP[norm] || 'images/logo.png';
+                            finalMap[norm] = img;
+                            return Object.assign({}, it, { image: img });
+                        });
+                        menuImageMap = Object.assign({}, DEFAULT_IMAGE_MAP, finalMap);
+                        isMenuDataLoaded = true;
+                        initMenuDisplay();
+                    }
+                } catch(errLocal) {}
             }
-            
-            menuImageMap = finalMap;
-            isMenuDataLoaded = true;
-            initMenuDisplay();
         } catch (error) {
             console.error('Error loading menu from Admin API:', error);
             if (menuGrid && (!menuData || menuData.length === 0)) {
@@ -580,13 +751,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Helper: Get item image with fallback
     function getItemImage(name) {
+        if (!name) return 'images/logo.png';
         const normalized = getNormalizedName(name);
-        return menuImageMap[normalized] || 'images/logo.png';
+        if (menuImageMap && menuImageMap[normalized] && menuImageMap[normalized] !== 'images/logo.png') {
+            return menuImageMap[normalized];
+        }
+        if (typeof DEFAULT_IMAGE_MAP !== 'undefined' && DEFAULT_IMAGE_MAP[normalized]) {
+            return DEFAULT_IMAGE_MAP[normalized];
+        }
+        return 'images/logo.png';
     }
 
     // Helper: Get Craziest Deal image (Folder based)
     function getDealImage(title) {
         if (!title) return 'images/logo.png';
+        const normalized = getNormalizedName(title);
+        if (menuImageMap && menuImageMap[normalized] && menuImageMap[normalized] !== 'images/logo.png') {
+            return menuImageMap[normalized];
+        }
+        if (typeof DEFAULT_IMAGE_MAP !== 'undefined' && DEFAULT_IMAGE_MAP[normalized]) {
+            return DEFAULT_IMAGE_MAP[normalized];
+        }
         const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         return `images/menu/Craziest Deal Menu/${slug}.png`;
     }
@@ -4666,7 +4851,7 @@ document.addEventListener('DOMContentLoaded', () => {
             var frag = document.createDocumentFragment();
             unique.slice(0, 10).forEach(function(item, idx) {
                 var displayName = lwStripVariant(item.name);
-                var imgSrc = (menuImageMap && menuImageMap[getNormalizedName(item.name)]) ? menuImageMap[getNormalizedName(item.name)] : 'images/logo.png';
+                var imgSrc = getItemImage(item.name);
 
                 var el = document.createElement('div');
                 el.className = 'lw-suggestion-item';
