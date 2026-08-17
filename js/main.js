@@ -382,16 +382,21 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchWithTimeout(`${ADMIN_API_BASE_URL}/announcements`, 5000).then(apiAnnouncements => {
             if (apiAnnouncements && Array.isArray(apiAnnouncements) && apiAnnouncements.length > 0) {
                 window.liveAnnouncements = apiAnnouncements;
-                localStorage.setItem('lw_cached_announcements', JSON.stringify(apiAnnouncements));
                 initAnnouncements(apiAnnouncements);
+                try {
+                    const lightAnn = apiAnnouncements.map(a => (a.image && a.image.startsWith('data:')) ? Object.assign({}, a, { image: '' }) : a);
+                    localStorage.setItem('lw_cached_announcements', JSON.stringify(lightAnn));
+                } catch(e) {}
             }
         }).catch(() => {});
 
         // 2. Settings & Store Status fetch
         fetchWithTimeout(`${ADMIN_API_BASE_URL}/settings`, 5000).then(apiSettings => {
             if (apiSettings && Array.isArray(apiSettings)) {
-                localStorage.setItem('lw_cached_settings', JSON.stringify(apiSettings));
                 processSettings(apiSettings);
+                try {
+                    localStorage.setItem('lw_cached_settings', JSON.stringify(apiSettings));
+                } catch(e) {}
             }
         }).catch(() => {});
 
@@ -408,15 +413,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     active: c.isActive !== false
                 }));
                 window.liveCoupons = availableCoupons;
-                localStorage.setItem('lw_cached_coupons', JSON.stringify(availableCoupons));
+                try {
+                    localStorage.setItem('lw_cached_coupons', JSON.stringify(availableCoupons));
+                } catch(e) {}
             }
         }).catch(() => {});
 
         // 4. Categories fetch
         fetchWithTimeout(`${ADMIN_API_BASE_URL}/categories`, 5000).then(apiCategories => {
             if (apiCategories && Array.isArray(apiCategories)) {
-                localStorage.setItem('lw_cached_categories', JSON.stringify(apiCategories));
                 applyLiveCategories(apiCategories);
+                try {
+                    localStorage.setItem('lw_cached_categories', JSON.stringify(apiCategories));
+                } catch(e) {}
             }
         }).catch(() => {});
 
@@ -475,12 +484,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 });
 
+                // Set live data and render UI IMMEDIATELY
                 menuData = finalMenu;
                 menuImageMap = Object.assign({}, DEFAULT_IMAGE_MAP, finalMap);
-                localStorage.setItem('lw_cached_menu', JSON.stringify(finalMenu));
-                sessionStorage.setItem('littiWaleCachedMenu', JSON.stringify(finalMenu));
                 isMenuDataLoaded = true;
                 initMenuDisplay();
+
+                // Safely cache without crashing on QuotaExceededError
+                try {
+                    const lightMenu = finalMenu.map(it => (it.image && it.image.startsWith('data:')) ? Object.assign({}, it, { image: '' }) : it);
+                    localStorage.setItem('lw_cached_menu', JSON.stringify(lightMenu));
+                    sessionStorage.setItem('littiWaleCachedMenu', JSON.stringify(lightMenu));
+                } catch (e) {
+                    console.warn('Storage quota notice, skipped local storage cache:', e);
+                }
             } else if (!menuData || menuData.length === 0) {
                 // If API is empty/unreachable and no cache, try loading local data/menu.json
                 console.warn("%c⚠️ [LITTIWALE] Admin API unreachable or empty, loading local menu.json fallback", 'color:#eab308; font-weight:bold;');
@@ -501,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch(errLocal) {}
             }
         } catch (error) {
-            console.error('Error loading menu from Admin API:', error);
+            console.error('Error processing menu from Admin API:', error);
             if (menuGrid && (!menuData || menuData.length === 0)) {
                 menuGrid.innerHTML = '<div class="error" style="grid-column: 1/-1; text-align: center; color: red; padding: 20px;">Failed to load menu items from Admin API. Please refresh or check connection.</div>';
             }
