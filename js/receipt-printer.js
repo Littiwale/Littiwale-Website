@@ -229,13 +229,14 @@
     // Reset animations
     paper.className = 'receipt-paper-box retracted';
     if (tearBtn) tearBtn.style.display = 'inline-flex';
-
+    
     // Format Data
     const shortId = orderData._id ? String(orderData._id).slice(-6).toUpperCase() : (orderData.shortId || 'LW');
+    const isTakeaway = (orderData.orderType === 'takeaway');
     const dateStr = orderData.createdAt ? new Date(orderData.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     const custName = orderData.customerName || 'Valued Customer';
     const custPhone = orderData.customerPhone || orderData.whatsappPhone || 'N/A';
-    const custAddress = orderData.deliveryAddress || orderData.address || 'Takeaway / Dine-in';
+    const custAddress = isTakeaway ? '🛍️ Pickup Location: Littiwale Cloud Kitchen, Ward No. 7, Punjabi Para, Barbil' : (orderData.deliveryAddress || orderData.address || 'Barbil');
     const landmark = orderData.landmark ? `<div style="font-size:10px; color:#6b7280;">Landmark: ${orderData.landmark}</div>` : '';
     const paymentMode = orderData.paymentMethod ? String(orderData.paymentMethod).toUpperCase() : (orderData.isCOD ? 'CASH ON DELIVERY (COD)' : 'PAID ONLINE (UPI)');
 
@@ -253,7 +254,7 @@
     `;
 
     const subtotal = orderData.subtotal || orderData.finalTotal || 0;
-    const delivery = Number(orderData.deliveryCharge || orderData.deliveryFee || 0);
+    const delivery = isTakeaway ? 0 : Number(orderData.deliveryCharge || orderData.deliveryFee || 0);
     const discount = Number(orderData.discount || orderData.couponDiscount || 0);
     const grandTotal = orderData.finalTotal || (subtotal + delivery - discount);
 
@@ -282,7 +283,7 @@
         <div class="receipt-meta-val">${paymentMode}</div>
 
         <div class="receipt-meta-label">ORDER TYPE:</div>
-        <div class="receipt-meta-val">DELIVERY</div>
+        <div class="receipt-meta-val">${isTakeaway ? 'TAKEAWAY (SELF PICKUP)' : 'HOME DELIVERY'}</div>
       </div>
 
       <!-- Customer Details Box -->
@@ -313,7 +314,7 @@
         </div>
         <div class="receipt-total-row">
           <span>Delivery Charges</span>
-          <span>${delivery > 0 ? `₹${delivery}` : '<strong style="color:#16a34a;">FREE</strong>'}</span>
+          <span>${isTakeaway ? '<strong style="color:#16a34a;">₹0 (Self Pickup)</strong>' : (delivery > 0 ? `₹${delivery}` : '<strong style="color:#16a34a;">FREE</strong>')}</span>
         </div>
         ${discount > 0 ? `
           <div class="receipt-total-row" style="color:#16a34a;">
@@ -327,43 +328,53 @@
         </div>
       </div>
 
-      <!-- Footer Greeting & Barcode -->
-      <div class="receipt-bottom-footer">
-        <div class="receipt-footer-thanks">Swag se banaya, pyaar se khilaya!</div>
-        <div style="font-size:10px; color:#6b7280; margin-bottom:8px;">Thank you for ordering with Littiwale Barbil</div>
+      <!-- Footer / Barcode -->
+      <div class="receipt-footer-box">
         <div class="receipt-barcode-wrap">
           <div class="receipt-barcode-bars"></div>
-          <div class="receipt-barcode-code">LW-ORD-${shortId}</div>
+          <div class="receipt-barcode-num">LW-${shortId}-${Date.now().toString().slice(-4)}</div>
         </div>
+        <div class="receipt-thankyou">Thank You for Ordering! ❤️</div>
+        <div class="receipt-powered">Official Receipt • Littiwale Barbil</div>
       </div>
     `;
 
-    // Open Modal
-    modal.classList.add('open');
-    document.body.style.overflow = 'hidden';
-
-    // Play Sound & Rollout Animation
-    playThermalPrinterSound(2400);
-    paper.classList.remove('retracted');
-    paper.classList.add('printing-anim');
-
+    // Trigger Print Animation Sequence
+    modal.classList.add('active');
     setTimeout(() => {
-      paper.classList.remove('printing-anim');
-      paper.classList.add('printed');
-    }, 2400);
+      playThermalPrinterSound(2400);
+      paper.className = 'receipt-paper-box printing';
+      setTimeout(() => {
+        paper.className = 'receipt-paper-box printed';
+      }, 1200);
+    }, 150);
   };
 
-  // Close Modal
+  /**
+   * Tear off and Save / Print Thermal Slip
+   */
+  window.tearOffReceipt = function() {
+    const paper = document.getElementById('receipt-paper-box');
+    const tearBtn = document.getElementById('receipt-tear-btn');
+    if (!paper) return;
+
+    playCutterSound();
+    paper.classList.add('torn');
+    if (tearBtn) tearBtn.style.display = 'none';
+
+    setTimeout(() => {
+      window.print();
+    }, 300);
+  };
+
+  /**
+   * Close Thermal Printer Modal
+   */
   window.closeReceiptPrinterModal = function() {
     const modal = document.getElementById('receipt-printer-modal');
     const paper = document.getElementById('receipt-paper-box');
-    if (modal) {
-      modal.classList.remove('open');
-      document.body.style.overflow = '';
-    }
-    if (paper) {
-      paper.className = 'receipt-paper-box retracted';
-    }
+    if (modal) modal.classList.remove('active');
+    if (paper) paper.className = 'receipt-paper-box retracted';
   };
 
   // 1-Click Print Thermal Receipt
@@ -371,205 +382,108 @@
     window.print();
   };
 
-  // Dedicated Professional A4 Tax Invoice / PDF Bill Generator
+  /**
+   * Full Page High-Res A4 Printable Invoice Modal
+   */
   window.openA4InvoiceModal = function(orderData) {
-    if (typeof orderData === 'string') {
-      const found = (window.cachedCustomerOrders || []).find(o => o._id === orderData);
-      if (found) orderData = found;
-      else if (window.currentTrackedOrder && window.currentTrackedOrder._id === orderData) orderData = window.currentTrackedOrder;
-    }
     if (!orderData) {
       if (typeof window.showAlert === 'function') {
-        window.showAlert('Order details not found.', { type: 'error', title: 'Invoice Error' });
-      } else {
-        alert('Order details not found.');
-      }
-      return;
-    }
-
-    if (orderData.status === 'pending') {
-      if (typeof window.showAlert === 'function') {
-        window.showAlert('Official Tax Invoice will be generated once the restaurant accepts and confirms your order.', { type: 'info', title: 'Invoice Pending' });
-      } else {
-        alert('Official Tax Invoice will be generated once the restaurant confirms your order.');
+        window.showAlert('Order details not found to generate invoice.', { type: 'warning' });
       }
       return;
     }
 
     const shortId = orderData._id ? String(orderData._id).slice(-6).toUpperCase() : (orderData.shortId || 'LW');
+    const isTakeaway = (orderData.orderType === 'takeaway');
     const dateStr = orderData.createdAt ? new Date(orderData.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     const custName = orderData.customerName || 'Valued Customer';
     const custPhone = orderData.customerPhone || orderData.whatsappPhone || 'N/A';
-    const custAddress = orderData.deliveryAddress || orderData.address || 'Barbil, Odisha';
-    const landmark = orderData.landmark ? `<br><span style="font-size:12px; color:#6b7280;">Landmark: ${orderData.landmark}</span>` : '';
-    const paymentMode = orderData.paymentMethod ? String(orderData.paymentMethod).toUpperCase() : (orderData.isCOD ? 'CASH ON DELIVERY (COD)' : 'PAID ONLINE (UPI / NETBANKING)');
+    const custAddress = isTakeaway ? '🛍️ Pickup Location: Littiwale Cloud Kitchen, Ward No. 7, Punjabi Para, Barbil' : (orderData.deliveryAddress || orderData.address || 'Barbil');
+    const landmark = orderData.landmark ? ` (Landmark: ${orderData.landmark})` : '';
+    const paymentMode = orderData.paymentMethod ? String(orderData.paymentMethod).toUpperCase() : (orderData.isCOD ? 'CASH ON DELIVERY (COD)' : 'PAID ONLINE (UPI)');
 
     const items = orderData.items || [];
     const subtotal = Number(orderData.subtotal || orderData.finalTotal || 0);
-    const delivery = Number(orderData.deliveryCharge || orderData.deliveryFee || 0);
+    const delivery = isTakeaway ? 0 : Number(orderData.deliveryCharge || orderData.deliveryFee || 0);
     const discount = Number(orderData.discount || orderData.couponDiscount || 0);
     const grandTotal = Number(orderData.finalTotal || (subtotal + delivery - discount));
 
     const rowsHtml = items.length > 0 ? items.map((it, idx) => `
-      <tr style="border-bottom: 1px solid #e5e7eb;">
-        <td style="padding: 10px 12px; text-align: center; color: #4b5563; font-size: 13px;">${idx + 1}</td>
-        <td style="padding: 10px 12px; font-size: 13.5px; font-weight: 600; color: #111827;">
-          ${it.name || 'Dish Item'}
-          ${it.note ? `<div style="font-size: 11.5px; color: #d97706; font-weight: 500;">${it.note}</div>` : ''}
-        </td>
-        <td style="padding: 10px 12px; text-align: center; color: #374151; font-size: 13.5px;">${it.quantity || 1}</td>
-        <td style="padding: 10px 12px; text-align: right; color: #374151; font-size: 13.5px;">₹${Number(it.price || 0)}</td>
-        <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #111827; font-size: 13.5px;">₹${Number(it.price || 0) * (it.quantity || 1)}</td>
+      <tr style="border-bottom: 1px solid #f1f5f9;">
+        <td style="padding:12px; text-align:center; color:#64748b; font-size:12px;">${idx + 1}</td>
+        <td style="padding:12px; font-weight:700; color:#0f172a;">${it.name || 'Dish Item'}</td>
+        <td style="padding:12px; text-align:center; font-weight:600;">${it.quantity || 1}</td>
+        <td style="padding:12px; text-align:right; color:#475569;">₹${it.price || 0}</td>
+        <td style="padding:12px; text-align:right; font-weight:800; color:#0f172a;">₹${(Number(it.price || 0) * (it.quantity || 1))}</td>
       </tr>
     `).join('') : `
-      <tr style="border-bottom: 1px solid #e5e7eb;">
-        <td style="padding: 10px 12px; text-align: center;">1</td>
-        <td style="padding: 10px 12px;">Authentic Bihari Meal Package</td>
-        <td style="padding: 10px 12px; text-align: center;">1</td>
-        <td style="padding: 10px 12px; text-align: right;">₹${subtotal}</td>
-        <td style="padding: 10px 12px; text-align: right; font-weight: 700;">₹${subtotal}</td>
+      <tr style="border-bottom: 1px solid #f1f5f9;">
+        <td style="padding:12px; text-align:center; color:#64748b;">1</td>
+        <td style="padding:12px; font-weight:700; color:#0f172a;">Authentic Bihari Meal Package</td>
+        <td style="padding:12px; text-align:center;">1</td>
+        <td style="padding:12px; text-align:right;">₹${subtotal}</td>
+        <td style="padding:12px; text-align:right; font-weight:800;">₹${subtotal}</td>
       </tr>
     `;
 
-    // Open clean printable A4 Tax Invoice in pop-up window or modal
-    const printWindow = window.open('', '_blank', 'width=900,height=1000');
-    if (!printWindow) {
-      alert('Popup blocker prevented invoice from opening. Please allow popups.');
+    const printWin = window.open('', '_blank', 'width=850,height=900');
+    if (!printWin) {
+      alert('Please allow popups to view & print invoice.');
       return;
     }
 
-    printWindow.document.write(`
+    printWin.document.write(`
       <!DOCTYPE html>
-      <html lang="en">
+      <html>
       <head>
-        <meta charset="UTF-8">
-        <title>Official Bill - #${shortId} - Littiwale</title>
+        <title>Invoice #${shortId} | Littiwale Barbil</title>
+        <meta charset="utf-8">
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
         <style>
-          @page { size: A4 portrait; margin: 15mm; }
           * { box-sizing: border-box; margin: 0; padding: 0; }
           body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: #f8fafc;
             color: #1e293b;
-            padding: 24px;
-            font-size: 13.5px;
-            line-height: 1.5;
-          }
-          .invoice-card {
-            max-width: 800px;
-            margin: 0 auto;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-            border: 1px solid #e2e8f0;
             padding: 40px;
           }
-          .btn-bar {
-            max-width: 800px;
-            margin: 0 auto 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-          }
-          .btn-print {
-            background: #f59e0b;
-            color: #000;
-            font-weight: 800;
-            padding: 10px 24px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-          }
-          .btn-close {
-            background: #e2e8f0;
-            color: #334155;
-            font-weight: 700;
-            padding: 10px 18px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-          }
-          @media print {
-            body { background: #fff; padding: 0; }
-            .btn-bar { display: none !important; }
-            .invoice-card { border: none !important; box-shadow: none !important; padding: 0 !important; }
-          }
+          .invoice-card { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         </style>
       </head>
       <body>
-        <div class="btn-bar">
-          <button class="btn-print" onclick="window.print()">🖨️ Print / Save as PDF</button>
-          <button class="btn-close" onclick="window.close()">Close ✕</button>
-        </div>
-
         <div class="invoice-card">
-          <!-- Header -->
           <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #f1f5f9; padding-bottom:24px; margin-bottom:24px;">
-            <div style="display:flex; align-items:center; gap:16px;">
-              <img src="/images/logo.png" onerror="this.src='images/logo.png'" alt="Littiwale" style="width:72px; height:72px; object-fit:contain; border-radius:12px; background:#fff; border:1px solid #fed7aa; padding:4px;">
-              <div>
-                <h1 style="font-size:24px; font-weight:800; color:#0f172a; letter-spacing:-0.5px; margin-bottom:2px;">LITTIWALE</h1>
-                <div style="font-size:12.5px; font-weight:700; color:#d97706; text-transform:uppercase; letter-spacing:1px;">Taste of Desi Swag</div>
-                <div style="font-size:12px; color:#64748b; margin-top:3px;">Ward No. 7, Punjabi Para, Barbil, Odisha 758035<br>Phone: +91 63706 80744</div>
-              </div>
+            <div>
+              <h1 style="font-size:24px; font-weight:800;">LITTIWALE</h1>
+              <div style="font-size:12px; color:#64748b;">Ward No. 7, Punjabi Para, Barbil</div>
             </div>
             <div style="text-align:right;">
-              <div style="display:inline-block; background:#fef3c7; color:#92400e; font-weight:800; font-size:12px; padding:4px 12px; border-radius:6px; letter-spacing:1px; margin-bottom:8px;">OFFICIAL BILL / RECEIPT</div>
-              <div style="font-size:18px; font-weight:800; color:#0f172a; font-family:monospace;">#${shortId}</div>
-              <div style="font-size:12px; color:#64748b; margin-top:2px;">Date: ${dateStr}</div>
+              <div style="font-size:18px; font-weight:800;">#${shortId}</div>
+              <div style="font-size:12px;">${dateStr}</div>
             </div>
           </div>
 
-          <!-- Billed To & Order Details -->
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; background:#f8fafc; border-radius:10px; padding:18px 20px; margin-bottom:24px; border:1px solid #edf2f7;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; background:#f8fafc; padding:20px; border-radius:12px; margin-bottom:24px;">
             <div>
-              <div style="font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px;">BILLED TO (CUSTOMER)</div>
-              <div style="font-size:14px; font-weight:800; color:#0f172a;">${custName}</div>
-              <div style="font-size:12.5px; color:#475569; margin-top:2px;">Mobile: <strong>+91 ${custPhone}</strong></div>
+              <div style="font-size:11px; color:#94a3b8; font-weight:800;">BILLED TO</div>
+              <div style="font-weight:700;">${custName}</div>
               <div style="font-size:12.5px; color:#475569; margin-top:2px;">${custAddress}${landmark}</div>
             </div>
             <div style="text-align:right;">
-              <div style="font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px;">PAYMENT & ORDER STATUS</div>
-              <div style="font-size:13px; font-weight:700; color:#0f172a;">Mode: <span style="color:#059669;">${paymentMode}</span></div>
-              <div style="font-size:12.5px; color:#475569; margin-top:2px;">Type: <strong>Delivery</strong></div>
+              <div style="font-size:11px; color:#94a3b8; font-weight:800;">PAYMENT & ORDER STATUS</div>
+              <div style="font-size:13px; font-weight:700;">Mode: <span style="color:#059669;">${paymentMode}</span></div>
+              <div style="font-size:12.5px; color:#475569; margin-top:2px;">Type: <strong>${isTakeaway ? 'Takeaway (Self Pickup)' : 'Home Delivery'}</strong></div>
               <div style="font-size:12.5px; color:#059669; font-weight:700; margin-top:4px;">● Order Confirmed by Kitchen</div>
             </div>
           </div>
 
-          <!-- Items Table -->
           <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
-            <thead>
-              <tr style="background:#0f172a; color:#fff;">
-                <th style="padding:12px; text-align:center; font-size:12px; width:40px; border-radius:6px 0 0 6px;">#</th>
-                <th style="padding:12px; text-align:left; font-size:12px;">ITEM DESCRIPTION</th>
-                <th style="padding:12px; text-align:center; font-size:12px; width:70px;">QTY</th>
-                <th style="padding:12px; text-align:right; font-size:12px; width:100px;">RATE</th>
-                <th style="padding:12px; text-align:right; font-size:12px; width:110px; border-radius:0 6px 6px 0;">AMOUNT</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
+            <tr style="background:#0f172a; color:#fff; font-size:11px;">
+              <th style="padding:12px;">#</th><th style="padding:12px; text-align:left;">ITEM</th><th style="padding:12px;">QTY</th><th style="padding:12px;">RATE</th><th style="padding:12px;">TOTAL</th>
+            </tr>
+            ${rowsHtml}
           </table>
 
-          <!-- Financial Breakdown -->
-          <div style="display:flex; justify-content:flex-end; margin-bottom:30px;">
-            <div style="width:300px;">
-              <div style="display:flex; justify-content:space-between; padding:6px 0; color:#475569; font-size:13px;">
-                <span>Food Subtotal:</span>
-                <span style="font-weight:600; color:#0f172a;">₹${subtotal}</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; padding:6px 0; color:#475569; font-size:13px;">
-                <span>Delivery & Handling:</span>
-                <span style="font-weight:600; color:#0f172a;">${delivery > 0 ? `₹${delivery}` : 'FREE (₹0)'}</span>
-              </div>
-              ${discount > 0 ? `
-              <div style="display:flex; justify-content:space-between; padding:6px 0; color:#059669; font-size:13px;">
-                <span>Promo Discount:</span>
-                <span style="font-weight:700;">-₹${discount}</span>
-              </div>` : ''}
               <div style="display:flex; justify-content:space-between; padding:12px 0 8px; border-top:2px solid #0f172a; margin-top:8px; font-size:16px; font-weight:800; color:#0f172a;">
                 <span>GRAND TOTAL:</span>
                 <span style="color:#d97706;">₹${grandTotal}</span>

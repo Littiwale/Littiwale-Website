@@ -1269,8 +1269,9 @@
             const container = document.getElementById('tracking-main-container');
             const shortId = order._id ? String(order._id).slice(-6).toUpperCase() : 'LW-ORD';
             const status = (order.status || 'pending').toLowerCase();
+            const isTakeaway = (order.orderType === 'takeaway');
             const finalTotal = order.finalTotal || order.subtotal || 0;
-            const delFee = Number(order.deliveryCharge || 0);
+            const delFee = isTakeaway ? 0 : Number(order.deliveryCharge || 0);
             const subtotal = Number(order.subtotal || (finalTotal - delFee));
             const discount = Number(order.discount || 0);
 
@@ -1288,21 +1289,25 @@
             if (status === 'accepted' || status === 'confirmed') {
                 statusBadgeClass = 'confirmed';
                 dotClass = 'green';
-                statusBadgeText = 'Kitchen Preparing';
-                statusTitle = 'Preparing in Kitchen';
+                statusBadgeText = isTakeaway ? 'Preparing for Pickup' : 'Kitchen Preparing';
+                statusTitle = isTakeaway ? 'Preparing Your Takeaway' : 'Preparing in Kitchen';
                 statusDesc = 'Our chefs are freshly preparing your authentic meal with authentic spices and ghee.';
             } else if (status === 'dispatched') {
                 statusBadgeClass = 'dispatched';
-                dotClass = 'blue';
-                statusBadgeText = 'Out for Delivery';
-                statusTitle = 'Out for Delivery';
-                statusDesc = 'Your hot food has left the kitchen and is on the way to your delivery address.';
+                dotClass = isTakeaway ? 'green' : 'blue';
+                statusBadgeText = isTakeaway ? 'Ready for Pickup' : 'Out for Delivery';
+                statusTitle = isTakeaway ? 'Ready at Counter' : 'Out for Delivery';
+                statusDesc = isTakeaway 
+                    ? 'Your meal is freshly packed and ready for collection at our counter!'
+                    : 'Your hot food has left the kitchen and is on the way to your delivery address.';
             } else if (status === 'delivered') {
                 statusBadgeClass = 'delivered';
                 dotClass = 'green';
-                statusBadgeText = 'Order Delivered';
-                statusTitle = 'Order Delivered';
-                statusDesc = 'Your meal was successfully delivered. Enjoy your delicious hot food!';
+                statusBadgeText = isTakeaway ? 'Order Picked Up' : 'Order Delivered';
+                statusTitle = isTakeaway ? 'Order Completed' : 'Order Delivered';
+                statusDesc = isTakeaway 
+                    ? 'Your meal was handed over successfully. Enjoy your delicious food!'
+                    : 'Your meal was successfully delivered. Enjoy your delicious hot food!';
             } else if (status === 'cancelled') {
                 statusBadgeClass = 'cancelled';
                 dotClass = 'red';
@@ -1334,6 +1339,27 @@
                         <div class="step-item active">
                             <div class="step-circle" style="background:#ef4444; border-color:#ef4444; color:#fff; font-weight:900;">✕</div>
                             <span class="step-label" style="color:#ef4444; font-weight:700;">Cancelled</span>
+                        </div>
+                    </div>
+                `;
+            } else if (isTakeaway) {
+                stepperHtml = `
+                    <div class="stepper-wrap">
+                        <div class="step-item ${isStep1 ? (isStep2 ? 'completed' : 'active') : ''}">
+                            <div class="step-circle">${isStep2 ? '✓' : '1'}</div>
+                            <span class="step-label">Placed</span>
+                        </div>
+                        <div class="step-item ${isStep2 ? (isStep3 ? 'completed' : 'active') : ''}">
+                            <div class="step-circle">${isStep3 ? '✓' : '2'}</div>
+                            <span class="step-label">Kitchen</span>
+                        </div>
+                        <div class="step-item ${isStep3 ? (isStep4 ? 'completed' : 'active') : ''}">
+                            <div class="step-circle">${isStep4 ? '✓' : '3'}</div>
+                            <span class="step-label">Ready</span>
+                        </div>
+                        <div class="step-item ${isStep4 ? 'completed' : ''}">
+                            <div class="step-circle">${isStep4 ? '✓' : '4'}</div>
+                            <span class="step-label">Picked Up</span>
                         </div>
                     </div>
                 `;
@@ -1396,20 +1422,52 @@
                             <!-- Visual Progress Bar -->
                             ${stepperHtml}
 
-                            <!-- Google Review Card (Active when Order Delivered) -->
+                            <!-- Google Review Card (Active when Order Delivered / Completed) -->
                             ${status === 'delivered' ? `
                             <div class="google-review-card" style="margin-top:22px; padding:18px 20px; background:linear-gradient(135deg, rgba(245,158,11,0.14), rgba(217,119,6,0.08)); border:1.5px solid rgba(245,158,11,0.4); border-radius:18px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.55);">
                                 <div style="font-size:26px; margin-bottom:6px; letter-spacing:2px;">⭐⭐⭐⭐⭐</div>
                                 <h4 style="color:#fff; font-size:1.15rem; font-weight:800; margin:0 0 6px;">How was your food experience?</h4>
                                 <p style="color:#cbd5e1; font-size:12.5px; margin:0 0 16px; line-height:1.4;">
-                                    Loved the authentic taste of your hot meal? Support Littiwale Cloud Kitchen with a quick 5-star Google review!
+                                    Loved the authentic taste of your hot meal? Support Littiwale with a quick 5-star Google review!
                                 </p>
                                 <a href="https://g.page/r/CYlrxD6jO24cEAE/review" target="_blank" style="display:inline-flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:13px 20px; background:linear-gradient(135deg, #f59e0b, #d97706); color:#000; font-weight:900; font-size:14px; text-decoration:none; border-radius:12px; box-shadow:0 6px 20px rgba(245,158,11,0.4); transition:transform 0.2s;">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                                     <span>Rate & Review Us on Google Maps</span>
                                 </a>
                             </div>
-                            ` : (status === 'dispatched' ? `
+                            ` : (status === 'dispatched' ? (isTakeaway ? `
+                            <!-- Pickup Counter Card for Takeaway Orders -->
+                            <div class="delivery-partner-card" style="margin-top:22px; padding:16px; background:linear-gradient(135deg, rgba(245,158,11,0.12), rgba(217,119,6,0.06)); border:1.5px solid rgba(245,158,11,0.35); border-radius:16px; text-align:left;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <div style="width:42px; height:42px; border-radius:50%; background:rgba(245,158,11,0.2); display:flex; align-items:center; justify-content:center; font-size:22px;">
+                                            🛍️
+                                        </div>
+                                        <div>
+                                            <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:#fbbf24;">
+                                                Takeaway Self Pickup
+                                            </div>
+                                            <div style="font-size:15px; font-weight:800; color:#fff;">
+                                                Littiwale Cloud Kitchen
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <div style="font-size:11px; color:#94a3b8;">Payment Summary</div>
+                                        <div style="font-size:13px; font-weight:800; color:${order.paymentCollectedByStore ? '#34d399' : '#fbbf24'};">
+                                            ${order.paymentCollectedByStore ? '✅ Already Paid (₹0 Due)' : `💵 ₹${finalTotal} (Pay at Counter)`}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="font-size:12.5px; color:#cbd5e1; margin-bottom:12px; line-height:1.4;">
+                                    📍 <strong>Pickup Location:</strong> Ward No. 7, Punjabi Para, Barbil, Odisha 758035
+                                </div>
+                                <a href="tel:+916370680744" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:11px; background:linear-gradient(135deg, #f59e0b, #d97706); color:#000; font-weight:800; font-size:13px; text-decoration:none; border-radius:10px; box-shadow:0 4px 14px rgba(245,158,11,0.35); transition:transform 0.2s;">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                    <span>Call Kitchen Support (+91 6370680744)</span>
+                                </a>
+                            </div>
+                            ` : `
                             <!-- Delivery Partner / Restaurant Delivery Card (Active when Order is Out for Delivery) -->
                             <div class="delivery-partner-card" style="margin-top:22px; padding:16px; background:linear-gradient(135deg, rgba(59,130,246,0.12), rgba(37,99,235,0.06)); border:1px solid rgba(59,130,246,0.3); border-radius:16px; text-align:left;">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
@@ -1438,7 +1496,7 @@
                                     <span>Call Delivery Contact (+91 ${String((order.deliveryBoy && order.deliveryBoy.phone) ? order.deliveryBoy.phone : '6370680744').replace(/\D/g,'').slice(-10)})</span>
                                 </a>
                             </div>
-                            ` : '')}
+                            `) : '')}
                         </div>
                     </div>
 

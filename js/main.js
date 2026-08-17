@@ -3610,47 +3610,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 msg += `⚠️ IMPORTANT: Please attach your payment screenshot before sending this message.\n\n`;
             }
 
-            const locLabel = window.littiWaleSelectedLocation === 'outlet'
-              ? '🏪 PHYSICAL OUTLET ORDER\n📍 Near Barbil Court, Rabisons Mall\n'
-              : '☁️ CLOUD KITCHEN ORDER\n';
+            const locLabel = isTakeaway
+              ? '🛍️ TAKEAWAY ORDER (Self Pickup)\n📍 Littiwale Cloud Kitchen, Ward No. 7, Punjabi Para, Barbil\n'
+              : '🛵 HOME DELIVERY ORDER\n';
             msg += `👋 Hello Littiwale!\n${locLabel}\n`;
             msg += `🛒 Order Details:\n`;
             msg += `${itemsList}\n\n`;
             msg += `-----------------------\n\n`;
             msg += `💰 Bill Summary:\n`;
-            msg += `Subtotal: ₹${subtotalAmount}\n`;
+            msg += `• Subtotal: ₹${subtotalAmount}\n`;
             if (appliedCoupon) {
                 if (appliedCoupon.type === 'PEPSI') {
-                    msg += `Discount: -₹${discountAmount} (Free Pepsi)\n`;
+                    msg += `• Discount: -₹${discountAmount} (Free Pepsi Offer)\n`;
                 } else {
-                    msg += `Discount: -₹${discountAmount}\n`;
+                    msg += `• Discount: -₹${discountAmount}\n`;
                 }
             }
-            msg += `Delivery: ${deliveryText}\n`;
-            msg += `Total: ₹${finalTotal}\n\n`;
+            msg += `• Delivery: ${deliveryText}\n`;
+            msg += `• Total Payable: ₹${finalTotal}\n\n`;
             msg += `-----------------------\n\n`;
-            msg += `💳 Payment:\n`;
-            msg += `Paid: ₹${paidAmount}\n`;
-            msg += `Delivery Due: ₹${deliveryDue}`;
+            msg += `💳 Payment Mode:\n`;
+            if (isCOD) {
+                msg += `• Mode: Cash on Delivery (COD)\n`;
+                msg += `• Amount to Pay: ₹${finalTotal}\n`;
+            } else {
+                msg += `• Mode: Prepaid Online (UPI)\n`;
+                msg += `• Amount Paid: ₹${paidAmount}\n`;
+                if (deliveryDue > 0) {
+                    msg += `• Delivery Due: ₹${deliveryDue} (To be paid on delivery)\n`;
+                }
+            }
 
             if (deliveryNoteStr) {
-                msg += `\n${deliveryNoteStr}\n`;
-            } else {
-                msg += `\n`;
+                msg += `${deliveryNoteStr}\n`;
             }
 
             msg += `\n-----------------------\n\n`;
             msg += `📍 Customer Details:\n`;
-            msg += `Name: ${name}\n`;
-            msg += `Phone: ${phone}\n`;
+            msg += `• Name: ${name}\n`;
+            msg += `• Phone: +91 ${phone}\n`;
             
             if (!isDelivery) {
-                msg += `Order Type: 🛍️ Takeaway\n\n`;
+                msg += `• Order Type: 🛍️ Takeaway (Self Pickup)\n`;
+                msg += `• Pickup Point: Littiwale Counter, Barbil\n\n`;
             } else {
-                msg += `Order Type: 🚚 Delivery\n`;
-                msg += `Address: ${address}\n`;
+                msg += `• Order Type: 🚚 Home Delivery\n`;
+                msg += `• Address: ${address}\n`;
                 if (window.gpsLink) {
-                    msg += `Google Maps GPS: ${window.gpsLink}\n\n`;
+                    msg += `• Google Maps GPS: ${window.gpsLink}\n\n`;
                 } else {
                     msg += `\n`;
                 }
@@ -3658,11 +3665,11 @@ document.addEventListener('DOMContentLoaded', () => {
             msg += `-----------------------`;
 
             if (!isCOD) {
-                msg += `\n\n📸 Please attach payment screenshot for confirmation.`;
+                msg += `\n\n📸 Payment screenshot attached above for instant confirmation.`;
             }
 
             if (restaurantNote) {
-                msg += `\n\n📝 Note: ${restaurantNote}`;
+                msg += `\n\n📝 Cooking Note: ${restaurantNote}`;
             }
 
             return msg;
