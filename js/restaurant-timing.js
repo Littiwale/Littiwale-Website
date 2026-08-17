@@ -340,6 +340,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ------- Core status logic -------
     function getStoreStatusInfo(loc) {
+        // TEMPORARY TESTING OVERRIDE: Allows live checkout and takeaway testing
+        const TEST_MODE_FORCE_OPEN = true;
+        if (TEST_MODE_FORCE_OPEN) {
+            return {
+                isOpen: true,
+                reason: '',
+                reopen: '',
+                isManual: false,
+                untilDate: null
+            };
+        }
+
         const istNow = getISTTime();
         const dayKey = getDayKey(istNow.getDay());
         const nowMins = istNow.getHours() * 60 + istNow.getMinutes();
