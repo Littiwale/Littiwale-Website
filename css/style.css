@@ -2795,15 +2795,13 @@ border-right: 1px solid #facc15;
 
 .cart-item-title {
     font-size: 0.95rem;
-    font-weight: 600;
+    font-weight: 700;
     color: #ffffff;
     margin-bottom: 6px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    white-space: normal !important;
+    word-break: break-word !important;
+    line-height: 1.35 !important;
+    display: block !important;
 }
 
 .cart-item-qty-pill {

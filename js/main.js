@@ -794,35 +794,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const toggleContainer = document.getElementById('menu-toggle-container');
             if (toggleContainer) toggleContainer.style.display = 'none';
         } else {
-            // Pick 6 in-stock, cloud-available items for the Best Seller section
-            const availableCloudItems = menuData.filter(item => {
-                const isInStock = item.inStock !== false && item.inStock !== 'false';
-                const avail = (item.availability || item.locationAvailability || 'both').toLowerCase();
-                const isCloudAvailable = avail === 'both' || avail.includes('cloud');
-                const catLower = (item.category || '').toLowerCase();
-                const nameLower = (item.name || '').toLowerCase();
-                const isDealOrPromo = catLower.includes('deal') || catLower.includes('craziest') || nameLower.includes('khila de') || nameLower.includes('diet bhool') || nameLower.includes('bhook lagi');
-                return isInStock && isCloudAvailable && !isDealOrPromo;
-            });
+            if (initialBestsellers && initialBestsellers.length > 0) {
+                const availableCloudItems = initialBestsellers.filter(item => {
+                    const isInStock = item.inStock !== false;
+                    const avail = (item.availability || item.locationAvailability || 'both').toLowerCase();
+                    const isCloudAvailable = avail === 'both' || avail.includes('cloud');
+                    const catLower = (item.category || '').toLowerCase();
+                    const nameLower = (item.name || '').toLowerCase();
+                    const isDealOrPromo = catLower.includes('deal') || catLower.includes('craziest') || nameLower.includes('khila de') || nameLower.includes('diet bhool') || nameLower.includes('bhook lagi');
+                    return isInStock && isCloudAvailable && !isDealOrPromo;
+                });
 
-            const shuffled = [...availableCloudItems].sort(() => 0.5 - Math.random());
-            
-            // Filter unique by base name to avoid showing Half/Full as separate items in the 6 picks
-            const uniqueBases = [];
-            const pickedItems = [];
-            for (const item of shuffled) {
-                const base = getNormalizedName(item.name);
-                if (!uniqueBases.includes(base)) {
-                    uniqueBases.push(base);
-                    pickedItems.push(item);
-                }
-                if (pickedItems.length >= 6) break;
+                // Group all available items into complete variant groups FIRST
+                const allCloudGroups = Object.values(buildMenuGrouping(availableCloudItems));
+                const shuffledGroups = [...allCloudGroups].sort(() => 0.5 - Math.random()).slice(0, 6);
+                renderBestSellers(shuffledGroups);
             }
             
-            renderBestSellers(pickedItems);
+            generateSmartDeals();
         }
-        
-        generateSmartDeals();
     }
     
     // =========================================================================
@@ -1467,16 +1457,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return baseGroups;
     }
 
-    function renderBestSellers(items) {
+    function renderBestSellers(itemsOrGroups) {
         const grid = document.getElementById('best-seller-items');
-        if (!grid) return;
+        if (!grid || !itemsOrGroups) return;
         grid.innerHTML = '';
 
-        // Process items into variant groups
-        const baseGroups = buildMenuGrouping(items);
+        // If already grouped objects
+        const groupsToRender = (Array.isArray(itemsOrGroups) && itemsOrGroups.length > 0 && itemsOrGroups[0].displayName)
+            ? itemsOrGroups
+            : Object.values(buildMenuGrouping(itemsOrGroups)).slice(0, 6);
 
-        // Render first 6 groups
-        Object.values(baseGroups).slice(0, 6).forEach(group => {
+        groupsToRender.forEach(group => {
             grid.appendChild(createMenuCard(group));
         });
 
@@ -2521,76 +2512,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function syncMenuWithCart() {
-        // --- 1. Sync Desktop Standard Items (Add/Qty controls) ---
-        const addBtns = document.querySelectorAll('[id^="menu-add-btn-"]');
-        addBtns.forEach(btn => {
-            const fullId = btn.id.replace('menu-add-btn-', '');
-            const ctrl = document.getElementById(`menu-qty-ctrl-${fullId}`);
-            const valSpan = document.getElementById(`menu-qty-val-${fullId}`);
-            const matchingItems = cart.filter(item => item.id === fullId || item.id.startsWith(fullId + '_'));
-            const totalQty = matchingItems.reduce((sum, item) => sum + item.quantity, 0);
-            
-            if (totalQty > 0) {
-                btn.style.display = 'none';
-                if (ctrl) ctrl.style.display = 'flex';
-                if (valSpan) valSpan.textContent = totalQty;
-            } else {
-                btn.style.display = 'block';
-                if (ctrl) ctrl.style.display = 'none';
-            }
-        });
-
-        // --- 2. Sync Mobile Standard Items (mob-add & mob-qty controls) ---
-        const mobAddBtns = document.querySelectorAll('[id^="mob-add-"]');
-        mobAddBtns.forEach(mobBtn => {
-            const fullId = mobBtn.id.replace('mob-add-', '');
-            const mobCtrl = document.getElementById(`mob-qty-${fullId}`);
-            const mobValSpan = document.getElementById(`mob-qval-${fullId}`);
-            const matchingItems = cart.filter(item => item.id === fullId || item.id.startsWith(fullId + '_'));
-            const totalQty = matchingItems.reduce((sum, item) => sum + item.quantity, 0);
-
-            if (totalQty > 0) {
-                mobBtn.style.display = 'none';
-                if (mobCtrl) mobCtrl.style.display = 'flex';
-                if (mobValSpan) mobValSpan.textContent = totalQty;
-            } else {
-                mobBtn.style.display = 'flex';
-                if (mobCtrl) mobCtrl.style.display = 'none';
-                if (mobValSpan) mobValSpan.textContent = '0';
-            }
-        });
-
-        // --- 3. Sync Desktop Half/Full & Dual Variants ---
-        document.querySelectorAll('.half-full-wrapper').forEach(wrapper => {
-            const boxes = wrapper.querySelectorAll('.half-full-box');
-            if (boxes.length === 2) {
-                const v1ValSpan = boxes[0].querySelector('.hf-value');
-                const v2ValSpan = boxes[1].querySelector('.hf-value');
-                
-                if (v1ValSpan && v2ValSpan) {
-                    const v1Id = v1ValSpan.id.replace('hf-val-', '');
-                    const v2Id = v2ValSpan.id.replace('hf-val-', '');
-                    
-                    const v1Qty = cart.find(i => i.id === v1Id)?.quantity || 0;
-                    const v2Qty = cart.find(i => i.id === v2Id)?.quantity || 0;
-                    
-                    v1ValSpan.textContent = v1Qty; 
-                    v2ValSpan.textContent = v2Qty;
-                }
-            }
-        });
-
-        // --- 4. Sync Mobile Dual Variant Buttons (Half/Full & Options) ---
         document.querySelectorAll('.menu-card').forEach(card => {
-            const mobBtn = card.querySelector('.mob-add-btn');
             const hfWrapper = card.querySelector('.half-full-wrapper');
-            if (mobBtn && hfWrapper) {
+            const mobAdd = card.querySelector('.mob-add-btn');
+            const mobQty = card.querySelector('.mob-qty-ctrl');
+            const mobValSpan = card.querySelector('.mq-val');
+
+            // 1. Dual Variant Card (Half/Full or Options)
+            if (hfWrapper) {
                 const valSpans = hfWrapper.querySelectorAll('.hf-value');
                 if (valSpans.length === 2) {
                     const v1Id = valSpans[0].id.replace('hf-val-', '');
                     const v2Id = valSpans[1].id.replace('hf-val-', '');
                     const baseId = v1Id.replace(/-half|_half|-full|_full|-opt1|-opt2/g, '');
-                    
+
+                    const v1Qty = cart.find(i => i.id === v1Id)?.quantity || 0;
+                    const v2Qty = cart.find(i => i.id === v2Id)?.quantity || 0;
+
+                    // Sync desktop values
+                    valSpans[0].textContent = v1Qty;
+                    valSpans[1].textContent = v2Qty;
+
+                    // Calculate total quantity in cart for this dish
                     let total = 0;
                     cart.forEach(item => {
                         const itId = String(item.id || '');
@@ -2599,12 +2542,56 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     });
 
-                    if (total > 0) {
-                        mobBtn.textContent = `${total} in Cart ✓`;
-                        mobBtn.style.background = '#15803d';
-                    } else {
-                        mobBtn.textContent = 'ADD +';
-                        mobBtn.style.background = '#16a34a';
+                    if (mobAdd) {
+                        if (total > 0) {
+                            mobAdd.textContent = `${total} in Cart ✓`;
+                            mobAdd.style.background = '#15803d';
+                        } else {
+                            mobAdd.textContent = 'ADD +';
+                            mobAdd.style.background = '#16a34a';
+                        }
+                    }
+                }
+            } 
+            // 2. Standard Single Item Card
+            else {
+                const deskAdd = card.querySelector('[id^="menu-add-btn-"]');
+                const deskCtrl = card.querySelector('[id^="menu-qty-ctrl-"]');
+                const deskVal = card.querySelector('[id^="menu-qty-val-"]');
+
+                // Extract standard item ID
+                let fullId = card._mobStdItemId;
+                if (!fullId && deskAdd) {
+                    fullId = deskAdd.id.replace('menu-add-btn-', '');
+                }
+
+                if (fullId) {
+                    const matchingItems = cart.filter(item => item.id === fullId || item.id.startsWith(fullId + '_') || item.id.startsWith(fullId + '-'));
+                    const totalQty = matchingItems.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+
+                    // Sync Desktop buttons
+                    if (deskAdd && deskCtrl) {
+                        if (totalQty > 0) {
+                            deskAdd.style.display = 'none';
+                            deskCtrl.style.display = 'flex';
+                            if (deskVal) deskVal.textContent = totalQty;
+                        } else {
+                            deskAdd.style.display = 'block';
+                            deskCtrl.style.display = 'none';
+                        }
+                    }
+
+                    // Sync Mobile buttons
+                    if (mobAdd && mobQty) {
+                        if (totalQty > 0) {
+                            mobAdd.style.display = 'none';
+                            mobQty.style.display = 'flex';
+                            if (mobValSpan) mobValSpan.textContent = totalQty;
+                        } else {
+                            mobAdd.style.display = 'flex';
+                            mobQty.style.display = 'none';
+                            if (mobValSpan) mobValSpan.textContent = '0';
+                        }
                     }
                 }
             }
