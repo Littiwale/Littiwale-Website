@@ -4552,21 +4552,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Floating Category Filter Button (Menu Page Only) ---
     const filterFab = document.getElementById('filter-fab');
-    if (filterFab && (window.location.pathname.includes('menu.html') || window.location.pathname.endsWith('/menu') || document.body.classList.contains('menu-page'))) {
+    if (filterFab) {
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
-                if (filterFab.style.display === 'none') {
-                    filterFab.style.display = 'flex';
-                }
-                setTimeout(() => filterFab.classList.add('visible'), 10);
+            if (window.scrollY > 220) {
+                filterFab.classList.add('visible');
             } else {
                 filterFab.classList.remove('visible');
-                // Optional: hide display after transition
-                setTimeout(() => {
-                    if (!filterFab.classList.contains('visible')) {
-                        filterFab.style.display = 'none';
-                    }
-                }, 300);
             }
         });
 

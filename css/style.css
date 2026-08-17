@@ -1860,11 +1860,14 @@ border-right: 1px solid #facc15;
     opacity: 0;
     visibility: hidden;
     transition: var(--transition);
+    background: var(--primary-color, #f4b400) !important;
+    color: #0d0d0d !important;
 }
 
 #filter-fab.visible {
-    opacity: 1;
-    visibility: visible;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
 }
 
 .fab-btn {
@@ -2037,8 +2040,7 @@ border-right: 1px solid #facc15;
         z-index: 99 !important;
     }
 
-    .fab-container .cart-fab,
-    .fab-container #filter-fab {
+    .fab-container .cart-fab {
         display: none !important;
     }
 
