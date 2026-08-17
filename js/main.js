@@ -181,6 +181,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Default bundled image map (100% verified dish images from /images/menu/Full Menu/)
     const DEFAULT_IMAGE_MAP = {
+        "aaj diet bhool ja": "images/menu/Craziest Deal Menu/aaj-diet-bhool-ja.png",
+        "tera jo mann wo khila de": "images/menu/Craziest Deal Menu/tera-jo-mann-wo-khila-de.png",
+        "tera jo mann khila de": "images/menu/Craziest Deal Menu/tera-jo-mann-wo-khila-de.png",
+        "pet bhar combo": "images/menu/Craziest Deal Menu/pet-bhar-combo.png",
+        "kuch bhi khila de": "images/menu/Craziest Deal Menu/kuch-bhi-khila-de.png",
+        "bhook lagi hai boss": "images/menu/Craziest Deal Menu/bhook-lagi-hai-boss.png",
         "mumbai street vada pav": "images/menu/Full Menu/Star Special/vadapav.webp",
         "authentic bihari litti chokha": "images/menu/Full Menu/Star Special/littichokha.webp",
         "desi delight chick-a-litti": "images/menu/Full Menu/Star Special/littichicken.webp",
@@ -725,14 +731,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper: Get Craziest Deal image (Folder based)
     function getDealImage(title) {
         if (!title) return 'images/logo.png';
-        const normalized = getNormalizedName(title);
-        if (menuImageMap && menuImageMap[normalized] && menuImageMap[normalized] !== 'images/logo.png') {
-            return menuImageMap[normalized];
+        const cleanTitle = title.replace(/[\u{1F600}-\u{1F6FF}|\u{2600}-\u{26FF}|\u{1F300}-\u{1F5FF}|\u{1F900}-\u{1F9FF}]/gu, '').trim().toLowerCase();
+        const norm = getNormalizedName(cleanTitle);
+
+        if (DEFAULT_IMAGE_MAP[cleanTitle]) return DEFAULT_IMAGE_MAP[cleanTitle];
+        if (DEFAULT_IMAGE_MAP[norm]) return DEFAULT_IMAGE_MAP[norm];
+        if (menuImageMap && menuImageMap[norm] && menuImageMap[norm] !== 'images/logo.png' && !menuImageMap[norm].endsWith('.webp')) {
+            return menuImageMap[norm];
         }
-        if (typeof DEFAULT_IMAGE_MAP !== 'undefined' && DEFAULT_IMAGE_MAP[normalized]) {
-            return DEFAULT_IMAGE_MAP[normalized];
-        }
-        const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+        const slug = cleanTitle.replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         return `images/menu/Craziest Deal Menu/${slug}.png`;
     }
 
@@ -1078,7 +1086,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const discountPct = (origPrice > dealPrice && origPrice > 0) ? Math.round(((origPrice - dealPrice) / origPrice) * 100) : 0;
             const savings = origPrice > dealPrice ? (origPrice - dealPrice) : 0;
             const dealNote = deal.note || deal.description || 'Special Chef Discount Combo';
-            const dealImage = deal.image || getDealImage(deal.name);
+            const dealImage = (deal.image && deal.image !== 'images/logo.png' && !deal.image.endsWith('.webp')) 
+                ? deal.image 
+                : getDealImage(deal.name);
             const safeAddCall = `window.addDealToCart('${deal._id || deal.id}', '${(deal.name || '').replace(/'/g, "\\'")}', ${dealPrice}, ${origPrice || dealPrice}, '${dealNote.replace(/'/g, "\\'")}', '${dealImage}');`;
 
             card.innerHTML = `
