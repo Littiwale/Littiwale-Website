@@ -389,6 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 5. Menu fetch from MongoDB Admin API
         try {
+            const menuFetchStart = Date.now();
             console.log('%c🌐 [LITTIWALE] Fetching LIVE MENU directly from Admin MongoDB API: ' + ADMIN_API_BASE_URL + '/menu', 'color:#3b82f6; font-weight:bold;');
             const apiMenu = await fetchWithTimeout(`${ADMIN_API_BASE_URL}/menu`, 15000);
 
@@ -396,7 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let finalMap = {};
             
             if (apiMenu && Array.isArray(apiMenu) && apiMenu.length > 0) {
-                console.log('%c✅ [LITTIWALE] LIVE MENU LOADED FROM API (MongoDB): ' + apiMenu.length + ' items with full details & descriptions', 'color:#22c55e; font-weight:bold; font-size:12px;');
+                console.log(`%c✅ [LITTIWALE] LIVE MENU LOADED FROM API (MongoDB) in ${Date.now() - menuFetchStart}ms (${apiMenu.length} items)`, 'color:#22c55e; font-weight:bold; font-size:12px;');
                 apiMenu.forEach(item => {
                     const id = item._id || item.id;
                     const norm = getNormalizedName(item.name);
