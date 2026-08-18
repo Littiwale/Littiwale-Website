@@ -4171,9 +4171,93 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (deliveryRadio) {
                     localStorage.setItem('littiWaleOrderType', deliveryRadio.checked ? 'delivery' : 'takeaway');
                 }
-                window.location.href='checkout.html';
+
+                // Check if user is logged in or already continuing as guest
+                const isCustomerLoggedIn = Boolean(
+                    localStorage.getItem('littiwale_customer_profile') || 
+                    localStorage.getItem('littiwale_customer_user') || 
+                    localStorage.getItem('littiwale_customer_phone')
+                );
+
+                if (isCustomerLoggedIn) {
+                    window.location.href = 'checkout.html';
+                } else {
+                    window.openCheckoutAuthModal();
+                }
             });
         }
+
+        // Global Checkout Auth Choice Modal (1-Click Google, Login, Guest)
+        window.openCheckoutAuthModal = function() {
+            let modal = document.getElementById('checkout-auth-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'checkout-auth-modal';
+                modal.style.cssText = `
+                    position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+                    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+                    z-index: 999999; display: flex; align-items: center; justify-content: center;
+                    padding: 20px; box-sizing: border-box; opacity: 0; visibility: hidden;
+                    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                `;
+                modal.innerHTML = `
+                    <div style="background: #121214; border: 1.5px solid rgba(249, 115, 22, 0.4); border-radius: 20px; width: 100%; max-width: 420px; padding: 28px 24px; box-shadow: 0 25px 60px rgba(0,0,0,0.8); text-align: center; position: relative;">
+                        <button type="button" onclick="window.closeCheckoutAuthModal()" style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.08); border:none; color:#cbd5e1; width:32px; height:32px; border-radius:50%; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+                        
+                        <div style="width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 16px; background: rgba(249, 115, 22, 0.15); display: flex; align-items: center; justify-content: center; font-size: 26px; border: 1px solid rgba(249, 115, 22, 0.3);">
+                            🍲
+                        </div>
+                        
+                        <h3 style="font-size: 20px; font-weight: 800; color: #fff; margin: 0 0 6px; font-family: var(--font-heading, 'Poppins', sans-serif);">Ready for Checkout!</h3>
+                        <p style="font-size: 13px; color: #94a3b8; margin: 0 0 22px; line-height: 1.5;">Choose how you want to complete your order:</p>
+                        
+                        <!-- 1. Google 1-Click Button -->
+                        <button type="button" onclick="window.handleGoogleLoginFromModal()" style="width:100%; background:#ffffff; color:#1f2937; border:none; padding:13px 18px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:12px; box-shadow:0 4px 15px rgba(0,0,0,0.25); transition:transform 0.2s ease;">
+                            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                            <span>1-Click Continue with Google</span>
+                        </button>
+                        
+                        <!-- 2. Email / Phone Login Button -->
+                        <button type="button" onclick="window.location.href='/login.html?redirect=checkout.html'" style="width:100%; background:rgba(255,255,255,0.06); color:#fff; border:1px solid rgba(255,255,255,0.15); padding:12px 18px; border-radius:12px; font-weight:700; font-size:13.5px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:14px; transition:all 0.2s ease;">
+                            <span>📱 Login / Sign Up with Mobile or Email</span>
+                        </button>
+                        
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+                            <div style="flex:1; height:1px; background:rgba(255,255,255,0.1);"></div>
+                            <span style="font-size:11px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.8px;">OR</span>
+                            <div style="flex:1; height:1px; background:rgba(255,255,255,0.1);"></div>
+                        </div>
+                        
+                        <!-- 3. Continue as Guest Button -->
+                        <button type="button" onclick="window.proceedAsGuestToCheckout()" style="width:100%; background:linear-gradient(135deg, #f97316, #ea580c); color:#fff; border:none; padding:13px 18px; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 6px 20px rgba(249, 115, 22, 0.4); transition:all 0.2s ease;">
+                            <span>⚡ Continue as Guest (Fast Checkout)</span>
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+            modal.style.opacity = '1';
+            modal.style.visibility = 'visible';
+        };
+
+        window.closeCheckoutAuthModal = function() {
+            const modal = document.getElementById('checkout-auth-modal');
+            if (modal) {
+                modal.style.opacity = '0';
+                modal.style.visibility = 'hidden';
+            }
+        };
+
+        window.handleGoogleLoginFromModal = function() {
+            const returnUrl = window.location.origin + '/login.html?redirect=' + encodeURIComponent('/checkout.html');
+            window.location.href = `https://ragoftflejyetarhdogh.supabase.co/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(returnUrl)}`;
+        };
+
+        window.proceedAsGuestToCheckout = function() {
+            localStorage.setItem('littiwale_is_guest', 'true');
+            window.closeCheckoutAuthModal();
+            window.location.href = 'checkout.html';
+        };
         
         const pageCheckoutBtn = document.getElementById('checkout-place-order-btn');
         if (pageCheckoutBtn) {
@@ -6168,9 +6252,29 @@ window.loadCustomerProfileAndAddresses = async function(phone) {
 function autoFillCheckoutFromSavedProfile(profile) {
     if (!profile) {
         try {
-            const raw = localStorage.getItem('littiwale_customer_profile');
+            const raw = localStorage.getItem('littiwale_customer_profile') || localStorage.getItem('littiwale_customer_user');
             if (raw) profile = JSON.parse(raw);
         } catch(e) {}
+    }
+
+    const userBadgeEl = document.getElementById('checkout-user-badge');
+    const authBannerEl = document.getElementById('checkout-auth-banner');
+    
+    if (profile && (profile.name || profile.email || profile.phone)) {
+        if (userBadgeEl) {
+            userBadgeEl.innerHTML = `
+                <span style="background:rgba(34, 197, 94, 0.15); color:#4ade80; border:1px solid rgba(34, 197, 94, 0.3); padding:4px 10px; border-radius:20px; font-weight:700; font-size:11px; display:inline-flex; align-items:center; gap:5px;">
+                    <span>✓</span> ${profile.name || profile.email}
+                </span>
+                <button type="button" onclick="window.logoutCustomer()" style="background:none; border:none; color:#f87171; font-size:11px; cursor:pointer; text-decoration:underline; margin-left:6px;">Logout</button>
+            `;
+        }
+        if (authBannerEl) {
+            authBannerEl.style.display = 'none';
+        }
+    } else {
+        if (userBadgeEl) userBadgeEl.innerHTML = '';
+        if (authBannerEl) authBannerEl.style.display = 'flex';
     }
     
     const savedPhone = localStorage.getItem('littiwale_customer_phone') || (profile ? profile.phone : null);
@@ -6188,16 +6292,16 @@ function autoFillCheckoutFromSavedProfile(profile) {
     const landmarkInputs = [document.getElementById('checkout-landmark'), document.getElementById('cust-landmark'), document.getElementById('landmark')];
 
     nameInputs.forEach(input => {
-        if (input && profile.name) input.value = profile.name;
+        if (input && profile.name && !input.value.trim()) input.value = profile.name;
     });
     phoneInputs.forEach(input => {
-        if (input && profile.phone) input.value = profile.phone;
+        if (input && profile.phone && !input.value.trim()) input.value = profile.phone;
     });
     emailInputs.forEach(input => {
         if (input && profile.email && !input.value.trim()) input.value = profile.email;
     });
     whatsappInputs.forEach(input => {
-        if (input && (profile.whatsapp || profile.phone)) input.value = profile.whatsapp || profile.phone;
+        if (input && (profile.whatsapp || profile.phone) && !input.value.trim()) input.value = profile.whatsapp || profile.phone;
     });
     addressInputs.forEach(input => {
         if (input && profile.address && !input.value.trim()) {
@@ -6210,6 +6314,15 @@ function autoFillCheckoutFromSavedProfile(profile) {
         if (input && profile.landmark && !input.value.trim()) input.value = profile.landmark;
     });
 }
+
+window.logoutCustomer = function() {
+    localStorage.removeItem('littiwale_customer_profile');
+    localStorage.removeItem('littiwale_customer_user');
+    localStorage.removeItem('littiwale_customer_token');
+    localStorage.removeItem('littiwale_customer_phone');
+    localStorage.removeItem('littiwale_is_guest');
+    location.reload();
+};
 
 // Auto-fill checkout and attach phone input listeners on DOM load
 document.addEventListener('DOMContentLoaded', () => {

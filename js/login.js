@@ -267,7 +267,75 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 4. GUEST BUTTON HANDLER
+    // 4. GOOGLE 1-CLICK OAUTH HANDLER
+    window.handleGoogleLogin = function() {
+        showLoader('Redirecting to Google Sign-In...');
+        const params = new URLSearchParams(window.location.search);
+        const redirectUrl = params.get('redirect') || '/checkout.html';
+        
+        // Supabase Google OAuth Endpoint
+        const returnUrl = window.location.origin + '/login.html?redirect=' + encodeURIComponent(redirectUrl);
+        const authUrl = `https://ragoftflejyetarhdogh.supabase.co/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(returnUrl)}`;
+        window.location.href = authUrl;
+    };
+
+    // Auto-detect and sync Supabase Google OAuth callback from URL hash
+    async function checkOAuthCallback() {
+        const hash = window.location.hash;
+        if (!hash || !hash.includes('access_token')) return;
+
+        showLoader('Signing in with Google...');
+        try {
+            const hashParams = new URLSearchParams(hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            if (!accessToken) return;
+
+            // Fetch User info from Supabase Auth
+            const userRes = await fetch('https://ragoftflejyetarhdogh.supabase.co/auth/v1/user', {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhZ29mdGZsZWp5ZXRhcmhkb2doIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4Njk4MzAwNSwiZXhwIjoyMTAyNTU5MDA1fQ.12-SCyAGnSeBO9uCfyzyK-QLwB8DkgT_ptGIp-JIxfY'
+                }
+            });
+
+            const userData = await userRes.json();
+            if (userData && userData.email) {
+                const apiBase = window.ADMIN_API_BASE_URL || '/api';
+                const syncRes = await fetch(`${apiBase}/customer/google-auth`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        supabaseId: userData.id,
+                        email: userData.email,
+                        name: userData.user_metadata?.full_name || userData.user_metadata?.name || userData.email.split('@')[0],
+                        avatarUrl: userData.user_metadata?.avatar_url || ''
+                    })
+                });
+
+                const syncData = await syncRes.json();
+                if (syncData.success && syncData.customer) {
+                    localStorage.setItem('littiwale_customer_profile', JSON.stringify(syncData.customer));
+                    localStorage.setItem('littiwale_customer_user', JSON.stringify(syncData.customer));
+                    localStorage.setItem('littiwale_customer_token', syncData.token);
+                    if (syncData.customer.phone) {
+                        localStorage.setItem('littiwale_customer_phone', syncData.customer.phone);
+                    }
+
+                    const queryParams = new URLSearchParams(window.location.search);
+                    const nextUrl = queryParams.get('redirect') || '/checkout.html';
+                    window.location.href = nextUrl;
+                    return;
+                }
+            }
+        } catch(e) {
+            console.error('Google OAuth callback error:', e);
+        }
+        hideLoader();
+    }
+
+    checkOAuthCallback();
+
+    // 5. GUEST BUTTON HANDLER
     window.continueAsGuest = function() {
         localStorage.setItem('littiwale_is_guest', 'true');
         
@@ -287,6 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = '/menu/';
     };
 
+    const guestBtn = document.getElementById('guest-btn');
     if (guestBtn) {
         guestBtn.addEventListener('click', window.continueAsGuest);
     }
