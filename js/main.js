@@ -737,7 +737,115 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (existingBanner) {
             existingBanner.remove();
         }
+        // Check Global Website Maintenance Mode
+        checkMaintenanceMode(apiSettings);
     }
+
+    // Global Website Maintenance Mode System with Instant Admin Bypass
+    function checkMaintenanceMode(apiSettings) {
+        const isMaintenance = apiSettings.some(s => s.isMaintenanceMode === true);
+        if (!isMaintenance) {
+            const existingMaint = document.getElementById('lw-maintenance-overlay');
+            if (existingMaint) existingMaint.remove();
+            return;
+        }
+
+        // Check for Admin Testing Bypass via URL parameters:
+        const params = new URLSearchParams(window.location.search);
+        const hasUrlBypass = params.get('admin') === '1' || params.get('bypass') === '1' || params.get('preview') === 'littiwale2026';
+        if (hasUrlBypass) {
+            localStorage.setItem('littiwale_maintenance_bypass', 'true');
+            console.log('🔓 [LITTIWALE] Maintenance Mode Bypassed via Admin Secret URL!');
+            return;
+        }
+
+        const isLocallyBypassed = localStorage.getItem('littiwale_maintenance_bypass') === 'true' || sessionStorage.getItem('littiwale_maintenance_bypass') === 'true';
+        if (isLocallyBypassed) {
+            console.log('🔓 [LITTIWALE] Maintenance Mode Bypassed via active Admin Session!');
+            return;
+        }
+
+        // Customer is NOT bypassed -> Render Luxury Full-screen Maintenance Page
+        const doc = apiSettings.find(s => s.maintenanceMessage) || apiSettings[0] || {};
+        renderMaintenancePage(doc.maintenanceMessage);
+    }
+
+    function renderMaintenancePage(customMsg) {
+        if (document.getElementById('lw-maintenance-overlay')) return;
+
+        const notice = customMsg || 'We are currently upgrading our website to serve you better! In the meantime, our kitchen is 100% active and open — please place your order directly via Call, WhatsApp, or Zomato below.';
+
+        const overlay = document.createElement('div');
+        overlay.id = 'lw-maintenance-overlay';
+        overlay.style.cssText = `
+            position: fixed; inset: 0; background: #08080a;
+            z-index: 99999999; display: flex; align-items: center; justify-content: center;
+            padding: 20px; box-sizing: border-box; overflow-y: auto;
+            font-family: 'Plus Jakarta Sans', 'Poppins', -apple-system, sans-serif;
+        `;
+
+        overlay.innerHTML = `
+            <div style="max-width: 560px; width: 100%; text-align: center; background: linear-gradient(145deg, #141418, #0e0e12); border: 1.5px solid rgba(245, 158, 11, 0.4); border-radius: 24px; padding: 40px 26px; box-shadow: 0 30px 80px rgba(0,0,0,0.9); position: relative;">
+                
+                <!-- Animated Icon -->
+                <div style="width: 84px; height: 84px; margin: 0 auto 20px; border-radius: 24px; background: rgba(245, 158, 11, 0.15); border: 1.5px solid rgba(245, 158, 11, 0.4); display: flex; align-items: center; justify-content: center; font-size: 40px; box-shadow: 0 10px 30px rgba(245, 158, 11, 0.25);">
+                    🛠️
+                </div>
+
+                <div style="display:inline-block; background:rgba(245, 158, 11, 0.2); color:#fbbf24; border:1px solid rgba(245, 158, 11, 0.4); padding:6px 16px; border-radius:30px; font-weight:800; font-size:12px; letter-spacing:1px; text-transform:uppercase; margin-bottom:14px;">
+                    Scheduled Maintenance
+                </div>
+
+                <h1 style="font-size: 25px; font-weight: 900; color: #ffffff; margin: 0 0 12px; letter-spacing: -0.5px; line-height: 1.3;">
+                    Hum Website Ko Aur Behtar Bana Rahe Hain! 🥘
+                </h1>
+
+                <p style="font-size: 13.5px; color: #cbd5e1; line-height: 1.6; margin: 0 0 28px;">
+                    ${notice}
+                </p>
+
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+                    <!-- WhatsApp Order Button -->
+                    <a href="https://wa.me/916370680744?text=Hi%20Littiwale,%20I%20want%20to%20place%20an%20order" target="_blank" style="background: #25d366; color: #000; font-weight: 800; font-size: 15px; padding: 14px 20px; border-radius: 14px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 6px 20px rgba(37, 211, 102, 0.35);">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.275.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.099.824z"/></svg>
+                        <span>Order via WhatsApp (+91 63706 80744)</span>
+                    </a>
+
+                    <!-- Call Button -->
+                    <a href="tel:+916370680744" style="background: rgba(255,255,255,0.06); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.15); font-weight: 700; font-size: 14px; padding: 13px 20px; border-radius: 14px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span>📞 Call Restaurant Directly</span>
+                    </a>
+
+                    <!-- Zomato Button -->
+                    <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" style="background: #e23744; color: #ffffff; font-weight: 800; font-size: 14px; padding: 13px 20px; border-radius: 14px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(226, 55, 68, 0.3);">
+                        <span>Order on Zomato</span>
+                    </a>
+                </div>
+
+                <!-- Admin Staff Unlock Link -->
+                <div style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 16px;">
+                    <button type="button" onclick="window.promptAdminBypassPin()" style="background:none; border:none; color:#64748b; font-size:12px; cursor:pointer; text-decoration:underline;">
+                        🔒 Staff / Admin Testing Bypass
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+    }
+
+    window.promptAdminBypassPin = function() {
+        const pin = prompt('Enter Admin Testing PIN to unlock live website preview:');
+        if (pin === '1234' || pin === 'littiwale2026') {
+            localStorage.setItem('littiwale_maintenance_bypass', 'true');
+            alert('✅ Admin Bypass Active! Loading website...');
+            const overlay = document.getElementById('lw-maintenance-overlay');
+            if (overlay) overlay.remove();
+            location.reload();
+        } else if (pin) {
+            alert('❌ Incorrect PIN');
+        }
+    };
 
     // Dynamic Instagram Reels Renderer (Syncs 100% Live with Admin CMS)
     async function initReels(reelsData) {
