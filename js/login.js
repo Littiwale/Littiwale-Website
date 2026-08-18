@@ -320,7 +320,16 @@ document.addEventListener('DOMContentLoaded', () => {
     window.handleGoogleLogin = function() {
         showLoader('Redirecting to Google Sign-In...');
         const params = new URLSearchParams(window.location.search);
-        const redirectUrl = params.get('redirect') || '/checkout.html';
+        let redirectUrl = params.get('redirect');
+
+        if (!redirectUrl) {
+            let hasCart = false;
+            try {
+                const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                if (Array.isArray(cart) && cart.length > 0) hasCart = true;
+            } catch(e) {}
+            redirectUrl = hasCart ? '/checkout.html' : '/';
+        }
         
         // Supabase Google OAuth Endpoint
         const returnUrl = window.location.origin + '/login.html?redirect=' + encodeURIComponent(redirectUrl);
@@ -371,8 +380,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     const queryParams = new URLSearchParams(window.location.search);
-                    const nextUrl = queryParams.get('redirect') || '/';
-                    window.location.href = nextUrl;
+                    let nextUrl = queryParams.get('redirect');
+
+                    if (!nextUrl) {
+                        let hasCart = false;
+                        try {
+                            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                            if (Array.isArray(cart) && cart.length > 0) hasCart = true;
+                        } catch(e) {}
+                        nextUrl = hasCart ? '/checkout.html' : '/';
+                    }
+
+                    hideLoader();
+
+                    // If user is new or has no custom PIN yet, offer quick PIN setup
+                    if (syncData.isNewUser || !syncData.hasCustomPin) {
+                        promptInitialPinSetup(syncData.customer, nextUrl);
+                    } else {
+                        window.location.href = nextUrl;
+                    }
                     return;
                 }
             }
@@ -380,6 +406,74 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Google OAuth callback error:', e);
         }
         hideLoader();
+    }
+
+    function promptInitialPinSetup(customer, nextUrl) {
+        const modal = document.createElement('div');
+        modal.id = 'initial-pin-modal';
+        modal.style.cssText = `
+            position: fixed; inset: 0; background: rgba(0,0,0,0.88); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px;
+            font-family: 'Poppins', sans-serif; animation: fadeIn 0.3s ease;
+        `;
+
+        modal.innerHTML = `
+            <div style="background: linear-gradient(135deg, #181924, #0e1017); border: 1.5px solid rgba(245,158,11,0.35); border-radius: 20px; max-width: 440px; width: 100%; padding: 28px 24px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.8);">
+                <div style="font-size: 42px; margin-bottom: 10px;">🔑</div>
+                <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 8px;">Set Your 4-Digit Quick PIN</h3>
+                <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 20px;">
+                    Hi <strong>${customer.name || 'Foodie'}</strong>! Set a quick 4-digit PIN (e.g. <code>1234</code>) so you can also log in anytime using just your mobile number!
+                </p>
+                <div style="margin-bottom: 16px; text-align: left;">
+                    <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; display: block; margin-bottom: 6px;">Create 4-Digit PIN *</label>
+                    <input type="password" id="init-pin-input" maxlength="6" placeholder="Enter 4-character PIN" style="width: 100%; padding: 12px 14px; background: #12131a; border: 1.5px solid rgba(245,158,11,0.3); border-radius: 10px; color: #fff; font-family: 'Poppins',sans-serif; font-size: 16px; text-align: center; letter-spacing: 4px; outline: none;">
+                </div>
+                <div id="init-pin-error" style="color: #ef4444; font-size: 12px; margin-bottom: 12px;"></div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" id="btn-save-init-pin" style="flex: 1; background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 13.5px; border: none; padding: 12px; border-radius: 10px; cursor: pointer; box-shadow: 0 6px 20px rgba(245,158,11,0.4);">
+                        💾 Save PIN & Continue
+                    </button>
+                    <button type="button" id="btn-skip-init-pin" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #94a3b8; font-family: 'Poppins', sans-serif; font-size: 12.5px; padding: 0 16px; border-radius: 10px; cursor: pointer;">
+                        Skip
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const pinInput = document.getElementById('init-pin-input');
+        if (pinInput) pinInput.focus();
+
+        document.getElementById('btn-skip-init-pin').addEventListener('click', () => {
+            modal.remove();
+            window.location.href = nextUrl;
+        });
+
+        document.getElementById('btn-save-init-pin').addEventListener('click', async () => {
+            const pin = pinInput?.value?.trim();
+            const errBox = document.getElementById('init-pin-error');
+            if (!pin || pin.length < 4) {
+                if (errBox) errBox.textContent = 'Please enter at least a 4-character PIN';
+                return;
+            }
+
+            try {
+                const apiBase = window.ADMIN_API_BASE_URL || '/api';
+                await fetch(`${apiBase}/customer/change-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: customer.email,
+                        phone: customer.phone,
+                        newPassword: pin
+                    })
+                });
+            } catch(e) {}
+
+            modal.remove();
+            window.location.href = nextUrl;
+        });
     }
 
     checkOAuthCallback();
