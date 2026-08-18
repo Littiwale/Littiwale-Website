@@ -1,6 +1,6 @@
 window.ADMIN_SERVER_ORIGIN = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
     ? 'http://localhost:5001' 
-    : 'https://littiwale-admin.vercel.app';
+    : 'https://admin.littiwale.co.in';
 
 window.ADMIN_API_BASE_URL = `${window.ADMIN_SERVER_ORIGIN}/api`;
 
@@ -319,11 +319,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const ADMIN_API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
         ? 'http://localhost:5001/api' 
-        : 'https://littiwale-admin.vercel.app/api';
+        : 'https://admin.littiwale.co.in/api';
 
     const ADMIN_SERVER_ORIGIN = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
         ? 'http://localhost:5001' 
-        : 'https://littiwale-admin.vercel.app';
+        : 'https://admin.littiwale.co.in';
 
     async function fetchWithTimeout(url, timeoutMs = 8000) {
         const controller = new AbortController();
@@ -3802,6 +3802,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             msg += `-----------------------`;
 
+            const siteUrl = (window.location.origin && !window.location.origin.includes('null')) ? window.location.origin : 'https://littiwale.co.in';
+            msg += `\n🌐 Order Placed via: ${siteUrl}`;
+
             if (!isCOD) {
                 msg += `\n\n📸 Payment screenshot attached above for instant confirmation.`;
             }
@@ -3892,10 +3895,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentDiscount = (appliedCoupon && typeof discountAmount !== 'undefined') ? discountAmount : 0;
             const computedFinalTotal = Math.max(0, subtotalAmount + currentDelCharge - currentDiscount);
 
-            // Construct Order Payload for MongoDB
+            const storedProfile = JSON.parse(localStorage.getItem('littiwale_customer_profile') || '{}');
+            const custEmail = (document.getElementById('checkout-email')?.value || document.getElementById('cust-email')?.value || storedProfile.email || '').trim();
+
+            // Construct Order Payload for PostgreSQL/Supabase
             const orderPayload = {
                 customerName: name,
                 customerPhone: phone,
+                customerEmail: custEmail,
                 whatsappPhone: whatsappPhone,
                 deliveryAddress: address,
                 landmark: landmark,
@@ -5374,7 +5381,7 @@ window.cachedCustomerOrders = [];
 
 const CUSTOMER_API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:5001/api'
-    : 'https://littiwale-admin.vercel.app/api';
+    : 'https://admin.littiwale.co.in/api';
 
 function ensureCustomerDrawerInDOM() {
     if (document.getElementById('customer-orders-drawer')) return;
@@ -5428,31 +5435,257 @@ function getCustomerOrdersTargetContainer() {
     return document.getElementById('customer-orders-container') || document.getElementById('customer-drawer-content');
 }
 
-window.renderCustomerPhoneLookupView = function() {
+window.renderCustomerPhoneLookupView = function(activeTab = 'signin') {
     const container = getCustomerOrdersTargetContainer();
     if (!container) return;
 
     container.innerHTML = `
-        <div class="cust-lookup-box">
-            <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 6px;">Find Your Orders</h3>
-            <p style="font-size: 13px; color: var(--text-dim, #94a3b8); max-width: 320px; margin: 0 auto 18px; line-height: 1.5;">
-                Enter your 10-digit mobile number to view your past orders, saved delivery address, live status & 1-click reorder.
-            </p>
-            <form onsubmit="window.handleCustomerPhoneSubmit(event)">
-                <div class="cust-lookup-input-group">
-                    <span class="cust-lookup-input-prefix">+91</span>
-                    <input type="tel" id="cust-lookup-phone-input" class="cust-lookup-input" placeholder="Enter Mobile Number" maxlength="10" pattern="[0-9]{10}" required autofocus>
-                </div>
-                <button type="submit" class="cust-lookup-btn">View My Orders</button>
-            </form>
-            <p style="font-size: 11.5px; color: #64748b; margin-top: 16px;">
-                🔒 Zero password or OTP required. Instant lookup.
-            </p>
+        <div class="cust-lookup-box" style="text-align:left;">
+            <!-- Tabs -->
+            <div style="display:flex; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:3px; margin-bottom:18px; gap:4px;">
+                <button type="button" class="cust-auth-tab-btn ${activeTab === 'signin' ? 'active' : ''}" style="flex:1; padding:8px 6px; font-size:12px; font-weight:800; border:none; border-radius:9px; background:${activeTab === 'signin' ? '#f97316' : 'transparent'}; color:#fff; cursor:pointer;" onclick="window.renderCustomerPhoneLookupView('signin')">
+                    🔑 Sign In
+                </button>
+                <button type="button" class="cust-auth-tab-btn ${activeTab === 'register' ? 'active' : ''}" style="flex:1; padding:8px 6px; font-size:12px; font-weight:800; border:none; border-radius:9px; background:${activeTab === 'register' ? '#f97316' : 'transparent'}; color:#fff; cursor:pointer;" onclick="window.renderCustomerPhoneLookupView('register')">
+                    📝 Register
+                </button>
+                <button type="button" class="cust-auth-tab-btn ${activeTab === 'guest' ? 'active' : ''}" style="flex:1; padding:8px 6px; font-size:12px; font-weight:800; border:none; border-radius:9px; background:${activeTab === 'guest' ? '#f97316' : 'transparent'}; color:#fff; cursor:pointer;" onclick="window.renderCustomerPhoneLookupView('guest')">
+                    ⚡ Guest Lookup
+                </button>
+            </div>
+
+            ${activeTab === 'signin' ? `
+                <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Sign In to Your Account</h3>
+                <p style="font-size: 12.5px; color: var(--text-dim, #94a3b8); margin-bottom: 16px; line-height: 1.4;">
+                    Log in using your registered <strong>Email or Mobile Number</strong> with your temporary or custom password.
+                </p>
+                <form onsubmit="window.handleCustomerLoginSubmit(event)">
+                    <div style="margin-bottom:12px;">
+                        <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">Email Address or 10-Digit Mobile</label>
+                        <input type="text" id="cust-login-identifier" class="form-control" placeholder="e.g. your@email.com or 9876543210" style="width:100%; padding:10px 14px; background:#12131a; border:1.5px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-size:14px;" required autofocus>
+                    </div>
+                    <div style="margin-bottom:14px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <label style="font-size:11px; font-weight:700; color:#cbd5e1; margin:0;">Password (4-Char Temp or Custom)</label>
+                            <a href="javascript:void(0)" onclick="window.renderCustomerPhoneLookupView('forgot')" style="font-size:11px; color:#38bdf8; text-decoration:none; font-weight:700;">Forgot Password?</a>
+                        </div>
+                        <input type="password" id="cust-login-password" class="form-control" placeholder="Enter Password" style="width:100%; padding:10px 14px; background:#12131a; border:1.5px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-size:14px;" required>
+                    </div>
+                    <button type="submit" id="cust-login-submit-btn" class="cust-lookup-btn" style="width:100%;">Sign In & View Orders</button>
+                </form>
+            ` : activeTab === 'register' ? `
+                <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Create Customer Account</h3>
+                <p style="font-size: 12.5px; color: var(--text-dim, #94a3b8); margin-bottom: 16px; line-height: 1.4;">
+                    Register with your Email & Phone. You will instantly receive a <strong>4-character temporary password</strong> in your email to log in!
+                </p>
+                <form onsubmit="window.handleCustomerRegisterSubmit(event)">
+                    <div style="margin-bottom:10px;">
+                        <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">Full Name *</label>
+                        <input type="text" id="cust-reg-name" class="form-control" placeholder="e.g. Rahul Sharma" style="width:100%; padding:9px 12px; background:#12131a; border:1.5px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-size:13.5px;" required autofocus>
+                    </div>
+                    <div style="margin-bottom:10px;">
+                        <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">10-Digit Mobile Number *</label>
+                        <div class="cust-lookup-input-group" style="display:flex; align-items:center; background:#12131a; border:1.5px solid rgba(255,255,255,0.15); border-radius:10px; padding:0 10px;">
+                            <span style="color:#f97316; font-weight:800; font-size:13.5px; margin-right:6px;">+91</span>
+                            <input type="tel" id="cust-reg-phone" placeholder="9876543210" maxlength="10" pattern="[0-9]{10}" style="width:100%; background:transparent; border:none; color:#fff; font-size:14px; padding:9px 0; outline:none;" required>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:14px;">
+                        <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">Email Address * (For Temp Password & Invoices)</label>
+                        <input type="email" id="cust-reg-email" class="form-control" placeholder="e.g. rahul@gmail.com" style="width:100%; padding:9px 12px; background:#12131a; border:1.5px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-size:13.5px;" required>
+                    </div>
+                    <button type="submit" id="cust-reg-submit-btn" class="cust-lookup-btn" style="width:100%;">Create Account & Get Temp Password</button>
+                </form>
+            ` : activeTab === 'forgot' ? `
+                <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Reset Password</h3>
+                <p style="font-size: 12.5px; color: var(--text-dim, #94a3b8); margin-bottom: 16px; line-height: 1.4;">
+                    Enter your registered Email or Mobile Number. We will generate and email a fresh <strong>4-character temporary password</strong> to you.
+                </p>
+                <form onsubmit="window.handleCustomerForgotSubmit(event)">
+                    <div style="margin-bottom:14px;">
+                        <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">Registered Email or Mobile Number</label>
+                        <input type="text" id="cust-forgot-identifier" class="form-control" placeholder="e.g. your@email.com or 9876543210" style="width:100%; padding:10px 14px; background:#12131a; border:1.5px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-size:14px;" required autofocus>
+                    </div>
+                    <button type="submit" id="cust-forgot-submit-btn" class="cust-lookup-btn" style="width:100%;">Send New 4-Char Password</button>
+                    <div style="text-align:center; margin-top:12px;">
+                        <a href="javascript:void(0)" onclick="window.renderCustomerPhoneLookupView('signin')" style="font-size:12px; color:#94a3b8; text-decoration:none;">← Back to Sign In</a>
+                    </div>
+                </form>
+            ` : `
+                <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Guest Mobile Lookup</h3>
+                <p style="font-size: 12.5px; color: var(--text-dim, #94a3b8); margin-bottom: 16px; line-height: 1.4;">
+                    Enter your 10-digit mobile number to view your past orders, saved delivery address, live status & 1-click reorder without password.
+                </p>
+                <form onsubmit="window.handleCustomerPhoneSubmit(event)">
+                    <div class="cust-lookup-input-group" style="display:flex; align-items:center; background:#12131a; border:1.5px solid rgba(255,255,255,0.15); border-radius:10px; padding:0 10px; margin-bottom:14px;">
+                        <span style="color:#f97316; font-weight:800; font-size:14px; margin-right:8px;">+91</span>
+                        <input type="tel" id="cust-lookup-phone-input" class="cust-lookup-input" placeholder="Enter Mobile Number" maxlength="10" pattern="[0-9]{10}" style="width:100%; background:transparent; border:none; color:#fff; font-size:15px; padding:10px 0; outline:none;" required autofocus>
+                    </div>
+                    <button type="submit" class="cust-lookup-btn" style="width:100%;">View My Orders</button>
+                </form>
+            `}
         </div>
     `;
-    setTimeout(() => {
-        document.getElementById('cust-lookup-phone-input')?.focus();
-    }, 150);
+};
+
+window.handleCustomerLoginSubmit = async function(e) {
+    if (e) e.preventDefault();
+    const idEl = document.getElementById('cust-login-identifier');
+    const passEl = document.getElementById('cust-login-password');
+    const btn = document.getElementById('cust-login-submit-btn');
+    if (!idEl || !passEl) return;
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Signing in...'; }
+
+    try {
+        const apiBase = window.ADMIN_API_BASE_URL || 'http://localhost:5001/api';
+        const res = await fetch(`${apiBase}/customer/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                identifier: idEl.value.trim(),
+                password: passEl.value.trim()
+            })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success && data.customer) {
+            localStorage.setItem('littiwale_customer_profile', JSON.stringify(data.customer));
+            localStorage.setItem('littiwale_customer_phone', data.customer.phone);
+            if (typeof window.showToast === 'function') window.showToast(`Welcome back, ${data.customer.name || 'Customer'}! 👋`, 'success');
+            window.fetchCustomerOrders(data.customer.phone);
+        } else {
+            if (typeof window.showToast === 'function') {
+                window.showToast(data.error || 'Invalid credentials', 'error');
+            } else {
+                alert(data.error || 'Invalid credentials');
+            }
+            if (btn) { btn.disabled = false; btn.textContent = 'Sign In & View Orders'; }
+        }
+    } catch(err) {
+        if (typeof window.showToast === 'function') window.showToast('Login failed. Please check connection.', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Sign In & View Orders'; }
+    }
+};
+
+window.handleCustomerRegisterSubmit = async function(e) {
+    if (e) e.preventDefault();
+    const nameEl = document.getElementById('cust-reg-name');
+    const phoneEl = document.getElementById('cust-reg-phone');
+    const emailEl = document.getElementById('cust-reg-email');
+    const btn = document.getElementById('cust-reg-submit-btn');
+    if (!nameEl || !phoneEl || !emailEl) return;
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Creating Account & Sending Code...'; }
+
+    try {
+        const apiBase = window.ADMIN_API_BASE_URL || 'http://localhost:5001/api';
+        const res = await fetch(`${apiBase}/customer/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: nameEl.value.trim(),
+                phone: phoneEl.value.trim(),
+                email: emailEl.value.trim()
+            })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success && data.customer) {
+            localStorage.setItem('littiwale_customer_profile', JSON.stringify(data.customer));
+            localStorage.setItem('littiwale_customer_phone', data.customer.phone);
+            if (typeof window.showToast === 'function') {
+                window.showToast(`🎉 Account Created! 4-character password sent to ${data.customer.email}`, 'success');
+            } else {
+                alert(`Account Created! 4-character password sent to ${data.customer.email}`);
+            }
+            window.fetchCustomerOrders(data.customer.phone);
+        } else {
+            if (typeof window.showToast === 'function') {
+                window.showToast(data.error || 'Registration failed', 'error');
+            } else {
+                alert(data.error || 'Registration failed');
+            }
+            if (btn) { btn.disabled = false; btn.textContent = 'Create Account & Get Temp Password'; }
+        }
+    } catch(err) {
+        if (typeof window.showToast === 'function') window.showToast('Registration error', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Create Account & Get Temp Password'; }
+    }
+};
+
+window.handleCustomerForgotSubmit = async function(e) {
+    if (e) e.preventDefault();
+    const idEl = document.getElementById('cust-forgot-identifier');
+    const btn = document.getElementById('cust-forgot-submit-btn');
+    if (!idEl) return;
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending new code...'; }
+
+    try {
+        const apiBase = window.ADMIN_API_BASE_URL || 'http://localhost:5001/api';
+        const res = await fetch(`${apiBase}/customer/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ identifier: idEl.value.trim() })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+            if (typeof window.showToast === 'function') {
+                window.showToast(data.message || 'New temporary password sent to your email!', 'success');
+            } else {
+                alert(data.message || 'New temporary password sent to your email!');
+            }
+            window.renderCustomerPhoneLookupView('signin');
+        } else {
+            if (typeof window.showToast === 'function') {
+                window.showToast(data.error || 'Could not reset password', 'error');
+            } else {
+                alert(data.error || 'Could not reset password');
+            }
+            if (btn) { btn.disabled = false; btn.textContent = 'Send New 4-Char Password'; }
+        }
+    } catch(err) {
+        if (typeof window.showToast === 'function') window.showToast('Reset failed', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Send New 4-Char Password'; }
+    }
+};
+
+window.switchCustomerAccount = function() {
+    localStorage.removeItem('littiwale_customer_phone');
+    localStorage.removeItem('littiwale_customer_profile');
+    window.renderCustomerPhoneLookupView('signin');
+};
+
+window.openChangePasswordPrompt = async function(phone, email) {
+    const newPass = prompt('Enter your new custom permanent password:');
+    if (!newPass || newPass.trim().length < 3) {
+        if (newPass !== null) alert('Password must be at least 3 characters');
+        return;
+    }
+
+    try {
+        const apiBase = window.ADMIN_API_BASE_URL || 'http://localhost:5001/api';
+        const res = await fetch(`${apiBase}/customer/change-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                phone: phone,
+                email: email,
+                newPassword: newPass.trim()
+            })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            if (typeof window.showToast === 'function') window.showToast('✅ Password changed successfully!', 'success');
+            else alert('Password changed successfully!');
+        } else {
+            alert(data.error || 'Could not update password');
+        }
+    } catch(e) {
+        alert('Error changing password');
+    }
 };
 
 window.handleCustomerPhoneSubmit = function(e) {
@@ -5500,36 +5733,44 @@ window.fetchCustomerOrders = async function(phone) {
 
         window.cachedCustomerOrders = orders;
 
-        if (customer) {
-            localStorage.setItem('littiwale_customer_profile', JSON.stringify(customer));
-            autoFillCheckoutFromSavedProfile(customer);
+        const storedProfile = JSON.parse(localStorage.getItem('littiwale_customer_profile') || '{}');
+        const finalCustomer = { ...storedProfile, ...(customer || {}) };
+
+        if (finalCustomer && finalCustomer.phone) {
+            localStorage.setItem('littiwale_customer_profile', JSON.stringify(finalCustomer));
+            autoFillCheckoutFromSavedProfile(finalCustomer);
         }
+
+        const custName = finalCustomer?.name || data.customer?.name || 'Customer';
+        const custEmail = finalCustomer?.email || data.customer?.email || '';
 
         if (orders.length === 0) {
             // New Customer View
             container.innerHTML = `
-                <div class="cust-profile-header-card">
+                <div class="cust-profile-header-card" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px 16px; display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <div class="cust-profile-greeting">Welcome to Littiwale</div>
-                        <div class="cust-profile-phone">+91 ${phone}</div>
+                        <div class="cust-profile-greeting" style="font-size:15px; font-weight:800; color:#fff;">Welcome to Littiwale, ${custName}! 👋</div>
+                        <div class="cust-profile-phone" style="font-size:12px; color:#94a3b8; margin-top:2px;">📱 +91 ${phone} ${custEmail ? `• 📧 ${custEmail}` : ''}</div>
                     </div>
-                    <button type="button" class="cust-switch-account-btn" onclick="window.switchCustomerAccount()" title="Use another number">Switch</button>
+                    <div style="display:flex; gap:6px;">
+                        <button type="button" class="cust-switch-account-btn" onclick="window.openChangePasswordPrompt('${phone}', '${custEmail}')" title="Change Password" style="background:rgba(249,115,22,0.15); border:1px solid #f97316; color:#f97316; font-size:11px; padding:4px 8px; border-radius:6px; cursor:pointer;">🔑 Password</button>
+                        <button type="button" class="cust-switch-account-btn" onclick="window.switchCustomerAccount()" title="Sign out" style="background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#ef4444; font-size:11px; padding:4px 8px; border-radius:6px; cursor:pointer;">Sign Out</button>
+                    </div>
                 </div>
-                <div class="cust-lookup-box" style="margin-top: 10px;">
+                <div class="cust-lookup-box" style="margin-top: 14px; text-align:center; padding:30px 20px;">
+                    <div style="font-size:36px; margin-bottom:10px;">🍲</div>
                     <h4 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 6px;">No Past Orders Yet</h4>
                     <p style="font-size: 12.5px; color: #94a3b8; margin-bottom: 20px;">
                         Ready for authentic Taste of Desi Swag? Explore our chef-special Littis, Combos, and Thalis.
                     </p>
-                    <a href="menu/index.html" class="cust-lookup-btn" style="text-decoration:none; display:inline-block;">Explore Menu & Order Now</a>
+                    <a href="/menu" class="cust-lookup-btn" style="text-decoration:none; display:inline-block; padding:12px 24px; border-radius:10px;">Explore Menu & Order Now</a>
                 </div>
             `;
             return;
         }
 
-        // Returning Customer View
-        const custName = data.customer?.name || 'Customer';
-        const address = data.customer?.address || '';
-        const landmark = data.customer?.landmark || '';
+        const address = finalCustomer?.address || data.customer?.address || '';
+        const landmark = finalCustomer?.landmark || data.customer?.landmark || '';
 
         // Check for active order in progress
         const activeOrder = data.orders.find(o => o.status === 'pending' || o.status === 'accepted' || o.status === 'confirmed' || o.status === 'dispatched');
@@ -5540,15 +5781,15 @@ window.fetchCustomerOrders = async function(phone) {
             const shortId = activeTrackId ? String(activeTrackId).slice(-6).toUpperCase() : 'LW';
             const statusLabel = activeOrder.status === 'dispatched' ? 'Out for Delivery' : (activeOrder.status === 'accepted' || activeOrder.status === 'confirmed' ? 'Preparing in Kitchen' : 'Order Placed (Pending)');
             liveOrderHtml = `
-                <div class="cust-live-order-banner">
-                    <div class="cust-live-order-left">
-                        <div class="cust-live-order-icon">🛵</div>
+                <div class="cust-live-order-banner" style="background:linear-gradient(135deg, rgba(249,115,22,0.15), rgba(234,88,12,0.06)); border:1px solid rgba(249,115,22,0.3); border-radius:14px; padding:14px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <div class="cust-live-order-left" style="display:flex; align-items:center; gap:10px;">
+                        <div class="cust-live-order-icon" style="font-size:24px;">🛵</div>
                         <div>
-                            <div class="cust-live-order-title">Active Order: #${shortId}</div>
-                            <div class="cust-live-order-sub">${statusLabel} • ${(activeOrder.items || []).map(i => `${i.quantity}x ${i.name}`).join(', ')}</div>
+                            <div class="cust-live-order-title" style="font-weight:800; font-size:14px; color:#fff;">Active Order: #${shortId}</div>
+                            <div class="cust-live-order-sub" style="font-size:12px; color:#f97316;">${statusLabel}</div>
                         </div>
                     </div>
-                    <a href="track.html?id=${activeTrackId}" class="cust-live-order-btn">Track Live Status →</a>
+                    <a href="track.html?id=${activeTrackId}" class="cust-live-order-btn" style="background:#f97316; color:#fff; font-size:12px; font-weight:800; padding:8px 14px; border-radius:8px; text-decoration:none;">Track Live Status →</a>
                 </div>
             `;
         }
@@ -5579,36 +5820,34 @@ window.fetchCustomerOrders = async function(phone) {
             const statusColor = rawStatus === 'delivered' ? '#22c55e' : (rawStatus === 'cancelled' ? '#ef4444' : '#f59e0b');
             const statusText = rawStatus.toUpperCase();
 
-            // If order is not delivered/cancelled yet (live/pending in kitchen/on the way), show "Track Order" button!
-            // If order is delivered or cancelled (completed), show "View Details" & "Reorder"!
             let actionButtons = '';
             if (isLive) {
                 actionButtons = `
-                    <a href="track.html?id=${trackId}" class="cust-live-order-btn" style="padding:7px 14px; font-size:12px; font-weight:800; border-radius:8px; text-decoration:none;">
+                    <a href="track.html?id=${trackId}" class="cust-live-order-btn" style="padding:7px 14px; font-size:12px; font-weight:800; border-radius:8px; text-decoration:none; background:#f97316; color:#fff;">
                         <span>📍 Track Order →</span>
                     </a>
                 `;
             } else {
                 actionButtons = `
-                    <button type="button" class="cust-view-order-btn" onclick="window.viewPastOrderDetails('${ord._id}')" title="View Order Details & Bill">
+                    <button type="button" class="cust-view-order-btn" onclick="window.viewPastOrderDetails('${ord._id}')" title="View Order Details & Bill" style="padding:6px 12px; font-size:11.5px; font-weight:700; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:transparent; color:#fff; cursor:pointer;">
                         <span>👁️ View Details</span>
                     </button>
-                    <button type="button" class="cust-reorder-btn" onclick="window.reorderPastOrder('${ord._id}')" title="Add all items to cart">
+                    <button type="button" class="cust-reorder-btn" onclick="window.reorderPastOrder('${ord._id}')" title="Add all items to cart" style="padding:6px 12px; font-size:11.5px; font-weight:800; border-radius:8px; border:none; background:#f97316; color:#fff; cursor:pointer;">
                         <span>Reorder</span>
                     </button>
                 `;
             }
 
             return `
-                <div class="cust-past-order-card">
-                    <div class="cust-order-top-row">
-                        <span class="cust-order-id">#${shortId}</span>
+                <div class="cust-past-order-card" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px; margin-bottom:12px;">
+                    <div class="cust-order-top-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <span class="cust-order-id" style="font-weight:900; font-family:monospace; color:#f97316;">#${shortId}</span>
                         <span style="font-size:10.5px; font-weight:800; color:${statusColor}; background:rgba(255,255,255,0.06); padding:2px 8px; border-radius:12px;">${statusText}</span>
                     </div>
-                    <div class="cust-order-date">${dateStr}</div>
-                    <div class="cust-order-items">${itemsStr}</div>
-                    <div class="cust-order-footer-row">
-                        <span class="cust-order-total">₹${total}</span>
+                    <div class="cust-order-date" style="font-size:11.5px; color:#94a3b8; margin-bottom:6px;">${dateStr}</div>
+                    <div class="cust-order-items" style="font-size:13px; color:#e2e8f0; margin-bottom:10px;">${itemsStr}</div>
+                    <div class="cust-order-footer-row" style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed rgba(255,255,255,0.08); padding-top:8px;">
+                        <span class="cust-order-total" style="font-size:15px; font-weight:900; color:#fbbf24;">₹${total}</span>
                         <div style="display:flex; gap:8px; align-items:center;">
                             ${actionButtons}
                         </div>
@@ -5618,16 +5857,21 @@ window.fetchCustomerOrders = async function(phone) {
         }).join('');
 
         container.innerHTML = `
-            <div class="cust-profile-header-card">
+            <div class="cust-profile-header-card" style="background:linear-gradient(135deg, rgba(249,115,22,0.12), rgba(245,158,11,0.05)); border:1px solid rgba(245,158,11,0.25); border-radius:14px; padding:14px 16px; display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                    <div class="cust-profile-greeting">Welcome back, ${custName}! 👋</div>
-                    <div class="cust-profile-phone">📱 +91 ${phone} • ${data.orders.length} Orders</div>
+                    <div class="cust-profile-greeting" style="font-size:15px; font-weight:800; color:#fff;">Welcome back, ${custName}! 👋</div>
+                    <div class="cust-profile-phone" style="font-size:12px; color:#f59e0b; font-weight:600; margin-top:2px;">📱 +91 ${phone} ${custEmail ? `• 📧 ${custEmail}` : ''}</div>
                 </div>
-                <button type="button" class="cust-switch-account-btn" onclick="window.switchCustomerAccount()" title="Use another number">Switch</button>
+                <div style="display:flex; gap:6px;">
+                    <button type="button" class="cust-switch-account-btn" onclick="window.openChangePasswordPrompt('${phone}', '${custEmail}')" title="Change Password" style="background:rgba(249,115,22,0.15); border:1px solid #f97316; color:#f97316; font-size:11px; padding:4px 8px; border-radius:6px; cursor:pointer;">🔑 Password</button>
+                    <button type="button" class="cust-switch-account-btn" onclick="window.switchCustomerAccount()" title="Sign out" style="background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#ef4444; font-size:11px; padding:4px 8px; border-radius:6px; cursor:pointer;">Sign Out</button>
+                </div>
             </div>
 
-            ${liveOrderHtml}
-            ${addressCardHtml}
+            <div style="margin-top:14px;">
+                ${liveOrderHtml}
+                ${addressCardHtml}
+            </div>
 
             <div style="font-size: 13.5px; font-weight: 800; color: #fff; margin: 18px 0 12px; display:flex; justify-content:space-between; align-items:center;">
                 <span>Past Orders (${data.orders.length})</span>
@@ -5938,6 +6182,7 @@ function autoFillCheckoutFromSavedProfile(profile) {
 
     const nameInputs = [document.getElementById('checkout-name'), document.getElementById('cust-name'), document.getElementById('name')];
     const phoneInputs = [document.getElementById('checkout-phone'), document.getElementById('cust-phone'), document.getElementById('phone')];
+    const emailInputs = [document.getElementById('checkout-email'), document.getElementById('cust-email'), document.getElementById('email')];
     const whatsappInputs = [document.getElementById('checkout-whatsapp'), document.getElementById('cust-whatsapp')];
     const addressInputs = [document.getElementById('checkout-address'), document.getElementById('cust-address'), document.getElementById('address')];
     const landmarkInputs = [document.getElementById('checkout-landmark'), document.getElementById('cust-landmark'), document.getElementById('landmark')];
@@ -5947,6 +6192,9 @@ function autoFillCheckoutFromSavedProfile(profile) {
     });
     phoneInputs.forEach(input => {
         if (input && profile.phone) input.value = profile.phone;
+    });
+    emailInputs.forEach(input => {
+        if (input && profile.email && !input.value.trim()) input.value = profile.email;
     });
     whatsappInputs.forEach(input => {
         if (input && (profile.whatsapp || profile.phone)) input.value = profile.whatsapp || profile.phone;
@@ -6042,3 +6290,33 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('appinstalled', () => {
     console.log('✅ Littiwale Web App Installed Successfully');
 });
+
+// Dynamic Navbar Auth Button (Switches between "Sign In" and "Customer Name / Orders")
+function updateNavAuthButton() {
+    try {
+        const profile = JSON.parse(localStorage.getItem('littiwale_customer_profile') || '{}');
+        const phone = localStorage.getItem('littiwale_customer_phone');
+        const authText = document.getElementById('nav-auth-text');
+        const authBtn = document.getElementById('nav-auth-btn');
+
+        if ((profile && profile.name) || phone) {
+            const firstName = (profile.name || 'Account').split(' ')[0];
+            if (authText) authText.textContent = firstName;
+            if (authBtn) {
+                authBtn.href = '/orders.html';
+                authBtn.title = `Logged in as ${profile.name || phone} • View Orders & Profile`;
+            }
+        } else {
+            if (authText) authText.textContent = 'Sign In';
+            if (authBtn) {
+                authBtn.href = '/login.html';
+                authBtn.title = 'Sign In / Register';
+            }
+        }
+    } catch(e) {}
+}
+
+window.addEventListener('DOMContentLoaded', updateNavAuthButton);
+window.addEventListener('load', updateNavAuthButton);
+
+

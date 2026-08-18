@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 
 # Sitemap for Search Engine Crawlers
-Sitemap: https://littiwale-barbil.vercel.app/sitemap.xml
+Sitemap: https://littiwale.co.in/sitemap.xml

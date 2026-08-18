@@ -11,10 +11,16 @@
     <meta name="apple-mobile-web-app-title" content="Littiwale">
     <title>Live Order Tracking | Littiwale Barbil</title>
     <meta name="description" content="Track your live food order status from Littiwale Barbil. Real-time kitchen preparation, delivery progress, and rider updates.">
-    <link rel="canonical" href="https://littiwale-barbil.vercel.app/track.html">
-    <link rel="icon" type="image/png" href="images/logo.png">
-    <link rel="apple-touch-icon" href="images/logo.png">
-    <link rel="manifest" href="manifest.json">
+    <link rel="canonical" href="https://littiwale.co.in/track.html">
+    <meta property="og:title" content="Live Order Tracking | Littiwale Barbil">
+    <meta property="og:description" content="Track your food preparation and delivery in real-time from Littiwale Barbil.">
+    <meta property="og:image" content="https://littiwale.co.in/images/logo.png">
+    <meta property="og:url" content="https://littiwale.co.in/track.html">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:image" content="https://littiwale.co.in/images/logo.png">
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+    <link rel="manifest" href="/manifest.json">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -925,7 +931,7 @@
     <script>
         const ADMIN_API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
             ? 'http://localhost:5001/api' 
-            : 'https://littiwale-admin.vercel.app/api';
+            : 'https://admin.littiwale.co.in/api';
 
         let activeOrderId = null;
         let pollTimer = null;

@@ -17,12 +17,18 @@
     <!-- ✅ AUTHOR -->
     <meta name="author" content="Littiwale Barbil">
 
+    <!-- ✅ CANONICAL -->
+    <link rel="canonical" href="https://littiwale.co.in/checkout">
+
     <!-- ✅ SOCIAL (OpenGraph / Google Preview) -->
     <meta property="og:title" content="Checkout | Littiwale Barbil | Best Restaurant & Food Delivery">
     <meta property="og:site_name" content="Littiwale Barbil">
     <meta property="og:description" content="Complete your order at Littiwale Barbil for authentic Litti Chokha, Thalis, Chole Bhature, Pizza, Biryani & more!">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="https://littiwale.com/images/logo.png">
+    <meta property="og:url" content="https://littiwale.co.in/checkout">
+    <meta property="og:image" content="https://littiwale.co.in/images/logo.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:image" content="https://littiwale.co.in/images/logo.png">
 
     <!-- ✅ SCHEMA.ORG JSON-LD FOR LOCAL RESTAURANT SEO -->
     <script type="application/ld+json">
@@ -31,8 +37,8 @@
       "@graph": [
         {
           "@type": "WebSite",
-          "@id": "https://littiwale-barbil.vercel.app/#website",
-          "url": "https://littiwale-barbil.vercel.app/",
+          "@id": "https://littiwale.co.in/#website",
+          "url": "https://littiwale.co.in/",
           "name": "Littiwale Barbil",
           "alternateName": ["Littiwale", "Litti Wale Barbil", "Littiwale Restaurant"],
           "description": "Best Restaurant in Barbil offering authentic Litti Chokha, Pizza, Biryani, Snacks & Beverages."
@@ -47,9 +53,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Littiwale">
-    <link rel="icon" type="image/png" href="images/logo.png">
-    <link rel="apple-touch-icon" href="images/logo.png">
-    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+    <link rel="manifest" href="/manifest.json">
 
     <link rel="stylesheet" href="css/style.css">
 
@@ -155,6 +161,11 @@
                     </div>
                     <div class="form-group" style="margin-bottom:10px;">
                         <input type="tel" id="checkout-phone" class="form-control" placeholder="Calling Phone Number" style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:8px;">
+                    </div>
+
+                    <!-- Optional Email for PDF Bill & Updates -->
+                    <div class="form-group" style="margin-bottom:12px;">
+                        <input type="email" id="checkout-email" class="form-control" placeholder="Email Address (Optional — To receive Official PDF Bill on Delivery)" style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:8px; font-size:13.5px;">
                     </div>
 
                     <!-- WhatsApp Number Toggle Option -->

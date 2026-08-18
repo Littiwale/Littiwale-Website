@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sign In & Register | Littiwale Barbil</title>
+    <meta name="description" content="Sign in or register to Littiwale Barbil to order authentic Bihari Litti Chokha and track live food orders.">
+    <link rel="canonical" href="https://littiwale.co.in/login.html">
+    <meta property="og:title" content="Sign In & Register | Littiwale Barbil">
+    <meta property="og:description" content="Access your Littiwale account to save addresses and track live orders.">
+    <meta property="og:image" content="https://littiwale.co.in/images/logo.png">
+    <meta property="og:url" content="https://littiwale.co.in/login.html">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:image" content="https://littiwale.co.in/images/logo.png">
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body class="bg-primary">
+
+    <div id="auth-container">
+        
+        <!-- Logo Overlay -->
+        <div class="logo-overlay">
+            <a href="/" class="logo-icon" title="Littiwale Home">
+                <img src="images/logo.png" alt="Littiwale Logo">
+            </a>
+        </div>
+
+        <!-- LEFT PANEL — Mascot Panda (Desktop) -->
+        <div class="left">
+            <img class="mascot-img hero-img-login" src="images/login_panda.png" alt="Littiwale Login Mascot">
+            <img class="mascot-img hero-img-signup" src="images/signup_panda.png" alt="Littiwale Signup Mascot">
+        </div>
+
+        <!-- RIGHT PANEL — Auth Forms & Card -->
+        <div class="right">
+            <div class="card-inner">
+                
+                <!-- Animated Litti Loader -->
+                <div id="auth-loader">
+                    <div class="litti-loader">
+                        <div class="litti-fire">
+                            <div class="flame f1"></div>
+                            <div class="flame f2"></div>
+                            <div class="flame f3"></div>
+                        </div>
+                        <div class="litti-ball">
+                            <div class="litti-crack"></div>
+                        </div>
+                    </div>
+                    <p id="litti-loader-status" class="litti-loader-text">Litti pak rahi hai...</p>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <div id="tab-login" class="tab active">Login</div>
+                    <div id="tab-signup" class="tab">Signup</div>
+                    <div id="tab-guest" class="tab">⚡ Guest</div>
+                </div>
+
+                <!-- 1. LOGIN FORM -->
+                <div id="login-form-side" class="form-container form-show">
+                    <h1>Bhookh Lagi Kya? 🍲</h1>
+                    <p class="sub">Apna account kholo, taste ka swag shuru karo</p>
+
+                    <form id="login-form">
+                        <div class="field-group">
+                            <label class="field-label">Email or 10-Digit Mobile</label>
+                            <input type="text" id="login-identifier" placeholder="e.g. rahul@gmail.com or 9876543210" required autofocus>
+                        </div>
+                        <div class="field-group">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <label class="field-label" style="margin:0 0 6px;">Password (4-Char or Custom)</label>
+                                <button type="button" id="toggle-to-forgot" style="background:none; border:none; color:#f97316; font-size:11px; font-weight:700; cursor:pointer; margin-bottom:6px;">Forgot Password?</button>
+                            </div>
+                            <input type="password" id="login-password" placeholder="Enter password (e.g. L2W1)" required>
+                        </div>
+
+                        <div id="login-error" class="error-msg"></div>
+
+                        <button type="submit" id="login-submit-btn" class="btn-luxury">Sign In</button>
+                        
+                        <div class="divider">or</div>
+
+                        <button type="button" id="guest-btn" class="btn-social" onclick="window.switchToGuestTab()">
+                            <span>⚡ Continue as Guest (With Mobile Number)</span>
+                        </button>
+                    </form>
+
+                    <div class="register-link">
+                        Don't have an account? <button type="button" id="toggle-to-signup">Register now</button>
+                    </div>
+                </div>
+
+                <!-- 2. SIGNUP FORM -->
+                <div id="signup-form-side" class="form-container form-hide">
+                    <h1>Littiwale ke Apne Ho Jao 🎉</h1>
+                    <p class="sub">Register & get instant 4-character CAPITAL temp password in your email!</p>
+
+                    <form id="signup-form">
+                        <div class="field-group">
+                            <label class="field-label">Full Name *</label>
+                            <input type="text" id="signup-name" placeholder="e.g. Rahul Sharma" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">10-Digit Mobile Number *</label>
+                            <input type="tel" id="signup-phone" placeholder="9876543210" maxlength="10" pattern="[0-9]{10}" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Email Address * (For Temp Password & Bill)</label>
+                            <input type="email" id="signup-email" placeholder="rahul@gmail.com" required>
+                        </div>
+
+                        <div id="signup-error" class="error-msg"></div>
+
+                        <button type="submit" id="signup-submit-btn" class="btn-luxury">Create Account & Get Temp Pass</button>
+                        
+                        <div class="divider">or</div>
+
+                        <button type="button" id="guest-signup-btn" onclick="window.switchToGuestTab()" class="btn-social">
+                            <span>⚡ Continue as Guest</span>
+                        </button>
+                    </form>
+
+                    <div class="register-link">
+                        Already have an account? <button type="button" id="toggle-to-login">Log in</button>
+                    </div>
+                </div>
+
+                <!-- 3. GUEST MOBILE FORM -->
+                <div id="guest-form-side" class="form-container form-hide">
+                    <h1>Instant Guest Order 🚀</h1>
+                    <p class="sub">Enter your 10-digit mobile number to access saved addresses & past orders without any password.</p>
+
+                    <form id="guest-form" onsubmit="window.handleGuestMobileSubmit(event)">
+                        <div class="field-group">
+                            <label class="field-label">10-Digit Mobile Number *</label>
+                            <div style="display:flex; align-items:center; background:#18181f; border:1.5px solid rgba(255,255,255,0.1); border-radius:12px; padding:0 12px;">
+                                <span style="color:#f97316; font-weight:800; font-size:14px; margin-right:8px;">+91</span>
+                                <input type="tel" id="guest-phone-input" placeholder="9876543210" maxlength="10" pattern="[0-9]{10}" style="width:100%; background:transparent; border:none; color:#fff; font-size:15px; padding:12px 0; outline:none;" required autofocus>
+                            </div>
+                        </div>
+
+                        <div id="guest-error" class="error-msg"></div>
+
+                        <button type="submit" id="guest-submit-btn" class="btn-luxury">Continue to Menu & Orders →</button>
+                        
+                        <div style="text-align:center; margin-top:16px;">
+                            <span style="font-size:12px; color:#64748b;">🔒 Zero password or OTP required. Instant access.</span>
+                        </div>
+                    </form>
+
+                    <div class="register-link">
+                        Want password & perks? <button type="button" id="toggle-from-guest-to-login">Sign in here</button>
+                    </div>
+                </div>
+
+                <!-- 4. FORGOT PASSWORD FORM -->
+                <div id="forgot-form-side" class="form-container form-hide">
+                    <h1>Reset Password 🔑</h1>
+                    <p class="sub">Enter your registered Email or Mobile. We will send a fresh 4-character CAPITAL password.</p>
+
+                    <form id="forgot-form">
+                        <div class="field-group">
+                            <label class="field-label">Registered Email or Mobile</label>
+                            <input type="text" id="forgot-identifier" placeholder="e.g. rahul@gmail.com or 9876543210" required>
+                        </div>
+
+                        <div id="forgot-error" class="error-msg"></div>
+
+                        <button type="submit" id="forgot-submit-btn" class="btn-luxury">Send New 4-Char Password</button>
+                    </form>
+
+                    <div class="register-link">
+                        <button type="button" id="toggle-back-to-login">← Back to Login</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- MOBILE ONLY: Full Panda Swipe Screen -->
+        <div id="mobile-panda-screen">
+            <div class="panda-glow"></div>
+            <img src="images/login_panda.png" alt="Littiwale Panda Mascot" id="mobile-panda-img" />
+            <div class="mobile-brand-name">LITTIWALE</div>
+            <div class="mobile-swipe-hints">
+                <div class="swipe-hint-up" id="swipe-up-hint" onclick="window.slidePandaUpToLogin()">
+                    <div class="swipe-arrows-up">
+                        <span class="swipe-arr">&#8679;</span>
+                        <span class="swipe-arr dim">&#8679;</span>
+                    </div>
+                    <div class="swipe-text-up">Swipe Up / Tap to Login</div>
+                </div>
+                <div class="swipe-hint-down" id="swipe-down-hint" onclick="window.slidePandaDownToSignup()">
+                    <div class="swipe-arrows-down">
+                        <span class="swipe-arr">&#8679;</span>
+                        <span class="swipe-arr dim">&#8679;</span>
+                    </div>
+                    <div class="swipe-text-down">Swipe Down / Tap to Sign Up</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/login.js"></script>
+
+    <!-- Mobile Swipe Touch & Drag Handler -->
+    <script>
+    (function () {
+        var overlay = document.getElementById('mobile-panda-screen');
+        if (!overlay) return;
+
+        var startY = null;
+        var isDragging = false;
+
+        window.slidePandaUpToLogin = function() {
+            if (!overlay) return;
+            overlay.classList.remove('mpanda-hidden-down');
+            overlay.classList.add('mpanda-hidden');
+            setTimeout(function() {
+                var tabLogin = document.getElementById('tab-login');
+                if (tabLogin) tabLogin.click();
+            }, 100);
+        };
+
+        window.slidePandaDownToSignup = function() {
+            if (!overlay) return;
+            overlay.classList.remove('mpanda-hidden');
+            overlay.classList.add('mpanda-hidden-down');
+            setTimeout(function() {
+                var tabSignup = document.getElementById('tab-signup');
+                if (tabSignup) tabSignup.click();
+            }, 100);
+        };
+
+        // Touch Gestures
+        overlay.addEventListener('touchstart', function (e) {
+            startY = e.touches[0].clientY;
+        }, { passive: true });
+
+        overlay.addEventListener('touchmove', function (e) {
+            if (startY === null) return;
+            var deltaY = startY - e.touches[0].clientY;
+            if (deltaY > 30) {
+                window.slidePandaUpToLogin();
+                startY = null;
+            } else if (deltaY < -30) {
+                window.slidePandaDownToSignup();
+                startY = null;
+            }
+        }, { passive: true });
+
+        overlay.addEventListener('touchend', function () { startY = null; }, { passive: true });
+
+        // Mouse drag support for DevTools responsive testing
+        overlay.addEventListener('mousedown', function (e) {
+            startY = e.clientY;
+            isDragging = true;
+        });
+
+        window.addEventListener('mousemove', function (e) {
+            if (!isDragging || startY === null) return;
+            var deltaY = startY - e.clientY;
+            if (deltaY > 30) {
+                window.slidePandaUpToLogin();
+                isDragging = false;
+                startY = null;
+            } else if (deltaY < -30) {
+                window.slidePandaDownToSignup();
+                isDragging = false;
+                startY = null;
+            }
+        });
+
+        window.addEventListener('mouseup', function () {
+            isDragging = false;
+            startY = null;
+        });
+
+        // Wheel swipe support
+        overlay.addEventListener('wheel', function(e) {
+            if (e.deltaY > 20) {
+                window.slidePandaUpToLogin();
+            } else if (e.deltaY < -20) {
+                window.slidePandaDownToSignup();
+            }
+        }, { passive: true });
+    })();
+    </script>
+</body>
+</html>

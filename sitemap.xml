@@ -3,7 +3,7 @@
 
   <!-- Homepage -->
   <url>
-    <loc>https://littiwale-barbil.vercel.app/</loc>
+    <loc>https://littiwale.co.in/</loc>
     <lastmod>2026-08-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
@@ -11,7 +11,7 @@
 
   <!-- Full Digital Food Menu -->
   <url>
-    <loc>https://littiwale-barbil.vercel.app/menu</loc>
+    <loc>https://littiwale.co.in/menu</loc>
     <lastmod>2026-08-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
@@ -19,7 +19,7 @@
 
   <!-- Physical Outlet Menu -->
   <url>
-    <loc>https://littiwale-barbil.vercel.app/outlet-menu</loc>
+    <loc>https://littiwale.co.in/outlet-menu</loc>
     <lastmod>2026-08-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -27,7 +27,7 @@
 
   <!-- Customer My Orders & Account -->
   <url>
-    <loc>https://littiwale-barbil.vercel.app/orders.html</loc>
+    <loc>https://littiwale.co.in/orders.html</loc>
     <lastmod>2026-08-16</lastmod>
     <changefreq>always</changefreq>
     <priority>0.80</priority>
@@ -35,7 +35,7 @@
 
   <!-- Live Order Tracking -->
   <url>
-    <loc>https://littiwale-barbil.vercel.app/track.html</loc>
+    <loc>https://littiwale.co.in/track.html</loc>
     <lastmod>2026-08-16</lastmod>
     <changefreq>always</changefreq>
     <priority>0.80</priority>
@@ -43,8 +43,16 @@
 
   <!-- Secure Checkout -->
   <url>
-    <loc>https://littiwale-barbil.vercel.app/checkout</loc>
-    <lastmod>2026-08-16</lastmod>
+    <loc>https://littiwale.co.in/checkout.html</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+  </url>
+
+  <!-- Customer Login & Register -->
+  <url>
+    <loc>https://littiwale.co.in/login.html</loc>
+    <lastmod>2026-08-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
   </url>

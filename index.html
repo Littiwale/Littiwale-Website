@@ -18,19 +18,30 @@
     <meta name="author" content="Littiwale Barbil">
 
     <!-- ✅ CANONICAL & GEO TAGS -->
-    <link rel="canonical" href="https://littiwale-barbil.vercel.app/">
+    <link rel="canonical" href="https://littiwale.co.in/">
     <meta name="geo.region" content="IN-OR">
     <meta name="geo.placename" content="Barbil">
     <meta name="geo.position" content="22.1152751;85.3871145">
     <meta name="ICBM" content="22.1152751, 85.3871145">
 
-    <!-- ✅ SOCIAL (OpenGraph / Google Preview) -->
+    <!-- ✅ SOCIAL & OPEN GRAPH (WhatsApp, Facebook, Twitter Previews) -->
     <meta property="og:title" content="Littiwale Barbil | Best Restaurant & Food Delivery in Barbil">
     <meta property="og:site_name" content="Littiwale Barbil">
-    <meta property="og:description" content="Searching for the best restaurant or snacks & beverages near me in Barbil? Explore Littiwale for authentic Litti Chokha, Thalis, Chole Bhature, Pizza, Biryani & more!">
+    <meta property="og:description" content="Authentic Bihari Litti Chokha, Pure Veg Thali, Pizza, Biryani & Snacks in Barbil. Fast home delivery & takeaway!">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://littiwale-barbil.vercel.app/">
-    <meta property="og:image" content="https://littiwale-barbil.vercel.app/images/logo.png">
+    <meta property="og:url" content="https://littiwale.co.in/">
+    <meta property="og:image" content="https://littiwale.co.in/images/logo.png">
+    <meta property="og:image:secure_url" content="https://littiwale.co.in/images/logo.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:locale" content="en_IN">
+
+    <!-- ✅ TWITTER CARD -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Littiwale Barbil | Best Restaurant in Barbil">
+    <meta name="twitter:description" content="Order authentic Litti Chokha, Thalis, Pizza & Biryani online in Barbil. Fast delivery to your doorstep.">
+    <meta name="twitter:image" content="https://littiwale.co.in/images/logo.png">
 
     <!-- ✅ SCHEMA.ORG JSON-LD FOR LOCAL RESTAURANT SEO -->
     <script type="application/ld+json">
@@ -39,18 +50,18 @@
       "@graph": [
         {
           "@type": "WebSite",
-          "@id": "https://littiwale-barbil.vercel.app/#website",
-          "url": "https://littiwale-barbil.vercel.app/",
+          "@id": "https://littiwale.co.in/#website",
+          "url": "https://littiwale.co.in/",
           "name": "Littiwale Barbil",
           "alternateName": ["Littiwale", "Litti Wale Barbil", "Littiwale Restaurant"],
           "description": "Best Restaurant in Barbil offering authentic Litti Chokha, Pizza, Biryani, Snacks & Beverages."
         },
         {
           "@type": "Restaurant",
-          "@id": "https://littiwale-barbil.vercel.app/#cloudkitchen",
+          "@id": "https://littiwale.co.in/#cloudkitchen",
           "name": "Littiwale Barbil (Cloud Kitchen)",
-          "image": "https://littiwale-barbil.vercel.app/images/logo.png",
-          "url": "https://littiwale-barbil.vercel.app/",
+          "image": "https://littiwale.co.in/images/logo.png",
+          "url": "https://littiwale.co.in/",
           "telephone": "+916370680744",
           "priceRange": "₹100 - ₹500",
           "servesCuisine": ["North Indian", "South Indian", "Fast Food", "Bihari", "Snacks & Beverages"],
@@ -73,14 +84,14 @@
             "opens": "09:00",
             "closes": "23:00"
           },
-          "menu": "https://littiwale-barbil.vercel.app/menu"
+          "menu": "https://littiwale.co.in/menu"
         },
         {
           "@type": "Restaurant",
-          "@id": "https://littiwale-barbil.vercel.app/#physicaloutlet",
+          "@id": "https://littiwale.co.in/#physicaloutlet",
           "name": "Littiwale Barbil (Physical Outlet)",
-          "image": "https://littiwale-barbil.vercel.app/images/logo.png",
-          "url": "https://littiwale-barbil.vercel.app/",
+          "image": "https://littiwale.co.in/images/logo.png",
+          "url": "https://littiwale.co.in/",
           "telephone": "+916370680744",
           "priceRange": "₹50 - ₹300",
           "servesCuisine": ["Pure Veg", "South Indian", "Snacks & Beverages", "North Indian", "Fast Food"],
@@ -102,7 +113,7 @@
             "opens": "08:00",
             "closes": "22:00"
           },
-          "menu": "https://littiwale-barbil.vercel.app/menu"
+          "menu": "https://littiwale.co.in/menu"
         }
       ]
     }
@@ -114,9 +125,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Littiwale">
-    <link rel="icon" type="image/png" href="images/logo.png">
-    <link rel="apple-touch-icon" href="images/logo.png">
-    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+    <link rel="manifest" href="/manifest.json">
 
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/animations.css">
@@ -154,10 +165,10 @@
             </ul>
 
             <div style="display:flex; align-items:center; gap:8px;">
-                <button type="button" class="nav-my-orders-btn" onclick="openCustomerOrdersDrawer()" title="View past orders & saved address">
+                <a href="/login.html" id="nav-auth-btn" class="nav-my-orders-btn" title="Sign In / My Orders" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
                     <i class="fas fa-user-circle"></i>
-                    <span>My Orders</span>
-                </button>
+                    <span id="nav-auth-text">Sign In</span>
+                </a>
 
                 <a href="javascript:void(0)" class="cart-link nav-cart-btn">
                     <i class="fas fa-shopping-cart"></i>
