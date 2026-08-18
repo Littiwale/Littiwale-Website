@@ -328,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     const queryParams = new URLSearchParams(window.location.search);
-                    const nextUrl = queryParams.get('redirect') || '/checkout.html';
+                    const nextUrl = queryParams.get('redirect') || '/';
                     window.location.href = nextUrl;
                     return;
                 }

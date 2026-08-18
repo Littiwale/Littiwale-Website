@@ -415,6 +415,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ------- Main check + UI update -------
     function checkRestaurantStatus() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('admin') === '1' || urlParams.get('bypass') === '1') {
+            localStorage.setItem('littiwale_maintenance_bypass', 'true');
+        }
+
+        const isBypassed = localStorage.getItem('littiwale_maintenance_bypass') === 'true';
+        if (isBypassed) {
+            window.isRestaurantCurrentlyOpen = true;
+            if (overlay)          overlay.classList.remove('show');
+            if (closedBanner)     closedBanner.style.display = 'none';
+            if (countdownInterval){ clearInterval(countdownInterval); countdownInterval = null; }
+            if (countdownWrapper) countdownWrapper.classList.remove('visible');
+            document.body.classList.remove('restaurant-closed-mode');
+            return;
+        }
+
         const settings = window.littiWaleSettings || [];
         const isMaintenance = settings.some(s => s.isMaintenanceMode === true);
         

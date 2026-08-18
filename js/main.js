@@ -760,12 +760,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (hasUrlBypass) {
             localStorage.setItem('littiwale_maintenance_bypass', 'true');
             console.log('🔓 [LITTIWALE] Maintenance Mode Bypassed via Admin Secret URL!');
-            return;
         }
 
         const isLocallyBypassed = localStorage.getItem('littiwale_maintenance_bypass') === 'true' || sessionStorage.getItem('littiwale_maintenance_bypass') === 'true';
-        if (isLocallyBypassed) {
+        if (isLocallyBypassed || hasUrlBypass) {
             console.log('🔓 [LITTIWALE] Maintenance Mode Bypassed via active Admin Session!');
+            document.getElementById('lw-maintenance-overlay')?.remove();
+            document.getElementById('restaurant-closed-overlay')?.remove();
+            document.getElementById('store-offline-banner')?.remove();
+            document.getElementById('closed-sticky-banner')?.style && (document.getElementById('closed-sticky-banner').style.display = 'none');
+            document.body.classList.remove('restaurant-closed-mode');
+            window.isRestaurantCurrentlyOpen = true;
             return;
         }
 
@@ -5619,10 +5624,17 @@ window.closeCustomerOrdersDrawer = function() {
 };
 
 window.renderCustomerOrdersUI = function() {
-    const savedPhone = localStorage.getItem('littiwale_customer_phone');
-    if (savedPhone) {
-        window.fetchCustomerOrders(savedPhone);
+    const profile = JSON.parse(localStorage.getItem('littiwale_customer_profile') || localStorage.getItem('littiwale_customer_user') || '{}');
+    const savedPhone = localStorage.getItem('littiwale_customer_phone') || profile.phone;
+    const identifier = savedPhone || profile.email;
+
+    if (identifier) {
+        window.fetchCustomerOrders(identifier);
     } else {
+        if (window.location.pathname.includes('orders.html') || window.location.pathname.endsWith('/orders')) {
+            window.location.href = '/login.html?redirect=/orders.html';
+            return;
+        }
         window.renderCustomerPhoneLookupView();
     }
 };
@@ -5848,21 +5860,25 @@ window.handleCustomerForgotSubmit = async function(e) {
     }
 };
 
-window.switchCustomerAccount = function() {
+window.logoutCustomer = function() {
     localStorage.removeItem('littiwale_customer_phone');
     localStorage.removeItem('littiwale_customer_profile');
-    window.renderCustomerPhoneLookupView('signin');
+    localStorage.removeItem('littiwale_customer_user');
+    localStorage.removeItem('littiwale_customer_token');
+    localStorage.removeItem('littiwale_is_guest');
+    window.location.href = '/';
 };
+window.switchCustomerAccount = window.logoutCustomer;
 
 window.openChangePasswordPrompt = async function(phone, email) {
-    const newPass = prompt('Enter your new custom permanent password:');
+    const newPass = prompt('Set your 4-character PIN or custom password (e.g. 1234):');
     if (!newPass || newPass.trim().length < 3) {
-        if (newPass !== null) alert('Password must be at least 3 characters');
+        if (newPass !== null) alert('Password / PIN must be at least 3 characters');
         return;
     }
 
     try {
-        const apiBase = window.ADMIN_API_BASE_URL || 'http://localhost:5001/api';
+        const apiBase = window.ADMIN_API_BASE_URL || 'https://admin.littiwale.co.in/api';
         const res = await fetch(`${apiBase}/customer/change-password`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -5874,13 +5890,46 @@ window.openChangePasswordPrompt = async function(phone, email) {
         });
         const data = await res.json();
         if (res.ok && data.success) {
-            if (typeof window.showToast === 'function') window.showToast('✅ Password changed successfully!', 'success');
-            else alert('Password changed successfully!');
+            if (typeof window.showToast === 'function') window.showToast('✅ PIN / Password updated successfully!', 'success');
+            else alert('✅ PIN / Password updated successfully!');
         } else {
             alert(data.error || 'Could not update password');
         }
     } catch(e) {
-        alert('Error changing password');
+        alert('Error updating password');
+    }
+};
+
+window.openAddPhonePrompt = async function(email) {
+    const phone = prompt('Enter your 10-digit Mobile Number:');
+    if (!phone) return;
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+    if (cleanPhone.length !== 10) {
+        alert('Please enter a valid 10-digit mobile number');
+        return;
+    }
+
+    try {
+        const apiBase = window.ADMIN_API_BASE_URL || 'https://admin.littiwale.co.in/api';
+        const res = await fetch(`${apiBase}/customer/update-profile`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: email,
+                phone: cleanPhone
+            })
+        });
+        const data = await res.json();
+        if (res.ok && data.success && data.customer) {
+            localStorage.setItem('littiwale_customer_profile', JSON.stringify(data.customer));
+            localStorage.setItem('littiwale_customer_phone', data.customer.phone);
+            alert('✅ Mobile number linked successfully!');
+            window.renderCustomerOrdersUI();
+        } else {
+            alert(data.error || 'Could not update phone number');
+        }
+    } catch(e) {
+        alert('Error saving phone number');
     }
 };
 
@@ -5901,21 +5950,44 @@ window.handleCustomerPhoneSubmit = function(e) {
     window.fetchCustomerOrders(phone);
 };
 
-window.fetchCustomerOrders = async function(phone) {
+window.switchProfileTab = function(tabName) {
+    const ordersSec = document.getElementById('cust-sec-orders');
+    const addressSec = document.getElementById('cust-sec-address');
+    const securitySec = document.getElementById('cust-sec-security');
+
+    const tabOrders = document.getElementById('cust-tab-orders');
+    const tabAddress = document.getElementById('cust-tab-address');
+    const tabSecurity = document.getElementById('cust-tab-security');
+
+    if (ordersSec) ordersSec.style.display = tabName === 'orders' ? 'block' : 'none';
+    if (addressSec) addressSec.style.display = tabName === 'address' ? 'block' : 'none';
+    if (securitySec) securitySec.style.display = tabName === 'security' ? 'block' : 'none';
+
+    if (tabOrders) tabOrders.style.background = tabName === 'orders' ? '#f59e0b' : 'transparent';
+    if (tabOrders) tabOrders.style.color = tabName === 'orders' ? '#000' : '#cbd5e1';
+
+    if (tabAddress) tabAddress.style.background = tabName === 'address' ? '#f59e0b' : 'transparent';
+    if (tabAddress) tabAddress.style.color = tabName === 'address' ? '#000' : '#cbd5e1';
+
+    if (tabSecurity) tabSecurity.style.background = tabName === 'security' ? '#f59e0b' : 'transparent';
+    if (tabSecurity) tabSecurity.style.color = tabName === 'security' ? '#000' : '#cbd5e1';
+};
+
+window.fetchCustomerOrders = async function(identifier) {
     const container = getCustomerOrdersTargetContainer();
     if (!container) return;
 
     container.innerHTML = `
         <div style="text-align:center; padding: 50px 20px; color: #94a3b8;">
-            <div class="spinner" style="margin: 0 auto 16px; width: 36px; height: 36px; border:3px solid rgba(255,255,255,0.1); border-top-color: #f97316; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
-            <div style="font-size: 14px; font-weight: 700; color: #fff;">Looking up your orders...</div>
-            <div style="font-size: 12px; margin-top: 4px; color: #64748b;">+91 ${phone}</div>
+            <div class="spinner" style="margin: 0 auto 16px; width: 36px; height: 36px; border:3px solid rgba(255,255,255,0.1); border-top-color: #f59e0b; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+            <div style="font-size: 14px; font-weight: 700; color: #fff;">Loading your profile & orders...</div>
+            <div style="font-size: 12px; margin-top: 4px; color: #64748b;">${identifier}</div>
         </div>
     `;
 
     try {
-        const apiBase = window.ADMIN_API_BASE_URL || 'http://localhost:5001/api';
-        const res = await fetch(`${apiBase}/orders/customer/${phone}`);
+        const apiBase = window.ADMIN_API_BASE_URL || 'https://admin.littiwale.co.in/api';
+        const res = await fetch(`${apiBase}/orders/customer/${encodeURIComponent(identifier)}`);
         const data = await res.json();
 
         let orders = [];
@@ -5929,47 +6001,25 @@ window.fetchCustomerOrders = async function(phone) {
 
         window.cachedCustomerOrders = orders;
 
-        const storedProfile = JSON.parse(localStorage.getItem('littiwale_customer_profile') || '{}');
+        const storedProfile = JSON.parse(localStorage.getItem('littiwale_customer_profile') || localStorage.getItem('littiwale_customer_user') || '{}');
         const finalCustomer = { ...storedProfile, ...(customer || {}) };
 
-        if (finalCustomer && finalCustomer.phone) {
+        if (finalCustomer && (finalCustomer.phone || finalCustomer.email)) {
             localStorage.setItem('littiwale_customer_profile', JSON.stringify(finalCustomer));
             autoFillCheckoutFromSavedProfile(finalCustomer);
         }
 
-        const custName = finalCustomer?.name || data.customer?.name || 'Customer';
-        const custEmail = finalCustomer?.email || data.customer?.email || '';
-
-        if (orders.length === 0) {
-            // New Customer View
-            container.innerHTML = `
-                <div class="cust-profile-header-card" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px 16px; display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <div class="cust-profile-greeting" style="font-size:15px; font-weight:800; color:#fff;">Welcome to Littiwale, ${custName}! 👋</div>
-                        <div class="cust-profile-phone" style="font-size:12px; color:#94a3b8; margin-top:2px;">📱 +91 ${phone} ${custEmail ? `• 📧 ${custEmail}` : ''}</div>
-                    </div>
-                    <div style="display:flex; gap:6px;">
-                        <button type="button" class="cust-switch-account-btn" onclick="window.openChangePasswordPrompt('${phone}', '${custEmail}')" title="Change Password" style="background:rgba(249,115,22,0.15); border:1px solid #f97316; color:#f97316; font-size:11px; padding:4px 8px; border-radius:6px; cursor:pointer;">🔑 Password</button>
-                        <button type="button" class="cust-switch-account-btn" onclick="window.switchCustomerAccount()" title="Sign out" style="background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#ef4444; font-size:11px; padding:4px 8px; border-radius:6px; cursor:pointer;">Sign Out</button>
-                    </div>
-                </div>
-                <div class="cust-lookup-box" style="margin-top: 14px; text-align:center; padding:30px 20px;">
-                    <div style="font-size:36px; margin-bottom:10px;">🍲</div>
-                    <h4 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 6px;">No Past Orders Yet</h4>
-                    <p style="font-size: 12.5px; color: #94a3b8; margin-bottom: 20px;">
-                        Ready for authentic Taste of Desi Swag? Explore our chef-special Littis, Combos, and Thalis.
-                    </p>
-                    <a href="/menu" class="cust-lookup-btn" style="text-decoration:none; display:inline-block; padding:12px 24px; border-radius:10px;">Explore Menu & Order Now</a>
-                </div>
-            `;
-            return;
-        }
+        const custName = finalCustomer?.name || 'Customer';
+        const custEmail = finalCustomer?.email || '';
+        const custPhone = finalCustomer?.phone || (identifier.includes('@') ? '' : identifier);
+        const avatarUrl = finalCustomer?.avatarUrl || '';
+        const initial = custName.charAt(0).toUpperCase();
 
         const address = finalCustomer?.address || data.customer?.address || '';
         const landmark = finalCustomer?.landmark || data.customer?.landmark || '';
 
         // Check for active order in progress
-        const activeOrder = data.orders.find(o => o.status === 'pending' || o.status === 'accepted' || o.status === 'confirmed' || o.status === 'dispatched');
+        const activeOrder = orders.find(o => o.status === 'pending' || o.status === 'accepted' || o.status === 'confirmed' || o.status === 'dispatched');
 
         let liveOrderHtml = '';
         if (activeOrder) {
@@ -5977,103 +6027,155 @@ window.fetchCustomerOrders = async function(phone) {
             const shortId = activeTrackId ? String(activeTrackId).slice(-6).toUpperCase() : 'LW';
             const statusLabel = activeOrder.status === 'dispatched' ? 'Out for Delivery' : (activeOrder.status === 'accepted' || activeOrder.status === 'confirmed' ? 'Preparing in Kitchen' : 'Order Placed (Pending)');
             liveOrderHtml = `
-                <div class="cust-live-order-banner" style="background:linear-gradient(135deg, rgba(249,115,22,0.15), rgba(234,88,12,0.06)); border:1px solid rgba(249,115,22,0.3); border-radius:14px; padding:14px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-                    <div class="cust-live-order-left" style="display:flex; align-items:center; gap:10px;">
-                        <div class="cust-live-order-icon" style="font-size:24px;">🛵</div>
+                <div class="cust-live-order-banner" style="background:linear-gradient(135deg, rgba(245,158,11,0.18), rgba(217,119,6,0.08)); border:1.5px solid #f59e0b; border-radius:14px; padding:14px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <div class="cust-live-order-left" style="display:flex; align-items:center; gap:12px;">
+                        <div class="cust-live-order-icon" style="font-size:26px;">🛵</div>
                         <div>
-                            <div class="cust-live-order-title" style="font-weight:800; font-size:14px; color:#fff;">Active Order: #${shortId}</div>
-                            <div class="cust-live-order-sub" style="font-size:12px; color:#f97316;">${statusLabel}</div>
+                            <div class="cust-live-order-title" style="font-weight:800; font-size:14px; color:#fff;">Live Order: #${shortId}</div>
+                            <div class="cust-live-order-sub" style="font-size:12px; color:#f59e0b; font-weight:700;">${statusLabel}</div>
                         </div>
                     </div>
-                    <a href="track.html?id=${activeTrackId}" class="cust-live-order-btn" style="background:#f97316; color:#fff; font-size:12px; font-weight:800; padding:8px 14px; border-radius:8px; text-decoration:none;">Track Live Status →</a>
+                    <a href="track.html?id=${activeTrackId}" class="cust-live-order-btn" style="background:#f59e0b; color:#000; font-size:12px; font-weight:800; padding:8px 14px; border-radius:8px; text-decoration:none;">Track Live Status →</a>
                 </div>
             `;
         }
 
-        let addressCardHtml = '';
-        if (address) {
-            addressCardHtml = `
-                <div class="cust-saved-address-card" style="background:var(--bg-surface, #18181f); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px 18px; margin-bottom:18px;">
-                    <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:#fbbf24; letter-spacing:0.8px; margin-bottom:4px;">
-                        <span>Saved Delivery Address</span>
-                    </div>
-                    <div style="font-size:13.5px; color:#e2e8f0; line-height:1.4;">
-                        <strong>${custName}</strong><br>
-                        ${address}${landmark ? `<br><span style="color:#94a3b8; font-size:12px;">Landmark: ${landmark}</span>` : ''}
-                    </div>
+        let ordersListHtml = '';
+        if (orders.length === 0) {
+            ordersListHtml = `
+                <div class="cust-lookup-box" style="margin-top: 10px; text-align:center; padding:30px 20px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:14px;">
+                    <div style="font-size:36px; margin-bottom:10px;">🍲</div>
+                    <h4 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 6px;">No Past Orders Yet</h4>
+                    <p style="font-size: 12.5px; color: #94a3b8; margin-bottom: 20px;">
+                        Ready for authentic Taste of Desi Swag? Explore our chef-special Littis, Combos, and Thalis.
+                    </p>
+                    <a href="/menu" class="cust-lookup-btn" style="text-decoration:none; display:inline-block; padding:12px 24px; border-radius:10px; background:#f59e0b; color:#000; font-weight:800;">Explore Menu & Order Now</a>
                 </div>
             `;
-        }
+        } else {
+            ordersListHtml = orders.map(ord => {
+                const trackId = ord.orderId || ord._id || ord.id || '';
+                const shortId = trackId ? String(trackId).slice(-6).toUpperCase() : 'LW-ORD';
+                const dateStr = ord.createdAt ? new Date(ord.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent';
+                const total = ord.finalTotal || ord.subtotal || 0;
+                const itemsStr = (ord.items || []).map(i => `${i.quantity}x ${i.name}`).join(', ');
+                const rawStatus = (ord.status || 'pending').toLowerCase();
+                const isLive = rawStatus === 'pending' || rawStatus === 'accepted' || rawStatus === 'confirmed' || rawStatus === 'dispatched';
+                const statusColor = rawStatus === 'delivered' ? '#22c55e' : (rawStatus === 'cancelled' ? '#ef4444' : '#f59e0b');
+                const statusText = rawStatus.toUpperCase();
 
-        const ordersListHtml = data.orders.map(ord => {
-            const trackId = ord.orderId || ord._id || ord.id || '';
-            const shortId = trackId ? String(trackId).slice(-6).toUpperCase() : 'LW-ORD';
-            const dateStr = ord.createdAt ? new Date(ord.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent';
-            const total = ord.finalTotal || ord.subtotal || 0;
-            const itemsStr = (ord.items || []).map(i => `${i.quantity}x ${i.name}`).join(', ');
-            const rawStatus = (ord.status || 'pending').toLowerCase();
-            const isLive = rawStatus === 'pending' || rawStatus === 'accepted' || rawStatus === 'confirmed' || rawStatus === 'dispatched';
-            const statusColor = rawStatus === 'delivered' ? '#22c55e' : (rawStatus === 'cancelled' ? '#ef4444' : '#f59e0b');
-            const statusText = rawStatus.toUpperCase();
+                let actionButtons = '';
+                if (isLive) {
+                    actionButtons = `
+                        <a href="track.html?id=${trackId}" class="cust-live-order-btn" style="padding:7px 14px; font-size:12px; font-weight:800; border-radius:8px; text-decoration:none; background:#f59e0b; color:#000;">
+                            <span>📍 Track Order →</span>
+                        </a>
+                    `;
+                } else {
+                    actionButtons = `
+                        <button type="button" class="cust-view-order-btn" onclick="window.viewPastOrderDetails('${ord._id}')" title="View Order Details & Bill" style="padding:6px 12px; font-size:11.5px; font-weight:700; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:transparent; color:#fff; cursor:pointer;">
+                            <span>👁️ View Details</span>
+                        </button>
+                        <button type="button" class="cust-reorder-btn" onclick="window.reorderPastOrder('${ord._id}')" title="Add all items to cart" style="padding:6px 12px; font-size:11.5px; font-weight:800; border-radius:8px; border:none; background:#f59e0b; color:#000; cursor:pointer;">
+                            <span>Reorder</span>
+                        </button>
+                    `;
+                }
 
-            let actionButtons = '';
-            if (isLive) {
-                actionButtons = `
-                    <a href="track.html?id=${trackId}" class="cust-live-order-btn" style="padding:7px 14px; font-size:12px; font-weight:800; border-radius:8px; text-decoration:none; background:#f97316; color:#fff;">
-                        <span>📍 Track Order →</span>
-                    </a>
-                `;
-            } else {
-                actionButtons = `
-                    <button type="button" class="cust-view-order-btn" onclick="window.viewPastOrderDetails('${ord._id}')" title="View Order Details & Bill" style="padding:6px 12px; font-size:11.5px; font-weight:700; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:transparent; color:#fff; cursor:pointer;">
-                        <span>👁️ View Details</span>
-                    </button>
-                    <button type="button" class="cust-reorder-btn" onclick="window.reorderPastOrder('${ord._id}')" title="Add all items to cart" style="padding:6px 12px; font-size:11.5px; font-weight:800; border-radius:8px; border:none; background:#f97316; color:#fff; cursor:pointer;">
-                        <span>Reorder</span>
-                    </button>
-                `;
-            }
-
-            return `
-                <div class="cust-past-order-card" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px; margin-bottom:12px;">
-                    <div class="cust-order-top-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                        <span class="cust-order-id" style="font-weight:900; font-family:monospace; color:#f97316;">#${shortId}</span>
-                        <span style="font-size:10.5px; font-weight:800; color:${statusColor}; background:rgba(255,255,255,0.06); padding:2px 8px; border-radius:12px;">${statusText}</span>
-                    </div>
-                    <div class="cust-order-date" style="font-size:11.5px; color:#94a3b8; margin-bottom:6px;">${dateStr}</div>
-                    <div class="cust-order-items" style="font-size:13px; color:#e2e8f0; margin-bottom:10px;">${itemsStr}</div>
-                    <div class="cust-order-footer-row" style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed rgba(255,255,255,0.08); padding-top:8px;">
-                        <span class="cust-order-total" style="font-size:15px; font-weight:900; color:#fbbf24;">₹${total}</span>
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            ${actionButtons}
+                return `
+                    <div class="cust-past-order-card" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px; margin-bottom:12px;">
+                        <div class="cust-order-top-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span class="cust-order-id" style="font-weight:900; font-family:monospace; color:#f59e0b;">#${shortId}</span>
+                            <span style="font-size:10.5px; font-weight:800; color:${statusColor}; background:rgba(255,255,255,0.06); padding:2px 8px; border-radius:12px;">${statusText}</span>
+                        </div>
+                        <div class="cust-order-date" style="font-size:11.5px; color:#94a3b8; margin-bottom:6px;">${dateStr}</div>
+                        <div class="cust-order-items" style="font-size:13px; color:#e2e8f0; margin-bottom:10px;">${itemsStr}</div>
+                        <div class="cust-order-footer-row" style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed rgba(255,255,255,0.08); padding-top:8px;">
+                            <span class="cust-order-total" style="font-size:15px; font-weight:900; color:#fbbf24;">₹${total}</span>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                ${actionButtons}
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
-        }).join('');
+                `;
+            }).join('');
+        }
 
         container.innerHTML = `
-            <div class="cust-profile-header-card" style="background:linear-gradient(135deg, rgba(249,115,22,0.12), rgba(245,158,11,0.05)); border:1px solid rgba(245,158,11,0.25); border-radius:14px; padding:14px 16px; display:flex; justify-content:space-between; align-items:center;">
+            <!-- Customer Luxury Profile Header -->
+            <div class="cust-profile-header-card" style="background:linear-gradient(135deg, rgba(245,158,11,0.12), rgba(255,255,255,0.02)); border:1px solid rgba(245,158,11,0.25); border-radius:16px; padding:18px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:14px;">
+                    ${avatarUrl ? `
+                        <img src="${avatarUrl}" alt="${custName}" style="width:50px; height:50px; border-radius:50%; border:2px solid #f59e0b; object-fit:cover;">
+                    ` : `
+                        <div style="width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg, #f59e0b, #d97706); color:#000; font-weight:900; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 0 15px rgba(245,158,11,0.4);">
+                            ${initial}
+                        </div>
+                    `}
+                    <div>
+                        <div style="font-size:16px; font-weight:800; color:#fff; display:flex; align-items:center; gap:6px;">
+                            <span>${custName}</span>
+                            <span style="font-size:10px; background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3); padding:2px 6px; border-radius:10px; font-weight:700;">✓ Verified</span>
+                        </div>
+                        <div style="font-size:12.5px; color:#cbd5e1; margin-top:2px;">
+                            ${custEmail ? `📧 ${custEmail}` : ''}
+                        </div>
+                        <div style="font-size:12px; color:#f59e0b; font-weight:700; margin-top:2px; display:flex; align-items:center; gap:6px;">
+                            📱 ${custPhone ? `+91 ${custPhone}` : 'No phone linked'}
+                            ${!custPhone ? `<button type="button" onclick="window.openAddPhonePrompt('${custEmail}')" style="background:none; border:none; color:#38bdf8; text-decoration:underline; font-size:11px; cursor:pointer; font-weight:700;">+ Link Mobile</button>` : ''}
+                        </div>
+                    </div>
+                </div>
                 <div>
-                    <div class="cust-profile-greeting" style="font-size:15px; font-weight:800; color:#fff;">Welcome back, ${custName}! 👋</div>
-                    <div class="cust-profile-phone" style="font-size:12px; color:#f59e0b; font-weight:600; margin-top:2px;">📱 +91 ${phone} ${custEmail ? `• 📧 ${custEmail}` : ''}</div>
-                </div>
-                <div style="display:flex; gap:6px;">
-                    <button type="button" class="cust-switch-account-btn" onclick="window.openChangePasswordPrompt('${phone}', '${custEmail}')" title="Change Password" style="background:rgba(249,115,22,0.15); border:1px solid #f97316; color:#f97316; font-size:11px; padding:4px 8px; border-radius:6px; cursor:pointer;">🔑 Password</button>
-                    <button type="button" class="cust-switch-account-btn" onclick="window.switchCustomerAccount()" title="Sign out" style="background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#ef4444; font-size:11px; padding:4px 8px; border-radius:6px; cursor:pointer;">Sign Out</button>
+                    <button type="button" onclick="window.logoutCustomer()" title="Logout" style="background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#ef4444; font-size:12px; font-weight:700; padding:6px 12px; border-radius:8px; cursor:pointer;">
+                        🚪 Sign Out
+                    </button>
                 </div>
             </div>
 
-            <div style="margin-top:14px;">
+            <!-- 3 Modern Navigation Tabs -->
+            <div style="display:flex; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:4px; margin-bottom:18px; gap:4px;">
+                <button type="button" id="cust-tab-orders" onclick="window.switchProfileTab('orders')" style="flex:1; padding:8px; font-size:12.5px; font-weight:800; border:none; border-radius:8px; background:#f59e0b; color:#000; cursor:pointer;">
+                    📦 My Orders (${orders.length})
+                </button>
+                <button type="button" id="cust-tab-address" onclick="window.switchProfileTab('address')" style="flex:1; padding:8px; font-size:12.5px; font-weight:800; border:none; border-radius:8px; background:transparent; color:#cbd5e1; cursor:pointer;">
+                    📍 Saved Address
+                </button>
+                <button type="button" id="cust-tab-security" onclick="window.switchProfileTab('security')" style="flex:1; padding:8px; font-size:12.5px; font-weight:800; border:none; border-radius:8px; background:transparent; color:#cbd5e1; cursor:pointer;">
+                    🔒 Security & PIN
+                </button>
+            </div>
+
+            <!-- SECTION 1: MY ORDERS -->
+            <div id="cust-sec-orders">
                 ${liveOrderHtml}
-                ${addressCardHtml}
+                ${ordersListHtml}
             </div>
 
-            <div style="font-size: 13.5px; font-weight: 800; color: #fff; margin: 18px 0 12px; display:flex; justify-content:space-between; align-items:center;">
-                <span>Past Orders (${data.orders.length})</span>
+            <!-- SECTION 2: SAVED ADDRESS -->
+            <div id="cust-sec-address" style="display:none;">
+                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px;">
+                    <h4 style="font-size:14px; font-weight:800; color:#f59e0b; margin-bottom:8px;">📍 Primary Delivery Address</h4>
+                    <div style="font-size:13.5px; color:#e2e8f0; line-height:1.5;">
+                        <strong>${custName}</strong><br>
+                        ${address ? address : '<span style="color:#94a3b8;">No saved address yet. It will automatically save when you place your next order!</span>'}
+                        ${landmark ? `<br><span style="color:#94a3b8; font-size:12px;">Landmark: ${landmark}</span>` : ''}
+                    </div>
+                </div>
             </div>
 
-            ${ordersListHtml}
+            <!-- SECTION 3: SECURITY & PIN -->
+            <div id="cust-sec-security" style="display:none;">
+                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px;">
+                    <h4 style="font-size:14px; font-weight:800; color:#f59e0b; margin-bottom:6px;">🔑 Quick 4-Digit Login PIN</h4>
+                    <p style="font-size:12.5px; color:#94a3b8; margin-bottom:14px;">
+                        Set a quick 4-character PIN or permanent password so you can instantly log in from any device using just your Phone Number!
+                    </p>
+                    <button type="button" onclick="window.openChangePasswordPrompt('${custPhone}', '${custEmail}')" style="background:#f59e0b; color:#000; font-weight:800; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; font-size:13px;">
+                        ✨ Set / Change Quick PIN
+                    </button>
+                </div>
+            </div>
         `;
 
     } catch(err) {
@@ -6083,7 +6185,7 @@ window.fetchCustomerOrders = async function(phone) {
                 <div style="font-size:32px; color:#ef4444; margin-bottom:8px;">⚠️</div>
                 <h4 style="font-size:1.1rem; color:#fff; margin-bottom:6px;">Could Not Load Orders</h4>
                 <p style="font-size:12px; color:#94a3b8; margin-bottom:16px;">Please check your connection and try again.</p>
-                <button type="button" class="cust-lookup-btn" onclick="window.fetchCustomerOrders('${phone}')">Retry</button>
+                <button type="button" class="cust-lookup-btn" onclick="window.fetchCustomerOrders('${identifier}')">Retry</button>
             </div>
         `;
     }
