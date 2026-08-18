@@ -215,11 +215,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     localStorage.setItem('littiwale_customer_profile', JSON.stringify(data.customer));
                     localStorage.setItem('littiwale_customer_phone', data.customer.phone);
 
-                    const passMsg = data.tempPassword ? `\n\n🔑 Your Login Temporary Password is: ${data.tempPassword}\n(Saved to your device so you stay logged in!)` : '';
-                    alert(`🎉 Welcome to Littiwale, ${name}!${passMsg}`);
-                    
-                    const nextUrl = new URLSearchParams(window.location.search).get('redirect') || '/menu';
-                    window.location.href = nextUrl;
+                    showLuxuryAuthNotification(
+                        '🎉 Account Created Successfully!',
+                        `Welcome to Littiwale, <strong>${name}</strong>!<br><br>Your secure 4-character Login PIN has been dispatched to <strong>${data.emailMasked || email}</strong> from <span style="color:#f59e0b;">support@littiwale.co.in</span>.`,
+                        '🎉',
+                        () => {
+                            const nextUrl = new URLSearchParams(window.location.search).get('redirect') || '/menu';
+                            window.location.href = nextUrl;
+                        }
+                    );
                 } else {
                     if (signupError) signupError.textContent = data.error || 'Registration failed. Try logging in.';
                 }
@@ -230,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. FORGOT PASSWORD HANDLER
+    // 3. FORGOT PASSWORD / PIN RESET HANDLER (Secure Email Dispatch)
     if (forgotForm) {
         forgotForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -242,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (forgotError) forgotError.textContent = '';
-            showLoader('Generating Temporary Password...');
+            showLoader('Generating Secure PIN & Dispatching Email...');
 
             try {
                 const apiBase = window.ADMIN_API_BASE_URL || '/api';
@@ -256,13 +260,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 hideLoader();
 
                 if (res.ok && data.success) {
-                    const tempMsg = data.tempPassword ? `\n\n🔑 Your New Temporary Password is: ${data.tempPassword}` : '';
-                    alert(`✅ Password Reset!${tempMsg}\n\nYou can now login with your mobile/email and this password.`);
-                    switchToLogin();
-                    const loginId = document.getElementById('login-identifier');
-                    const loginPass = document.getElementById('login-password');
-                    if (loginId) loginId.value = identifier;
-                    if (loginPass && data.tempPassword) loginPass.value = data.tempPassword;
+                    showLuxuryAuthNotification(
+                        '🔑 Login PIN Sent to Email!',
+                        `A new 4-character Login PIN has been sent to your registered email <strong>${data.emailMasked || 'address'}</strong> from <span style="color:#f59e0b;">support@littiwale.co.in</span>.<br><br><span style="font-size:12px; color:#94a3b8;">Please check your Inbox or Spam folder and enter the PIN to sign in.</span>`,
+                        '📧',
+                        () => {
+                            switchToLogin();
+                            const loginId = document.getElementById('login-identifier');
+                            const loginPass = document.getElementById('login-password');
+                            if (loginId) loginId.value = identifier;
+                            if (loginPass) {
+                                loginPass.value = '';
+                                loginPass.focus();
+                            }
+                        }
+                    );
                 } else {
                     if (forgotError) forgotError.textContent = data.error || 'Could not reset password. Please check your details.';
                 }
@@ -270,6 +282,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 hideLoader();
                 if (forgotError) forgotError.textContent = 'Connection error. Please try again.';
             }
+        });
+    }
+
+    function showLuxuryAuthNotification(title, message, icon, onClose) {
+        const existing = document.getElementById('luxury-auth-modal');
+        if (existing) existing.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'luxury-auth-modal';
+        modal.style.cssText = `
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px;
+            font-family: 'Poppins', sans-serif; animation: fadeIn 0.3s ease;
+        `;
+
+        modal.innerHTML = `
+            <div style="background: linear-gradient(135deg, #181924, #0e1017); border: 1.5px solid rgba(245,158,11,0.35); border-radius: 20px; max-width: 440px; width: 100%; padding: 28px 24px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.8); position: relative;">
+                <div style="font-size: 42px; margin-bottom: 12px;">${icon || '✨'}</div>
+                <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 10px; letter-spacing: -0.3px;">${title}</h3>
+                <div style="font-size: 13.5px; color: #cbd5e1; line-height: 1.6; margin-bottom: 22px;">${message}</div>
+                <button type="button" id="btn-close-luxury-modal" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 14px; border: none; padding: 12px 28px; border-radius: 10px; cursor: pointer; width: 100%; box-shadow: 0 6px 20px rgba(245,158,11,0.4);">
+                    Got It! Continue →
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        document.getElementById('btn-close-luxury-modal').addEventListener('click', () => {
+            modal.remove();
+            if (typeof onClose === 'function') onClose();
         });
     }
 
