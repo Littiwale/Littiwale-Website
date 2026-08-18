@@ -6152,26 +6152,80 @@ window.fetchCustomerOrders = async function(identifier) {
                 ${ordersListHtml}
             </div>
 
-            <!-- SECTION 2: SAVED ADDRESS -->
-            <div id="cust-sec-address" style="display:none;">
-                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px;">
-                    <h4 style="font-size:14px; font-weight:800; color:#f59e0b; margin-bottom:8px;">📍 Primary Delivery Address</h4>
-                    <div style="font-size:13.5px; color:#e2e8f0; line-height:1.5;">
-                        <strong>${custName}</strong><br>
-                        ${address ? address : '<span style="color:#94a3b8;">No saved address yet. It will automatically save when you place your next order!</span>'}
-                        ${landmark ? `<br><span style="color:#94a3b8; font-size:12px;">Landmark: ${landmark}</span>` : ''}
+            <!-- SECTION 2: SAVED ADDRESS WITH GPS LIVE LOCATION -->
+            <div id="cust-sec-address" style="display:none; font-family:'Poppins', sans-serif;">
+                ${address ? `
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(245,158,11,0.25); border-radius:14px; padding:18px; margin-bottom:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <span style="font-size:11px; font-weight:800; text-transform:uppercase; color:#f59e0b; letter-spacing:0.8px;">📍 Primary Delivery Address</span>
+                            <button type="button" onclick="window.toggleAddressEditForm()" style="background:rgba(245,158,11,0.15); border:1px solid #f59e0b; color:#f59e0b; font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px; cursor:pointer;">✏️ Edit Address</button>
+                        </div>
+                        <div style="font-size:14px; color:#ffffff; font-weight:700;">${custName} • 📱 +91 ${custPhone || phone}</div>
+                        <div style="font-size:13px; color:#cbd5e1; margin-top:4px; line-height:1.4;">${address}</div>
+                        ${landmark ? `<div style="font-size:12px; color:#94a3b8; margin-top:2px;">📍 Landmark: ${landmark}</div>` : ''}
+                        ${finalCustomer?.latitude && finalCustomer?.longitude ? `
+                            <div style="margin-top:10px; padding:8px 12px; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.25); border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-size:11.5px; color:#22c55e; font-weight:700;">📍 GPS Linked (${Number(finalCustomer.latitude).toFixed(4)}, ${Number(finalCustomer.longitude).toFixed(4)})</span>
+                                <a href="https://maps.google.com/?q=${finalCustomer.latitude},${finalCustomer.longitude}" target="_blank" style="font-size:11px; color:#38bdf8; text-decoration:none; font-weight:800;">🗺️ Open in Google Maps →</a>
+                            </div>
+                        ` : ''}
                     </div>
+                ` : ''}
+
+                <!-- Address Add / Edit Form -->
+                <div id="cust-address-form-box" style="${address ? 'display:none;' : 'display:block;'} background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:18px;">
+                    <h4 style="font-size:14px; font-weight:800; color:#f59e0b; margin-bottom:12px;">🏠 ${address ? 'Edit Delivery Address' : 'Add New Delivery Address'}</h4>
+                    <form onsubmit="window.handleSaveCustomerAddress(event)">
+                        <div style="margin-bottom:12px;">
+                            <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px; text-transform:uppercase;">Recipient Name *</label>
+                            <input type="text" id="cust-addr-name" value="${custName}" style="width:100%; padding:10px 14px; background:#161822; border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-family:'Poppins',sans-serif; font-size:13px;" required>
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px; text-transform:uppercase;">Mobile Number * (For Delivery Call)</label>
+                            <div style="display:flex; align-items:center; background:#161822; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0 12px;">
+                                <span style="color:#f59e0b; font-weight:800; font-size:13px; margin-right:8px;">+91</span>
+                                <input type="tel" id="cust-addr-phone" value="${custPhone || ''}" placeholder="10-digit mobile" maxlength="10" pattern="[0-9]{10}" style="width:100%; background:transparent; border:none; color:#fff; font-family:'Poppins',sans-serif; font-size:13.5px; padding:10px 0; outline:none;" required>
+                            </div>
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px; text-transform:uppercase;">House / Flat / Street / Area Address *</label>
+                            <textarea id="cust-addr-text" rows="2" placeholder="e.g. Flat 302, Royal Residency, Main Road, Barbil" style="width:100%; padding:10px 14px; background:#161822; border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-family:'Poppins',sans-serif; font-size:13px; resize:vertical;" required>${address}</textarea>
+                        </div>
+                        <div style="margin-bottom:14px;">
+                            <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px; text-transform:uppercase;">Landmark (Optional)</label>
+                            <input type="text" id="cust-addr-landmark" value="${landmark}" placeholder="e.g. Near Shiv Temple / Behind Petrol Pump" style="width:100%; padding:10px 14px; background:#161822; border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-family:'Poppins',sans-serif; font-size:13px;">
+                        </div>
+
+                        <!-- 📍 GPS LIVE LOCATION CAPTURE BUTTON -->
+                        <div style="margin-bottom:16px; background:#12131a; border:1px dashed rgba(245,158,11,0.4); border-radius:10px; padding:12px; text-align:center;">
+                            <button type="button" id="btn-fetch-gps" onclick="window.fetchLiveGPSLocation()" style="background:rgba(245,158,11,0.18); border:1px solid #f59e0b; color:#fbbf24; font-family:'Poppins',sans-serif; font-weight:800; font-size:12.5px; padding:8px 16px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                                <span>📍 Use My Current GPS Location</span>
+                            </button>
+                            <input type="hidden" id="cust-addr-lat" value="${finalCustomer?.latitude || ''}">
+                            <input type="hidden" id="cust-addr-lng" value="${finalCustomer?.longitude || ''}">
+                            <div id="gps-status-msg" style="font-size:11.5px; color:#94a3b8; margin-top:6px;">
+                                ${finalCustomer?.latitude ? `✅ GPS Coordinates saved (${Number(finalCustomer.latitude).toFixed(4)}, ${Number(finalCustomer.longitude).toFixed(4)})` : 'Click above to link your exact live pin for fast delivery!'}
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px;">
+                            <button type="submit" id="btn-save-address" style="flex:1; background:#f59e0b; color:#000; font-family:'Poppins',sans-serif; font-weight:800; font-size:13.5px; border:none; padding:12px; border-radius:8px; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px;">
+                                💾 Save Address
+                            </button>
+                            ${address ? `<button type="button" onclick="window.toggleAddressEditForm()" style="background:transparent; border:1px solid rgba(255,255,255,0.2); color:#cbd5e1; font-family:'Poppins',sans-serif; font-size:12px; padding:0 14px; border-radius:8px; cursor:pointer;">Cancel</button>` : ''}
+                        </div>
+                    </form>
                 </div>
             </div>
 
             <!-- SECTION 3: SECURITY & PIN -->
-            <div id="cust-sec-security" style="display:none;">
+            <div id="cust-sec-security" style="display:none; font-family:'Poppins', sans-serif;">
                 <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px;">
                     <h4 style="font-size:14px; font-weight:800; color:#f59e0b; margin-bottom:6px;">🔑 Quick 4-Digit Login PIN</h4>
-                    <p style="font-size:12.5px; color:#94a3b8; margin-bottom:14px;">
+                    <p style="font-size:12.5px; color:#94a3b8; margin-bottom:14px; line-height:1.5;">
                         Set a quick 4-character PIN or permanent password so you can instantly log in from any device using just your Phone Number!
                     </p>
-                    <button type="button" onclick="window.openChangePasswordPrompt('${custPhone}', '${custEmail}')" style="background:#f59e0b; color:#000; font-weight:800; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; font-size:13px;">
+                    <button type="button" onclick="window.openChangePasswordPrompt('${custPhone || phone}', '${custEmail}')" style="background:#f59e0b; color:#000; font-family:'Poppins',sans-serif; font-weight:800; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; font-size:13px;">
                         ✨ Set / Change Quick PIN
                     </button>
                 </div>
@@ -6188,6 +6242,110 @@ window.fetchCustomerOrders = async function(identifier) {
                 <button type="button" class="cust-lookup-btn" onclick="window.fetchCustomerOrders('${identifier}')">Retry</button>
             </div>
         `;
+    }
+};
+
+window.toggleAddressEditForm = function() {
+    const box = document.getElementById('cust-address-form-box');
+    if (box) {
+        box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    }
+};
+
+window.fetchLiveGPSLocation = function() {
+    const btn = document.getElementById('btn-fetch-gps');
+    const msg = document.getElementById('gps-status-msg');
+    const latInput = document.getElementById('cust-addr-lat');
+    const lngInput = document.getElementById('cust-addr-lng');
+
+    if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser.');
+        return;
+    }
+
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span>⏳ Capturing GPS location...</span>'; }
+    if (msg) { msg.textContent = 'Acquiring high-accuracy GPS coordinates...'; msg.style.color = '#f59e0b'; }
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            if (latInput) latInput.value = lat;
+            if (lngInput) lngInput.value = lng;
+            if (btn) { btn.disabled = false; btn.innerHTML = '<span>✅ GPS Location Linked!</span>'; btn.style.background = 'rgba(34,197,94,0.2)'; btn.style.color = '#22c55e'; btn.style.borderColor = '#22c55e'; }
+            if (msg) { msg.innerHTML = `✅ <strong>Coordinates Linked:</strong> ${lat.toFixed(5)}, ${lng.toFixed(5)} <br><span style="color:#38bdf8;">Driver will get direct 1-tap Google Maps navigation!</span>`; msg.style.color = '#22c55e'; }
+        },
+        (error) => {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<span>📍 Retry GPS Fetch</span>'; }
+            if (msg) { msg.textContent = '⚠️ Could not get GPS. Please enable Location/GPS permissions.'; msg.style.color = '#ef4444'; }
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+};
+
+window.handleSaveCustomerAddress = async function(e) {
+    if (e) e.preventDefault();
+    const name = document.getElementById('cust-addr-name')?.value?.trim();
+    const phone = document.getElementById('cust-addr-phone')?.value?.trim();
+    const address = document.getElementById('cust-addr-text')?.value?.trim();
+    const landmark = document.getElementById('cust-addr-landmark')?.value?.trim();
+    const lat = document.getElementById('cust-addr-lat')?.value?.trim();
+    const lng = document.getElementById('cust-addr-lng')?.value?.trim();
+    const btn = document.getElementById('btn-save-address');
+
+    if (!name || !phone || !address) {
+        alert('Please fill recipient name, phone, and address');
+        return;
+    }
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving Address...'; }
+
+    try {
+        const storedProfile = JSON.parse(localStorage.getItem('littiwale_customer_profile') || localStorage.getItem('littiwale_customer_user') || '{}');
+        const email = storedProfile.email || '';
+        const apiBase = window.ADMIN_API_BASE_URL || 'https://admin.littiwale.co.in/api';
+
+        const addressObj = {
+            id: 'addr_' + Date.now(),
+            name,
+            phone,
+            address,
+            landmark,
+            latitude: lat ? parseFloat(lat) : null,
+            longitude: lng ? parseFloat(lng) : null,
+            mapsUrl: (lat && lng) ? `https://maps.google.com/?q=${lat},${lng}` : '',
+            isDefault: true
+        };
+
+        const res = await fetch(`${apiBase}/customer/update-profile`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: email,
+                phone: phone,
+                name: name,
+                addressObj: addressObj
+            })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success && data.customer) {
+            const updated = { ...storedProfile, ...data.customer, address, landmark, latitude: lat, longitude: lng };
+            localStorage.setItem('littiwale_customer_profile', JSON.stringify(updated));
+            localStorage.setItem('littiwale_customer_phone', phone);
+            
+            if (typeof window.showToast === 'function') window.showToast('✅ Address & GPS Location saved!', 'success');
+            else alert('✅ Address & GPS Location saved successfully!');
+
+            window.renderCustomerOrdersUI();
+        } else {
+            alert(data.error || 'Could not save address');
+            if (btn) { btn.disabled = false; btn.textContent = 'Save Address'; }
+        }
+    } catch(err) {
+        console.error(err);
+        alert('Error saving address');
+        if (btn) { btn.disabled = false; btn.textContent = 'Save Address'; }
     }
 };
 
