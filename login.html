@@ -75,15 +75,15 @@
 
                     <form id="login-form">
                         <div class="field-group">
-                            <label class="field-label">EMAIL / USERNAME</label>
-                            <input type="text" id="login-identifier" placeholder="Enter your credentials" required autofocus>
+                            <label class="field-label">EMAIL / MOBILE NUMBER</label>
+                            <input type="text" id="login-identifier" placeholder="Enter Email or 10-digit Mobile" required autofocus>
                         </div>
                         <div class="field-group">
                             <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <label class="field-label" style="margin:0 0 6px;">PASSWORD</label>
-                                <button type="button" id="toggle-to-forgot" style="background:none; border:none; color:#f59e0b; font-size:11px; font-weight:700; cursor:pointer; margin-bottom:6px;">Forgot Password?</button>
+                                <label class="field-label" style="margin:0 0 6px;">4-DIGIT PIN</label>
+                                <button type="button" id="toggle-to-forgot" style="background:none; border:none; color:#f59e0b; font-size:11px; font-weight:700; cursor:pointer; margin-bottom:6px;">Forgot PIN?</button>
                             </div>
-                            <input type="password" id="login-password" placeholder="••••••••••••" required>
+                            <input type="password" id="login-password" maxlength="8" placeholder="Enter 4-character PIN" required>
                         </div>
 
                         <div id="login-error" class="error-msg"></div>
@@ -129,8 +129,8 @@
                         </div>
 
                         <div class="field-group">
-                            <label class="field-label">PASSWORD</label>
-                            <input type="password" id="signup-password" placeholder="••••••••••••" required>
+                            <label class="field-label">CREATE 4-DIGIT PIN (OPTIONAL)</label>
+                            <input type="password" id="signup-password" maxlength="8" placeholder="e.g. 1234 (or leave blank to auto-generate)">
                         </div>
 
                         <div id="signup-error" class="error-msg"></div>
@@ -182,20 +182,20 @@
                     </div>
                 </div>
 
-                <!-- 4. FORGOT PASSWORD FORM -->
+                <!-- 4. FORGOT PIN FORM -->
                 <div id="forgot-form-side" class="form-container form-hide">
-                    <h1>Reset Password 🔑</h1>
-                    <p class="sub">Enter your registered Email or Mobile. We will send a fresh 4-character CAPITAL password.</p>
+                    <h1>Reset Login PIN 🔑</h1>
+                    <p class="sub">Enter your registered Email or Mobile number. We will send a fresh 4-character PIN to your email.</p>
 
                     <form id="forgot-form">
                         <div class="field-group">
-                            <label class="field-label">Registered Email or Mobile</label>
+                            <label class="field-label">Registered Email or Mobile Number</label>
                             <input type="text" id="forgot-identifier" placeholder="e.g. rahul@gmail.com or 9876543210" required>
                         </div>
 
                         <div id="forgot-error" class="error-msg"></div>
 
-                        <button type="submit" id="forgot-submit-btn" class="btn-luxury">Send New 4-Char Password</button>
+                        <button type="submit" id="forgot-submit-btn" class="btn-luxury">Send 4-Digit PIN to Email</button>
                     </form>
 
                     <div class="register-link">
