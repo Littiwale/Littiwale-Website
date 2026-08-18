@@ -2,6 +2,12 @@
 // LITTIWALE ANIMATED PANDA AUTH CONTROLLER
 // ============================================================
 
+window.ADMIN_SERVER_ORIGIN = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+    ? 'http://localhost:5001' 
+    : 'https://admin.littiwale.co.in';
+
+window.ADMIN_API_BASE_URL = `${window.ADMIN_SERVER_ORIGIN}/api`;
+
 document.addEventListener('DOMContentLoaded', () => {
     const tabLogin = document.getElementById('tab-login');
     const tabSignup = document.getElementById('tab-signup');
