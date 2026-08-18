@@ -4,11 +4,12 @@
 
 :root {
     --bg: #09090b;
-    --card-bg: #121217;
-    --card-border: rgba(255, 255, 255, 0.1);
-    --gold: #f97316;
-    --gold-glow: rgba(249, 115, 22, 0.35);
-    --input-bg: #18181f;
+    --card-bg: #0f1015;
+    --card-border: rgba(255, 255, 255, 0.08);
+    --gold: #f59e0b;
+    --gold-hover: #fbbf24;
+    --gold-glow: rgba(245, 158, 11, 0.35);
+    --input-bg: #181920;
     --text-primary: #ffffff;
     --text-muted: #94a3b8;
     --text-light: #e2e8f0;
@@ -16,7 +17,6 @@
     --font-body: 'Plus Jakarta Sans', sans-serif;
     --white: #ffffff;
     --error: #ef4444;
-    --button-text: #ffffff;
 }
 
 * {
@@ -39,16 +39,14 @@ body.bg-primary {
 
 #auth-container {
     display: flex;
-    align-items: center;
-    justify-content: center;
     width: 100%;
-    max-width: 1020px;
-    min-height: 600px;
+    max-width: 1080px;
+    min-height: 640px;
     margin: 20px;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: 24px;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(249, 115, 22, 0.1);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 50px rgba(245, 158, 11, 0.06);
     overflow: hidden;
     position: relative;
     z-index: 10;
@@ -56,8 +54,8 @@ body.bg-primary {
 
 .logo-overlay {
     position: absolute;
-    top: 20px;
-    left: 24px;
+    top: 22px;
+    left: 26px;
     z-index: 30;
 }
 
@@ -68,26 +66,34 @@ body.bg-primary {
     filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
 }
 
-/* LEFT PANEL (MASCOT PANDA ON DESKTOP) */
+/* ============================================================
+   DESKTOP 50/50 SPLIT PANELS & SMOOTH SLIDING TRANSITIONS
+   ============================================================ */
+
+/* 1. LEFT PANEL (Panda Mascot) */
 .left {
-    flex: 1;
+    flex: 0 0 50%;
+    width: 50%;
     height: 100%;
-    min-height: 620px;
-    background: radial-gradient(circle at center, rgba(249, 115, 22, 0.18) 0%, rgba(9, 9, 11, 0.95) 75%);
+    min-height: 640px;
+    background: radial-gradient(circle at center, rgba(245, 158, 11, 0.16) 0%, rgba(11, 12, 16, 0.98) 75%);
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     overflow: hidden;
     border-right: 1px solid var(--card-border);
+    transform: translateX(0%);
+    transition: transform 0.65s cubic-bezier(0.65, 0, 0.35, 1), border-color 0.65s ease;
+    z-index: 5;
 }
 
 .left::before {
     content: '';
     position: absolute;
-    width: 320px;
-    height: 320px;
-    background: radial-gradient(circle, rgba(249, 115, 22, 0.3) 0%, transparent 70%);
+    width: 340px;
+    height: 340px;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.28) 0%, transparent 70%);
     border-radius: 50%;
     filter: blur(40px);
     animation: pandaPulse 4s ease-in-out infinite alternate;
@@ -99,72 +105,91 @@ body.bg-primary {
 }
 
 .mascot-img {
-    max-width: 82%;
-    max-height: 480px;
+    max-width: 86%;
+    max-height: 500px;
     object-fit: contain;
     z-index: 2;
-    filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.7));
-    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 0.8));
+    transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: absolute;
+}
+
+.hero-img-login {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
 }
 
 .hero-img-signup {
-    display: none;
     opacity: 0;
     transform: scale(0.9);
+    pointer-events: none;
 }
 
-body.signup-mode .hero-img-login {
-    display: none;
-    opacity: 0;
-}
-
-body.signup-mode .hero-img-signup {
-    display: block;
-    opacity: 1;
-    transform: scale(1);
-    animation: popIn 0.5s ease;
-}
-
-@keyframes popIn {
-    0% { transform: scale(0.85); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-/* RIGHT PANEL (FORM) */
+/* 2. RIGHT PANEL (Auth Forms) */
 .right {
-    flex: 1.15;
-    padding: 44px 40px;
+    flex: 0 0 50%;
+    width: 50%;
+    padding: 44px 50px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     position: relative;
-    background: #121217;
+    background: #0f1015;
+    transform: translateX(0%);
+    transition: transform 0.65s cubic-bezier(0.65, 0, 0.35, 1);
+    z-index: 6;
+}
+
+/* 🔄 SLIDING ANIMATION: SIGNUP MODE (Panda moves Right, Form moves Left) */
+body.signup-mode .left {
+    transform: translateX(100%);
+    border-right: none;
+    border-left: 1px solid var(--card-border);
+}
+
+body.signup-mode .right {
+    transform: translateX(-100%);
+}
+
+body.signup-mode .hero-img-login {
+    opacity: 0;
+    transform: scale(0.9);
+    pointer-events: none;
+}
+
+body.signup-mode .hero-img-signup {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
 }
 
 .card-inner {
     width: 100%;
-    max-width: 440px;
+    max-width: 420px;
     margin: 0 auto;
 }
 
+/* ============================================================
+   FORM TYPOGRAPHY & CONTROLS (MATCHES SCREENSHOT EXACTLY)
+   ============================================================ */
+
 .tabs {
-    display: flex;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1.5px solid var(--card-border);
-    border-radius: 14px;
-    padding: 4px;
+    display: inline-flex;
+    background: #181920;
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 3px;
     margin-bottom: 24px;
-    gap: 6px;
+    gap: 4px;
 }
 
 .tab {
-    flex: 1;
-    text-align: center;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-size: 13px;
+    padding: 7px 18px;
+    border-radius: 7px;
+    font-size: 11.5px;
     font-weight: 800;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
     text-transform: uppercase;
     cursor: pointer;
     transition: all 0.25s ease;
@@ -172,21 +197,22 @@ body.signup-mode .hero-img-signup {
 }
 
 .tab.active {
-    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-    color: #ffffff;
-    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+    background: var(--gold);
+    color: #000000;
+    box-shadow: 0 3px 12px rgba(245, 158, 11, 0.35);
 }
 
-.card h1 {
+.form-container h1 {
     font-family: var(--font-heading);
-    font-size: 30px;
+    font-size: 26px;
     font-weight: 900;
     color: var(--white);
     margin-bottom: 6px;
     line-height: 1.2;
+    letter-spacing: -0.3px;
 }
 
-.card .sub {
+.form-container .sub {
     font-size: 13px;
     color: var(--text-muted);
     margin-bottom: 22px;
@@ -216,21 +242,21 @@ body.signup-mode .hero-img-signup {
 
 .field-label {
     display: block;
-    font-size: 11.5px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 800;
     color: var(--text-muted);
     margin-bottom: 6px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
 }
 
 input {
     width: 100%;
     background: var(--input-bg);
     border: 1.5px solid var(--card-border);
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 12px 16px;
-    font-size: 14px;
+    font-size: 13.5px;
     font-family: var(--font-body);
     color: var(--text-primary);
     outline: none;
@@ -238,7 +264,7 @@ input {
 }
 
 input::placeholder {
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.25);
 }
 
 input:focus {
@@ -248,25 +274,26 @@ input:focus {
 
 .btn-luxury {
     width: 100%;
-    padding: 14px;
-    border-radius: 12px;
+    padding: 13px;
+    border-radius: 10px;
     border: none;
-    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-    color: #ffffff;
+    background: var(--gold);
+    color: #000000;
     font-family: var(--font-body);
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 13.5px;
+    font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 1px;
     cursor: pointer;
-    margin-top: 10px;
+    margin-top: 8px;
     transition: all 0.25s ease;
-    box-shadow: 0 8px 25px rgba(249, 115, 22, 0.4);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
 }
 
 .btn-luxury:hover {
+    background: var(--gold-hover);
     transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(249, 115, 22, 0.6);
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.5);
 }
 
 .btn-luxury:active {
@@ -275,11 +302,12 @@ input:focus {
 
 .divider {
     text-align: center;
-    color: var(--text-muted);
+    color: #64748b;
     font-size: 11px;
-    letter-spacing: 2px;
+    font-weight: 800;
+    letter-spacing: 1px;
     text-transform: uppercase;
-    margin: 18px 0;
+    margin: 16px 0;
     position: relative;
 }
 
@@ -287,7 +315,7 @@ input:focus {
     content: '';
     position: absolute;
     top: 50%;
-    width: 40%;
+    width: 42%;
     height: 1px;
     background: var(--card-border);
 }
@@ -297,16 +325,16 @@ input:focus {
 
 .btn-social {
     width: 100%;
-    padding: 12px;
-    border-radius: 12px;
-    border: 1.5px solid var(--card-border);
-    background: rgba(255, 255, 255, 0.04);
+    padding: 11px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
+    background: #181920;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    color: var(--text-light);
-    font-size: 13.5px;
+    color: #ffffff;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -314,15 +342,15 @@ input:focus {
 }
 
 .btn-social:hover {
-    background: rgba(255, 255, 255, 0.09);
-    border-color: rgba(255, 255, 255, 0.25);
+    background: #22232c;
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .register-link {
     text-align: center;
-    font-size: 13px;
+    font-size: 12.5px;
     color: var(--text-muted);
-    margin-top: 20px;
+    margin-top: 18px;
 }
 
 .register-link button {
@@ -348,14 +376,6 @@ input:focus {
     min-height: 18px;
 }
 
-.success-msg {
-    color: #22c55e;
-    font-size: 12px;
-    font-weight: 600;
-    text-align: center;
-    margin-top: 8px;
-}
-
 /* ============================================================
    LITTI FIRE LOADER ANIMATION
    ============================================================ */
@@ -363,7 +383,7 @@ input:focus {
     display: none;
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(18, 18, 23, 0.95);
+    background: rgba(15, 16, 21, 0.95);
     backdrop-filter: blur(8px);
     z-index: 50;
     flex-direction: column;
@@ -440,7 +460,7 @@ input:focus {
     margin-top: 18px;
     font-size: 14px;
     font-weight: 800;
-    color: #f97316;
+    color: var(--gold);
     letter-spacing: 0.5px;
 }
 
@@ -456,14 +476,22 @@ input:focus {
         margin: 12px;
         min-height: auto;
         border-radius: 20px;
+        flex-direction: column;
     }
 
     .left {
-        display: none;
+        display: none !important;
     }
 
     .right {
+        flex: 1 1 100% !important;
+        width: 100% !important;
         padding: 30px 20px;
+        transform: none !important;
+    }
+
+    body.signup-mode .right {
+        transform: none !important;
     }
 
     #mobile-panda-screen {
@@ -507,10 +535,10 @@ input:focus {
         z-index: 2;
         font-size: 30px;
         font-weight: 900;
-        color: #f97316;
+        color: var(--gold);
         letter-spacing: 5px;
         text-align: center;
-        text-shadow: 0 0 30px rgba(249, 115, 22, 0.6);
+        text-shadow: 0 0 30px rgba(245, 158, 11, 0.6);
         margin-bottom: 6px;
     }
 
@@ -535,7 +563,7 @@ input:focus {
         width: 100%;
         max-width: 320px;
         background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(249, 115, 22, 0.3);
+        border: 1px solid rgba(245, 158, 11, 0.3);
         border-radius: 14px;
         cursor: pointer;
         user-select: none;
@@ -545,7 +573,7 @@ input:focus {
 
     .swipe-hint-up:active, .swipe-hint-down:active {
         transform: scale(0.96);
-        background: rgba(249, 115, 22, 0.2);
+        background: rgba(245, 158, 11, 0.2);
     }
 
     .swipe-hint-up {
@@ -558,7 +586,7 @@ input:focus {
 
     .swipe-arr {
         font-size: 20px;
-        color: #f97316;
+        color: var(--gold);
         line-height: 1;
         display: block;
         font-weight: 900;

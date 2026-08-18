@@ -62,44 +62,43 @@
                     <p id="litti-loader-status" class="litti-loader-text">Litti pak rahi hai...</p>
                 </div>
 
-                <!-- Tabs -->
+                <!-- Tabs (2 Tabs only: LOGIN / SIGNUP) -->
                 <div class="tabs">
-                    <div id="tab-login" class="tab active">Login</div>
-                    <div id="tab-signup" class="tab">Signup</div>
-                    <div id="tab-guest" class="tab">⚡ Guest</div>
+                    <div id="tab-login" class="tab active">LOGIN</div>
+                    <div id="tab-signup" class="tab">SIGNUP</div>
                 </div>
 
                 <!-- 1. LOGIN FORM -->
                 <div id="login-form-side" class="form-container form-show">
-                    <h1>Bhookh Lagi Kya? 🍲</h1>
+                    <h1>Bhookh Lagi Kya? 🔥</h1>
                     <p class="sub">Apna account kholo, taste ka swag shuru karo</p>
 
                     <form id="login-form">
                         <div class="field-group">
-                            <label class="field-label">Email or 10-Digit Mobile</label>
-                            <input type="text" id="login-identifier" placeholder="e.g. rahul@gmail.com or 9876543210" required autofocus>
+                            <label class="field-label">EMAIL / USERNAME</label>
+                            <input type="text" id="login-identifier" placeholder="Enter your credentials" required autofocus>
                         </div>
                         <div class="field-group">
                             <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <label class="field-label" style="margin:0 0 6px;">Password (4-Char or Custom)</label>
-                                <button type="button" id="toggle-to-forgot" style="background:none; border:none; color:#f97316; font-size:11px; font-weight:700; cursor:pointer; margin-bottom:6px;">Forgot Password?</button>
+                                <label class="field-label" style="margin:0 0 6px;">PASSWORD</label>
+                                <button type="button" id="toggle-to-forgot" style="background:none; border:none; color:#f59e0b; font-size:11px; font-weight:700; cursor:pointer; margin-bottom:6px;">Forgot Password?</button>
                             </div>
-                            <input type="password" id="login-password" placeholder="Enter password (e.g. L2W1)" required>
+                            <input type="password" id="login-password" placeholder="••••••••••••" required>
                         </div>
 
                         <div id="login-error" class="error-msg"></div>
 
-                        <button type="submit" id="login-submit-btn" class="btn-luxury">Sign In</button>
+                        <button type="submit" id="login-submit-btn" class="btn-luxury">SIGN IN</button>
                         
-                        <div class="divider">or continue with</div>
+                        <div class="divider">OR</div>
 
-                        <button type="button" id="google-login-btn" class="btn-social" onclick="window.handleGoogleLogin()" style="background:#ffffff; color:#1f2937; font-weight:700; border:1px solid #e5e7eb; box-shadow:0 2px 6px rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px;">
+                        <button type="button" id="google-login-btn" class="btn-social" onclick="window.handleGoogleLogin()">
                             <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-                            <span>1-Click Continue with Google</span>
+                            <span>Continue with Google</span>
                         </button>
 
-                        <button type="button" id="guest-btn" class="btn-social" onclick="window.switchToGuestTab()">
-                            <span>⚡ Continue as Guest (With Mobile Number)</span>
+                        <button type="button" id="guest-btn" class="btn-social" onclick="window.continueAsGuest()" style="margin-top:10px;">
+                            <span>Continue as Guest</span>
                         </button>
                     </form>
 
@@ -110,45 +109,48 @@
 
                 <!-- 2. SIGNUP FORM -->
                 <div id="signup-form-side" class="form-container form-hide">
-                    <h1>Littiwale ke Apne Ho Jao 🎉</h1>
-                    <p class="sub">Register & get instant 4-character CAPITAL temp password in your email!</p>
+                    <h1>Littiwale ke apne ho jao 🔥</h1>
+                    <p class="sub">Taste of swag is just a few steps away</p>
 
                     <form id="signup-form">
-                        <button type="button" id="google-signup-btn" class="btn-social" onclick="window.handleGoogleLogin()" style="background:#ffffff; color:#1f2937; font-weight:700; border:1px solid #e5e7eb; box-shadow:0 2px 6px rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:14px;">
-                            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-                            <span>1-Click Sign up with Google</span>
-                        </button>
-
-                        <div class="divider" style="margin:10px 0 16px;">or fill details</div>
-
                         <div class="field-group">
-                            <label class="field-label">Full Name *</label>
-                            <input type="text" id="signup-name" placeholder="e.g. Rahul Sharma" required>
+                            <label class="field-label">FULL NAME</label>
+                            <input type="text" id="signup-name" placeholder="Name" required>
                         </div>
 
                         <div class="field-group">
-                            <label class="field-label">10-Digit Mobile Number *</label>
-                            <input type="tel" id="signup-phone" placeholder="9876543210" maxlength="10" pattern="[0-9]{10}" required>
+                            <label class="field-label">PHONE NUMBER</label>
+                            <input type="tel" id="signup-phone" placeholder="10-digit mobile" maxlength="10" pattern="[0-9]{10}" required>
                         </div>
 
                         <div class="field-group">
-                            <label class="field-label">Email Address * (For Temp Password & Bill)</label>
-                            <input type="email" id="signup-email" placeholder="rahul@gmail.com" required>
+                            <label class="field-label">EMAIL ADDRESS</label>
+                            <input type="email" id="signup-email" placeholder="email@example.com" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">PASSWORD</label>
+                            <input type="password" id="signup-password" placeholder="••••••••••••" required>
                         </div>
 
                         <div id="signup-error" class="error-msg"></div>
 
-                        <button type="submit" id="signup-submit-btn" class="btn-luxury">Create Account & Get Temp Pass</button>
+                        <button type="submit" id="signup-submit-btn" class="btn-luxury">JOIN NOW</button>
                         
-                        <div class="divider">or</div>
+                        <div class="divider">OR</div>
 
-                        <button type="button" id="guest-signup-btn" onclick="window.switchToGuestTab()" class="btn-social">
-                            <span>⚡ Continue as Guest</span>
+                        <button type="button" id="google-signup-btn" class="btn-social" onclick="window.handleGoogleLogin()">
+                            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                            <span>Continue with Google</span>
+                        </button>
+
+                        <button type="button" id="guest-signup-btn" onclick="window.continueAsGuest()" class="btn-social" style="margin-top:10px;">
+                            <span>Continue as Guest</span>
                         </button>
                     </form>
 
                     <div class="register-link">
-                        Already have an account? <button type="button" id="toggle-to-login">Log in</button>
+                        Already have an account? <button type="button" id="toggle-to-login">Log In</button>
                     </div>
                 </div>
 
