@@ -6160,7 +6160,7 @@ window.fetchCustomerOrders = async function(identifier) {
                             <span style="font-size:11px; font-weight:800; text-transform:uppercase; color:#f59e0b; letter-spacing:0.8px;">📍 Primary Delivery Address</span>
                             <button type="button" onclick="window.toggleAddressEditForm()" style="background:rgba(245,158,11,0.15); border:1px solid #f59e0b; color:#f59e0b; font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px; cursor:pointer;">✏️ Edit Address</button>
                         </div>
-                        <div style="font-size:14px; color:#ffffff; font-weight:700;">${custName} • 📱 +91 ${custPhone || phone}</div>
+                        <div style="font-size:14px; color:#ffffff; font-weight:700;">${custName} • 📱 ${custPhone ? `+91 ${custPhone}` : 'No phone linked'}</div>
                         <div style="font-size:13px; color:#cbd5e1; margin-top:4px; line-height:1.4;">${address}</div>
                         ${landmark ? `<div style="font-size:12px; color:#94a3b8; margin-top:2px;">📍 Landmark: ${landmark}</div>` : ''}
                         ${finalCustomer?.latitude && finalCustomer?.longitude ? `
@@ -6225,7 +6225,7 @@ window.fetchCustomerOrders = async function(identifier) {
                     <p style="font-size:12.5px; color:#94a3b8; margin-bottom:14px; line-height:1.5;">
                         Set a quick 4-character PIN or permanent password so you can instantly log in from any device using just your Phone Number!
                     </p>
-                    <button type="button" onclick="window.openChangePasswordPrompt('${custPhone || phone}', '${custEmail}')" style="background:#f59e0b; color:#000; font-family:'Poppins',sans-serif; font-weight:800; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; font-size:13px;">
+                    <button type="button" onclick="window.openChangePasswordPrompt('${custPhone || ''}', '${custEmail}')" style="background:#f59e0b; color:#000; font-family:'Poppins',sans-serif; font-weight:800; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; font-size:13px;">
                         ✨ Set / Change Quick PIN
                     </button>
                 </div>
