@@ -723,8 +723,12 @@ document.addEventListener('DOMContentLoaded', () => {
             offlineReason = targetSetting.offlineReason || `The ${targetSetting.storeName} is currently offline.`;
         }
 
+        const isMaintenance = apiSettings.some(s => s.isMaintenanceMode === true);
         const existingBanner = document.getElementById('store-offline-banner');
-        if (isOffline) {
+
+        if (isMaintenance) {
+            if (existingBanner) existingBanner.remove();
+        } else if (isOffline) {
             if (!existingBanner) {
                 const banner = document.createElement('div');
                 banner.id = 'store-offline-banner';

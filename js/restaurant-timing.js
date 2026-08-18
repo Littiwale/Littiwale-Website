@@ -415,6 +415,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ------- Main check + UI update -------
     function checkRestaurantStatus() {
+        const settings = window.littiWaleSettings || [];
+        const isMaintenance = settings.some(s => s.isMaintenanceMode === true);
+        
+        // When Maintenance Mode is active, it overrides all store timing/closed popups!
+        if (isMaintenance) {
+            if (overlay)          overlay.classList.remove('show');
+            if (closedBanner)     closedBanner.style.display = 'none';
+            if (countdownInterval){ clearInterval(countdownInterval); countdownInterval = null; }
+            if (countdownWrapper) countdownWrapper.classList.remove('visible');
+            document.body.classList.remove('restaurant-closed-mode');
+            return;
+        }
+
         const loc    = sessionStorage.getItem('littiWaleLocation') || 'cloud';
         const status = getStoreStatusInfo(loc);
 
