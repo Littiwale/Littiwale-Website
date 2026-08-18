@@ -4131,15 +4131,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const encodedMessage = encodeURIComponent(message);
             const whatsappUrl = 'https://wa.me/' + phoneTarget + '?text=' + encodedMessage;
 
-            // ⚡ OPEN WHATSAPP SIMULTANEOUSLY (Instant without waiting for server roundtrip)
-            try {
-                const waWin = window.open(whatsappUrl, '_blank');
-                if (!waWin || waWin.closed || typeof waWin.closed === 'undefined') {
-                    setTimeout(() => { window.location.href = whatsappUrl; }, 100);
-                }
-            } catch(e) {
-                setTimeout(() => { window.location.href = whatsappUrl; }, 100);
-            }
+            // ⚡ INSTANT DIRECT LAUNCH TO WHATSAPP
+            window.location.href = whatsappUrl;
 
             // ⚡ SIMULTANEOUS BACKGROUND SAVE TO DATABASE
             saveOrderToDatabase(orderPayload).catch(err => console.warn('Background order save note:', err));
