@@ -1,22 +1,19 @@
 /* ============================================================
-   LITTIWALE PANDA & LITTI ANIMATED AUTH STYLES
+   LITTIWALE PANDA AUTH STYLES (MATCHES REFERENCE 1:1)
    ============================================================ */
 
 :root {
-    --bg: #09090b;
-    --card-bg: #0f1015;
-    --card-border: rgba(255, 255, 255, 0.08);
+    --bg-main: #0b0c10;
+    --panel-bg: #0d0e13;
+    --input-bg: #161822;
+    --input-border: rgba(255, 255, 255, 0.08);
     --gold: #f59e0b;
-    --gold-hover: #fbbf24;
-    --gold-glow: rgba(245, 158, 11, 0.35);
-    --input-bg: #181920;
-    --text-primary: #ffffff;
-    --text-muted: #94a3b8;
-    --text-light: #e2e8f0;
-    --font-heading: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-    --font-body: 'Plus Jakarta Sans', sans-serif;
-    --white: #ffffff;
-    --error: #ef4444;
+    --gold-hover: #d97706;
+    --gold-glow: rgba(245, 158, 11, 0.4);
+    --text-main: #ffffff;
+    --text-sub: #94a3b8;
+    --text-dim: #64748b;
+    --font-main: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 * {
@@ -26,90 +23,84 @@
 }
 
 body.bg-primary {
-    background: #09090b;
-    font-family: var(--font-body);
-    color: var(--text-primary);
+    background: var(--bg-main);
+    font-family: var(--font-main);
+    color: var(--text-main);
     min-height: 100vh;
+    width: 100vw;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow-x: hidden;
     position: relative;
+    margin: 0;
 }
 
+/* ============================================================
+   DESKTOP FULL SCREEN 50/50 EDGE-TO-EDGE SPLIT VIEW
+   ============================================================ */
 #auth-container {
     display: flex;
-    width: 100%;
-    max-width: 1080px;
-    min-height: 640px;
-    margin: 20px;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 24px;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 50px rgba(245, 158, 11, 0.06);
-    overflow: hidden;
+    width: 100vw;
+    min-height: 100vh;
+    background: var(--bg-main);
     position: relative;
+    overflow: hidden;
     z-index: 10;
 }
 
 .logo-overlay {
     position: absolute;
-    top: 22px;
-    left: 26px;
-    z-index: 30;
+    top: 24px;
+    left: 28px;
+    z-index: 40;
 }
 
 .logo-icon img {
-    height: 42px;
+    height: 44px;
     width: auto;
     object-fit: contain;
-    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6));
 }
-
-/* ============================================================
-   DESKTOP 50/50 SPLIT PANELS & SMOOTH SLIDING TRANSITIONS
-   ============================================================ */
 
 /* 1. LEFT PANEL (Panda Mascot) */
 .left {
-    flex: 0 0 50%;
-    width: 50%;
-    height: 100%;
-    min-height: 640px;
-    background: radial-gradient(circle at center, rgba(245, 158, 11, 0.16) 0%, rgba(11, 12, 16, 0.98) 75%);
+    flex: 0 0 50vw;
+    width: 50vw;
+    min-height: 100vh;
+    background: radial-gradient(circle at center, rgba(245, 158, 11, 0.18) 0%, rgba(11, 12, 16, 0.98) 75%);
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     overflow: hidden;
-    border-right: 1px solid var(--card-border);
     transform: translateX(0%);
-    transition: transform 0.65s cubic-bezier(0.65, 0, 0.35, 1), border-color 0.65s ease;
+    transition: transform 0.65s cubic-bezier(0.65, 0, 0.35, 1);
     z-index: 5;
 }
 
 .left::before {
     content: '';
     position: absolute;
-    width: 340px;
-    height: 340px;
-    background: radial-gradient(circle, rgba(245, 158, 11, 0.28) 0%, transparent 70%);
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.32) 0%, transparent 70%);
     border-radius: 50%;
-    filter: blur(40px);
+    filter: blur(45px);
     animation: pandaPulse 4s ease-in-out infinite alternate;
 }
 
 @keyframes pandaPulse {
-    0% { transform: scale(0.85); opacity: 0.6; }
+    0% { transform: scale(0.88); opacity: 0.65; }
     100% { transform: scale(1.15); opacity: 1; }
 }
 
 .mascot-img {
-    max-width: 86%;
-    max-height: 500px;
+    max-width: 82%;
+    max-height: 520px;
     object-fit: contain;
     z-index: 2;
-    filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 0.8));
+    filter: drop-shadow(0 20px 45px rgba(0, 0, 0, 0.85));
     transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
     position: absolute;
 }
@@ -128,24 +119,23 @@ body.bg-primary {
 
 /* 2. RIGHT PANEL (Auth Forms) */
 .right {
-    flex: 0 0 50%;
-    width: 50%;
-    padding: 44px 50px;
+    flex: 0 0 50vw;
+    width: 50vw;
+    min-height: 100vh;
+    padding: 50px 60px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     position: relative;
-    background: #0f1015;
+    background: var(--bg-main);
     transform: translateX(0%);
     transition: transform 0.65s cubic-bezier(0.65, 0, 0.35, 1);
     z-index: 6;
 }
 
-/* 🔄 SLIDING ANIMATION: SIGNUP MODE (Panda moves Right, Form moves Left) */
+/* 🔄 SLIDING ANIMATION (DESKTOP): SIGNUP MODE */
 body.signup-mode .left {
     transform: translateX(100%);
-    border-right: none;
-    border-left: 1px solid var(--card-border);
 }
 
 body.signup-mode .right {
@@ -166,57 +156,57 @@ body.signup-mode .hero-img-signup {
 
 .card-inner {
     width: 100%;
-    max-width: 420px;
+    max-width: 440px;
     margin: 0 auto;
 }
 
 /* ============================================================
-   FORM TYPOGRAPHY & CONTROLS (MATCHES SCREENSHOT EXACTLY)
+   PILL TABS, INPUTS & GLOW BUTTONS (1:1 TO SCREENSHOT)
    ============================================================ */
 
 .tabs {
     display: inline-flex;
-    background: #181920;
-    border: 1px solid var(--card-border);
-    border-radius: 10px;
-    padding: 3px;
-    margin-bottom: 24px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 26px;
     gap: 4px;
 }
 
 .tab {
-    padding: 7px 18px;
-    border-radius: 7px;
-    font-size: 11.5px;
-    font-weight: 800;
+    padding: 8px 22px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
     letter-spacing: 0.8px;
     text-transform: uppercase;
     cursor: pointer;
     transition: all 0.25s ease;
-    color: var(--text-muted);
+    color: var(--text-sub);
 }
 
 .tab.active {
     background: var(--gold);
     color: #000000;
-    box-shadow: 0 3px 12px rgba(245, 158, 11, 0.35);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
 }
 
 .form-container h1 {
-    font-family: var(--font-heading);
-    font-size: 26px;
-    font-weight: 900;
-    color: var(--white);
+    font-size: 25px;
+    font-weight: 700;
+    color: var(--text-main);
     margin-bottom: 6px;
-    line-height: 1.2;
+    line-height: 1.25;
     letter-spacing: -0.3px;
 }
 
 .form-container .sub {
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-bottom: 22px;
-    line-height: 1.4;
+    font-size: 13.5px;
+    color: var(--text-sub);
+    margin-bottom: 24px;
+    line-height: 1.45;
+    font-weight: 400;
 }
 
 .form-container {
@@ -236,15 +226,15 @@ body.signup-mode .hero-img-signup {
 }
 
 .field-group {
-    margin-bottom: 14px;
+    margin-bottom: 16px;
     position: relative;
 }
 
 .field-label {
     display: block;
     font-size: 11px;
-    font-weight: 800;
-    color: var(--text-muted);
+    font-weight: 700;
+    color: var(--text-sub);
     margin-bottom: 6px;
     text-transform: uppercase;
     letter-spacing: 0.6px;
@@ -253,12 +243,12 @@ body.signup-mode .hero-img-signup {
 input {
     width: 100%;
     background: var(--input-bg);
-    border: 1.5px solid var(--card-border);
-    border-radius: 10px;
-    padding: 12px 16px;
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    padding: 13px 16px;
     font-size: 13.5px;
-    font-family: var(--font-body);
-    color: var(--text-primary);
+    font-family: var(--font-main);
+    color: var(--text-main);
     outline: none;
     transition: all 0.2s ease;
 }
@@ -272,28 +262,29 @@ input:focus {
     box-shadow: 0 0 0 3px var(--gold-glow);
 }
 
+/* PRIMARY GLOW BUTTON (SIGN IN / JOIN NOW) */
 .btn-luxury {
     width: 100%;
-    padding: 13px;
-    border-radius: 10px;
+    padding: 14px;
+    border-radius: 8px;
     border: none;
     background: var(--gold);
     color: #000000;
-    font-family: var(--font-body);
-    font-size: 13.5px;
-    font-weight: 900;
+    font-family: var(--font-main);
+    font-size: 14px;
+    font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 1px;
     cursor: pointer;
     margin-top: 8px;
     transition: all 0.25s ease;
-    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.45);
 }
 
 .btn-luxury:hover {
     background: var(--gold-hover);
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.5);
+    box-shadow: 0 12px 30px rgba(245, 158, 11, 0.6);
 }
 
 .btn-luxury:active {
@@ -302,12 +293,12 @@ input:focus {
 
 .divider {
     text-align: center;
-    color: #64748b;
+    color: var(--text-dim);
     font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 1px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-    margin: 16px 0;
+    margin: 18px 0;
     position: relative;
 }
 
@@ -317,49 +308,50 @@ input:focus {
     top: 50%;
     width: 42%;
     height: 1px;
-    background: var(--card-border);
+    background: var(--input-border);
 }
 
 .divider::before { left: 0; }
 .divider::after  { right: 0; }
 
+/* SECONDARY BUTTONS (GOOGLE & GUEST) */
 .btn-social {
     width: 100%;
-    padding: 11px 16px;
-    border-radius: 10px;
-    border: 1px solid var(--card-border);
-    background: #181920;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    color: #ffffff;
+    color: var(--text-main);
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     text-decoration: none;
 }
 
 .btn-social:hover {
-    background: #22232c;
-    border-color: rgba(255, 255, 255, 0.2);
+    background: #1f2230;
+    border-color: rgba(255, 255, 255, 0.18);
 }
 
 .register-link {
     text-align: center;
-    font-size: 12.5px;
-    color: var(--text-muted);
-    margin-top: 18px;
+    font-size: 13px;
+    color: var(--text-sub);
+    margin-top: 20px;
 }
 
 .register-link button {
     background: none;
     border: none;
     color: var(--gold);
-    font-weight: 800;
+    font-weight: 700;
     cursor: pointer;
-    font-family: var(--font-body);
+    font-family: var(--font-main);
     margin-left: 4px;
 }
 
@@ -368,7 +360,7 @@ input:focus {
 }
 
 .error-msg {
-    color: var(--error);
+    color: #ef4444;
     font-size: 12px;
     font-weight: 600;
     text-align: center;
@@ -377,19 +369,18 @@ input:focus {
 }
 
 /* ============================================================
-   LITTI FIRE LOADER ANIMATION
+   ANIMATED ROASTING LITTI LOADER
    ============================================================ */
 #auth-loader {
     display: none;
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(15, 16, 21, 0.95);
+    background: rgba(11, 12, 16, 0.96);
     backdrop-filter: blur(8px);
     z-index: 50;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 24px;
 }
 
 .litti-loader {
@@ -459,23 +450,22 @@ input:focus {
 .litti-loader-text {
     margin-top: 18px;
     font-size: 14px;
-    font-weight: 800;
+    font-weight: 700;
     color: var(--gold);
     letter-spacing: 0.5px;
 }
 
 /* ============================================================
-   MOBILE SWIPE PANDA SCREEN (Full screen on mobile)
+   MOBILE VIEW & SWIPE SPLASH SCREEN
    ============================================================ */
 #mobile-panda-screen {
     display: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 860px) {
     #auth-container {
-        margin: 12px;
-        min-height: auto;
-        border-radius: 20px;
+        width: 100vw;
+        min-height: 100vh;
         flex-direction: column;
     }
 
@@ -486,7 +476,7 @@ input:focus {
     .right {
         flex: 1 1 100% !important;
         width: 100% !important;
-        padding: 30px 20px;
+        padding: 40px 24px;
         transform: none !important;
     }
 
@@ -564,7 +554,7 @@ input:focus {
         max-width: 320px;
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(245, 158, 11, 0.3);
-        border-radius: 14px;
+        border-radius: 12px;
         cursor: pointer;
         user-select: none;
         touch-action: manipulation;
@@ -603,7 +593,7 @@ input:focus {
         letter-spacing: 2px;
         text-transform: uppercase;
         color: #ffffff;
-        font-weight: 800;
+        font-weight: 700;
         margin-top: 4px;
         text-shadow: 0 2px 8px rgba(0,0,0,0.8);
     }
