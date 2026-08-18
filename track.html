@@ -1027,32 +1027,39 @@
             }
         }
 
-        // Phone lookup form — shown when no order ID is available
+        // Phone lookup form — shown when no active order ID is available or order is deleted
         function renderPhoneLookup() {
             if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
             const container = document.getElementById('tracking-main-container');
+            const isLoggedIn = Boolean(localStorage.getItem('littiwale_customer_profile') || localStorage.getItem('littiwale_customer_phone'));
+
             container.innerHTML = `
-                <div class="order-card" style="text-align:center; padding:40px 20px; max-width:480px; margin:0 auto;">
-                    <div style="font-size:40px; margin-bottom:12px;">📱</div>
-                    <h3 style="font-size:1.25rem; margin-bottom:8px; font-weight:800;">Find Your Order</h3>
-                    <p style="color:var(--text-dim); font-size:13.5px; margin-bottom:24px; line-height:1.6;">Enter your WhatsApp / mobile number to look up your active order status.</p>
+                <div class="order-card" style="text-align:center; padding:40px 20px; max-width:480px; margin:0 auto; font-family:'Poppins',sans-serif;">
+                    <div style="font-size:42px; margin-bottom:12px;">📦</div>
+                    <h3 style="font-size:1.3rem; margin-bottom:8px; font-weight:800; color:#fff;">Order Status / Tracking</h3>
+                    <p style="color:var(--text-dim, #94a3b8); font-size:13.5px; margin-bottom:24px; line-height:1.6;">
+                        ${isLoggedIn ? 'No active orders found in live kitchen. You can check past orders or track using your mobile number.' : 'Enter your WhatsApp / mobile number to look up your active order status.'}
+                    </p>
                     <div style="display:flex; gap:10px; max-width:360px; margin:0 auto 16px;">
                         <div style="position:relative; flex:1;">
-                            <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:13px;">+91</span>
+                            <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-muted, #64748b); font-size:13px; font-weight:700;">+91</span>
                             <input type="tel" id="track-phone-input" placeholder="10-digit mobile number"
-                                style="width:100%; padding:13px 14px 13px 42px; background:var(--bg-surface); border:1.5px solid var(--border-hover); border-radius:12px; color:#fff; font-size:14px; font-weight:600; outline:none; box-sizing:border-box;"
+                                style="width:100%; padding:13px 14px 13px 44px; background:var(--bg-surface, #181924); border:1.5px solid var(--border-hover, rgba(245,158,11,0.3)); border-radius:12px; color:#fff; font-size:14px; font-weight:600; outline:none; box-sizing:border-box;"
                                 maxlength="10" inputmode="numeric"
                                 onkeydown="if(event.key==='Enter') findOrderByPhone()"
                             >
                         </div>
-                        <button onclick="findOrderByPhone()" style="padding:13px 20px; background:var(--primary, #f97316); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; white-space:nowrap; transition:background 0.2s;" onmouseover="this.style.background='#ea580c'" onmouseout="this.style.background='var(--primary, #f97316)'">
+                        <button onclick="findOrderByPhone()" style="padding:13px 20px; background:linear-gradient(135deg, #f59e0b, #d97706); color:#000; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; white-space:nowrap; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
                             🔍 Track
                         </button>
                     </div>
-                    <div id="track-phone-result" style="min-height:24px; font-size:13px;"></div>
-                    <div style="margin-top:24px; padding-top:20px; border-top:1px solid var(--border);">
-                        <a href="index.html#menu" class="btn-action btn-order-more" style="display:inline-flex; width:auto; padding:11px 24px; font-size:13px;">
-                            <i class="fas fa-utensils"></i> Browse Menu & Order
+                    <div id="track-phone-result" style="min-height:24px; font-size:13px; margin-bottom:16px;"></div>
+                    <div style="margin-top:20px; padding-top:20px; border-top:1px dashed rgba(255,255,255,0.1); display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+                        <a href="orders.html" class="btn-action" style="display:inline-flex; align-items:center; gap:6px; background:rgba(245,158,11,0.15); border:1px solid #f59e0b; color:#f59e0b; padding:11px 20px; border-radius:10px; font-size:13px; font-weight:700; text-decoration:none;">
+                            📦 View My Orders
+                        </a>
+                        <a href="index.html#menu" class="btn-action" style="display:inline-flex; align-items:center; gap:6px; background:#ea580c; color:#fff; padding:11px 20px; border-radius:10px; font-size:13px; font-weight:700; text-decoration:none;">
+                            🍽️ Browse Menu
                         </a>
                     </div>
                 </div>

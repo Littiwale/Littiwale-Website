@@ -4406,23 +4406,47 @@ document.addEventListener('DOMContentLoaded', () => {
                     btnGps.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Locating...';
                     deliveryStatus = 'CALCULATING';
                     updateCartUI();
-                    navigator.geolocation.getCurrentPosition(position => {
-                        window.gpsLink = `https://maps.google.com/?q=${position.coords.latitude},${position.coords.longitude}`;
+
+                    const onGeoSuccess = (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        window.gpsLink = `https://maps.google.com/?q=${lat},${lng}`;
                         btnGps.innerHTML = '<i class="fas fa-check"></i> Location Captured';
                         btnGps.style.background = '#28a745';
-                        const dist = calculateDistance(position.coords.latitude, position.coords.longitude, RESTAURANT_LAT, RESTAURANT_LNG);
+                        const dist = calculateDistance(lat, lng, RESTAURANT_LAT, RESTAURANT_LNG);
                         const roundedKm = Math.max(1, Math.round(dist));
                         const currentRate = window.adminDeliveryRate || 30;
                         deliveryCharge = roundedKm * currentRate;
                         deliveryStatus = 'AVAILABLE';
                         updateCartUI();
-                    }, error => {
-                        window.showAlert('Could not get your location. Please ensure GPS is enabled and try again.', { title: 'Location Error', icon: '📍', type: 'error' });
-                        btnGps.innerHTML = '<i class="fas fa-map-marker-alt"></i> Use Current Location (Optional)';
-                        deliveryStatus = 'UNKNOWN';
-                        deliveryCharge = 0;
-                        updateCartUI();
-                    });
+                    };
+
+                    const onGeoFallback = () => {
+                        // Tier 2: Low-accuracy Wi-Fi/Network Location (Ideal for PCs/Desktops without hardware GPS chips)
+                        navigator.geolocation.getCurrentPosition(
+                            onGeoSuccess,
+                            (err) => {
+                                console.warn('Geolocation failed:', err);
+                                let alertMsg = 'Could not get exact GPS signal. Please type your delivery address in the box above.';
+                                if (err && err.code === 1) {
+                                    alertMsg = 'Location permission is blocked. Please click the 📍 icon in your browser URL bar at top-right to "Always Allow", or type your address manually.';
+                                }
+                                window.showAlert(alertMsg, { title: 'Location Notice', icon: '📍', type: 'info' });
+                                btnGps.innerHTML = '<i class="fas fa-map-marker-alt"></i> Use Current Location (Optional)';
+                                deliveryStatus = 'AVAILABLE';
+                                deliveryCharge = Number(window.adminDeliveryRate || 30);
+                                updateCartUI();
+                            },
+                            { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 }
+                        );
+                    };
+
+                    // Tier 1: Try High Accuracy GPS first
+                    navigator.geolocation.getCurrentPosition(
+                        onGeoSuccess,
+                        onGeoFallback,
+                        { enableHighAccuracy: true, timeout: 6000, maximumAge: 60000 }
+                    );
                 } else {
                     window.showAlert('Geolocation is not supported by your browser. Please enter your address manually.', { title: 'Not Supported', icon: '🌍', type: 'info' });
                 }
@@ -6280,20 +6304,30 @@ window.fetchLiveGPSLocation = function() {
     if (btn) { btn.disabled = true; btn.innerHTML = '<span>⏳ Capturing GPS location...</span>'; }
     if (msg) { msg.textContent = 'Acquiring high-accuracy GPS coordinates...'; msg.style.color = '#f59e0b'; }
 
+    const onPosSuccess = (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        if (latInput) latInput.value = lat;
+        if (lngInput) lngInput.value = lng;
+        if (btn) { btn.disabled = false; btn.innerHTML = '<span>✅ GPS Location Linked!</span>'; btn.style.background = 'rgba(34,197,94,0.2)'; btn.style.color = '#22c55e'; btn.style.borderColor = '#22c55e'; }
+        if (msg) { msg.innerHTML = `✅ <strong>Coordinates Linked:</strong> ${lat.toFixed(5)}, ${lng.toFixed(5)} <br><span style="color:#38bdf8;">Driver will get direct 1-tap Google Maps navigation!</span>`; msg.style.color = '#22c55e'; }
+    };
+
+    const onPosFallback = () => {
+        navigator.geolocation.getCurrentPosition(
+            onPosSuccess,
+            (error) => {
+                if (btn) { btn.disabled = false; btn.innerHTML = '<span>📍 Retry GPS Fetch</span>'; }
+                if (msg) { msg.textContent = '⚠️ Could not get exact GPS. Please check browser location permissions or type address manually.'; msg.style.color = '#ef4444'; }
+            },
+            { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 }
+        );
+    };
+
     navigator.geolocation.getCurrentPosition(
-        (position) => {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            if (latInput) latInput.value = lat;
-            if (lngInput) lngInput.value = lng;
-            if (btn) { btn.disabled = false; btn.innerHTML = '<span>✅ GPS Location Linked!</span>'; btn.style.background = 'rgba(34,197,94,0.2)'; btn.style.color = '#22c55e'; btn.style.borderColor = '#22c55e'; }
-            if (msg) { msg.innerHTML = `✅ <strong>Coordinates Linked:</strong> ${lat.toFixed(5)}, ${lng.toFixed(5)} <br><span style="color:#38bdf8;">Driver will get direct 1-tap Google Maps navigation!</span>`; msg.style.color = '#22c55e'; }
-        },
-        (error) => {
-            if (btn) { btn.disabled = false; btn.innerHTML = '<span>📍 Retry GPS Fetch</span>'; }
-            if (msg) { msg.textContent = '⚠️ Could not get GPS. Please enable Location/GPS permissions.'; msg.style.color = '#ef4444'; }
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        onPosSuccess,
+        onPosFallback,
+        { enableHighAccuracy: true, timeout: 6000, maximumAge: 60000 }
     );
 };
 
