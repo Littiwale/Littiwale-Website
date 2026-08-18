@@ -210,18 +210,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const data = await res.json();
                 hideLoader();
-
                 if (res.ok && data.success && data.customer) {
-                    localStorage.setItem('littiwale_customer_profile', JSON.stringify(data.customer));
-                    localStorage.setItem('littiwale_customer_phone', data.customer.phone);
+                    // Reset signup form
+                    signupForm.reset();
 
                     showLuxuryAuthNotification(
                         '🎉 Account Created Successfully!',
-                        `Welcome to Littiwale, <strong>${name}</strong>!<br><br>Your secure 4-character Login PIN has been dispatched to <strong>${data.emailMasked || email}</strong> from <span style="color:#f59e0b;">support@littiwale.co.in</span>.`,
-                        '🎉',
+                        `Welcome to Littiwale, <strong>${name}</strong>!<br><br>Your secure 4-digit Login PIN has been dispatched to <strong>${data.emailMasked || email}</strong> from <span style="color:#f59e0b;">support@littiwale.co.in</span>.<br><br>Please enter your email and 4-digit PIN to login.`,
+                        '🔑',
                         () => {
-                            const nextUrl = new URLSearchParams(window.location.search).get('redirect') || '/menu';
-                            window.location.href = nextUrl;
+                            // Switch to Login Tab and prefill email
+                            const loginTabBtn = document.getElementById('tab-btn-login') || document.querySelector('.auth-tab[data-tab="login"]');
+                            if (loginTabBtn) {
+                                loginTabBtn.click();
+                            } else if (typeof window.switchAuthTab === 'function') {
+                                window.switchAuthTab('login');
+                            }
+                            const loginIdent = document.getElementById('login-ident');
+                            if (loginIdent) {
+                                loginIdent.value = email;
+                            }
+                            const loginPass = document.getElementById('login-password');
+                            if (loginPass) {
+                                setTimeout(() => loginPass.focus(), 300);
+                            }
                         }
                     );
                 } else {
@@ -238,22 +250,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (forgotForm) {
         forgotForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const identifier = document.getElementById('forgot-identifier')?.value?.trim();
+            const ident = document.getElementById('forgot-ident')?.value?.trim();
 
-            if (!identifier) {
-                if (forgotError) forgotError.textContent = 'Please enter your Mobile number or Email';
+            if (!ident) {
+                if (forgotError) forgotError.textContent = 'Please enter your registered email address or phone';
                 return;
             }
 
             if (forgotError) forgotError.textContent = '';
-            showLoader('Generating Secure PIN & Dispatching Email...');
+            showLoader('Sending Login PIN...');
 
             try {
                 const apiBase = window.ADMIN_API_BASE_URL || '/api';
                 const res = await fetch(`${apiBase}/customer/forgot-password`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ identifier })
+                    body: JSON.stringify({ identifier: ident })
                 });
 
                 const data = await res.json();
@@ -261,22 +273,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (res.ok && data.success) {
                     showLuxuryAuthNotification(
-                        '🔑 Login PIN Sent to Email!',
-                        `A new 4-character Login PIN has been sent to your registered email <strong>${data.emailMasked || 'address'}</strong> from <span style="color:#f59e0b;">support@littiwale.co.in</span>.<br><br><span style="font-size:12px; color:#94a3b8;">Please check your Inbox or Spam folder and enter the PIN to sign in.</span>`,
-                        '📧',
+                        '🔐 PIN Reset Dispatched!',
+                        `A fresh 4-digit Login PIN has been sent to <strong>${data.emailMasked || 'your registered email'}</strong>.<br><br>Use this PIN to sign into your account immediately.`,
+                        '📩',
                         () => {
-                            switchToLogin();
-                            const loginId = document.getElementById('login-identifier');
-                            const loginPass = document.getElementById('login-password');
-                            if (loginId) loginId.value = identifier;
-                            if (loginPass) {
-                                loginPass.value = '';
-                                loginPass.focus();
+                            // Switch to Login tab
+                            const loginTabBtn = document.getElementById('tab-btn-login') || document.querySelector('.auth-tab[data-tab="login"]');
+                            if (loginTabBtn) {
+                                loginTabBtn.click();
+                            } else if (typeof window.switchAuthTab === 'function') {
+                                window.switchAuthTab('login');
                             }
+                            const loginIdent = document.getElementById('login-ident');
+                            if (loginIdent) loginIdent.value = ident;
                         }
                     );
                 } else {
-                    if (forgotError) forgotError.textContent = data.error || 'Could not reset password. Please check your details.';
+                    if (forgotError) forgotError.textContent = data.error || 'User not found. Check details or register.';
                 }
             } catch (err) {
                 hideLoader();
