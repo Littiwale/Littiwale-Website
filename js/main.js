@@ -749,6 +749,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function checkMaintenanceMode(apiSettings) {
         const isMaintenance = apiSettings.some(s => s.isMaintenanceMode === true);
         if (!isMaintenance) {
+            localStorage.removeItem('littiwale_maintenance_bypass');
+            sessionStorage.removeItem('littiwale_maintenance_bypass');
             const existingMaint = document.getElementById('lw-maintenance-overlay');
             if (existingMaint) existingMaint.remove();
             return;
@@ -766,11 +768,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isLocallyBypassed || hasUrlBypass) {
             console.log('🔓 [LITTIWALE] Maintenance Mode Bypassed via active Admin Session!');
             document.getElementById('lw-maintenance-overlay')?.remove();
-            document.getElementById('restaurant-closed-overlay')?.remove();
-            document.getElementById('store-offline-banner')?.remove();
-            document.getElementById('closed-sticky-banner')?.style && (document.getElementById('closed-sticky-banner').style.display = 'none');
-            document.body.classList.remove('restaurant-closed-mode');
-            window.isRestaurantCurrentlyOpen = true;
             return;
         }
 
