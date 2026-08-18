@@ -6235,11 +6235,14 @@ window.fetchCustomerOrders = async function(identifier) {
     } catch(err) {
         console.error(err);
         container.innerHTML = `
-            <div class="cust-lookup-box">
-                <div style="font-size:32px; color:#ef4444; margin-bottom:8px;">⚠️</div>
-                <h4 style="font-size:1.1rem; color:#fff; margin-bottom:6px;">Could Not Load Orders</h4>
-                <p style="font-size:12px; color:#94a3b8; margin-bottom:16px;">Please check your connection and try again.</p>
-                <button type="button" class="cust-lookup-btn" onclick="window.fetchCustomerOrders('${identifier}')">Retry</button>
+            <div class="cust-lookup-box" style="text-align:center; padding:30px 20px; font-family:'Poppins',sans-serif;">
+                <div style="font-size:36px; margin-bottom:10px;">⚠️</div>
+                <h4 style="font-size:1.1rem; color:#fff; margin-bottom:6px; font-weight:800;">Could Not Load Orders</h4>
+                <p style="font-size:12.5px; color:#94a3b8; margin-bottom:18px;">Please check your connection or sign out to reset session.</p>
+                <div style="display:flex; gap:10px; justify-content:center;">
+                    <button type="button" class="cust-lookup-btn" onclick="window.fetchCustomerOrders('${identifier}')" style="background:#f59e0b; color:#000; font-weight:800; padding:10px 20px; border-radius:8px; border:none; cursor:pointer;">🔄 Retry</button>
+                    <button type="button" onclick="window.logoutCustomer()" style="background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#ef4444; font-weight:800; padding:10px 20px; border-radius:8px; cursor:pointer;">🚪 Sign Out</button>
+                </div>
             </div>
         `;
     }
