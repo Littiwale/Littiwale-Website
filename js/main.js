@@ -2139,9 +2139,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const userLat = position.coords.latitude;
                     const userLng = position.coords.longitude;
                     const distanceKm = calculateDistance(userLat, userLng, RESTAURANT_LAT, RESTAURANT_LNG);
-                    const roundedKm = Math.max(1, Math.round(distanceKm)); // At least 1 km to prevent zero
-                    const currentRate = window.adminDeliveryRate || 30;
-                    
+                    const roundedKm = Math.max(1, Math.round(distanceKm));
+                    const currentRate = Number(window.adminDeliveryRate || 30);
                     deliveryCharge = roundedKm * currentRate;
                     deliveryStatus = 'AVAILABLE';
                     updateCartUI();
@@ -4045,49 +4044,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 createdAt: new Date().toISOString()
             };
 
-            // Save order to MongoDB before WhatsApp
-            const saveRes = await saveOrderToDatabase(orderPayload);
+            const trackingId = 'LW-' + Math.floor(100000 + Math.random() * 900000);
+            orderPayload.orderId = trackingId;
+            orderPayload._id = trackingId;
 
-            if (!saveRes.success) {
-                window.isSubmittingOrder = false;
-                submitBtns.forEach((b, i) => {
-                    b.disabled = false;
-                    b.innerHTML = origBtnTexts[i];
-                });
-                window.showAlert('Unable to save order to the restaurant system:\n' + (saveRes.error || 'Please check your internet connection and try again.') + '\n\nYour cart has been preserved.', { title: 'Order Failed', icon: '❌', type: 'error' });
-                return;
-            }
-
-            // Save active order to localStorage for live customer status tracking
-            const createdOrder = saveRes.data?.order || saveRes.data;
-            const trackingId = createdOrder?._id || createdOrder?.orderId || createdOrder?.id || saveRes.data?.orderId || saveRes.data?._id;
-            if (trackingId) {
-                const cleanCustPhone = String(phone || '').replace(/\D/g, '').slice(-10);
-                localStorage.setItem('littiWaleActiveOrder', JSON.stringify({
-                    _id: trackingId,
-                    id: trackingId,
-                    orderId: trackingId,
-                    shortId: String(trackingId).slice(-6).toUpperCase(),
-                    status: 'pending',
-                    customerName: createdOrder?.customerName || name,
-                    customerPhone: cleanCustPhone,
-                    deliveryAddress: address,
-                    items: cart.map(i => ({ name: i.name, quantity: i.quantity, price: i.price, subtotal: i.price * i.quantity })),
-                    subtotal: createdOrder?.subtotal || subtotalAmount,
-                    discount: currentDiscount,
-                    deliveryCharge: createdOrder?.deliveryCharge || 0,
-                    finalTotal: createdOrder?.finalTotal || computedFinalTotal,
-                    paymentMethod: isCOD ? 'COD' : 'UPI',
-                    orderType: isDelivery ? 'delivery' : 'takeaway',
-                    createdAt: new Date().toISOString()
-                }));
-                if (typeof window.initOrderTracker === 'function') {
-                    window.initOrderTracker();
-                }
+            // Save active order to localStorage immediately for live customer status tracking
+            const cleanCustPhone = String(phone || '').replace(/\D/g, '').slice(-10);
+            localStorage.setItem('littiWaleActiveOrder', JSON.stringify({
+                _id: trackingId,
+                id: trackingId,
+                orderId: trackingId,
+                shortId: String(trackingId).slice(-6).toUpperCase(),
+                status: 'pending',
+                customerName: name,
+                customerPhone: cleanCustPhone,
+                deliveryAddress: address,
+                items: cart.map(i => ({ name: i.name, quantity: i.quantity, price: i.price, subtotal: i.price * i.quantity })),
+                subtotal: subtotalAmount,
+                discount: currentDiscount,
+                deliveryCharge: currentDelCharge,
+                finalTotal: computedFinalTotal,
+                paymentMethod: isCOD ? 'COD' : 'UPI',
+                orderType: isDelivery ? 'delivery' : 'takeaway',
+                createdAt: new Date().toISOString()
+            }));
+            if (typeof window.initOrderTracker === 'function') {
+                window.initOrderTracker();
             }
 
             // Save Customer Profile for Instant Reorder & Auto-Fill
-            const cleanCustPhone = String(phone || '').replace(/\D/g, '').slice(-10);
             if (cleanCustPhone) {
                 localStorage.setItem('littiwale_customer_phone', cleanCustPhone);
                 if (isDelivery && address && !address.toLowerCase().includes('self pickup')) {
@@ -4098,7 +4083,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         landmark: landmark || ''
                     }));
                 } else {
-                    // For takeaway, update name and phone, but preserve existing real delivery address!
                     const existingProfile = JSON.parse(localStorage.getItem('littiwale_customer_profile') || '{}');
                     const prevRealAddr = (existingProfile.address && !existingProfile.address.toLowerCase().includes('self pickup')) ? existingProfile.address : '';
                     localStorage.setItem('littiwale_customer_profile', JSON.stringify({
@@ -4109,36 +4093,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     }));
                 }
 
-                // Also save to Supabase customers table (upsert name + save new address)
+                // Supabase customer sync in background
                 const apiBase = window.ADMIN_API_BASE_URL || 'http://localhost:5001/api';
-                try {
-                    // Upsert customer name
-                    await fetch(`${apiBase}/customers/${cleanCustPhone}`, {
+                fetch(`${apiBase}/customers/${cleanCustPhone}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, whatsapp_phone: whatsappPhone || phone })
+                }).catch(() => {});
+
+                if (isDelivery && address && !address.toLowerCase().includes('self pickup')) {
+                    fetch(`${apiBase}/customers/${cleanCustPhone}/addresses`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name, whatsapp_phone: whatsappPhone || phone })
-                    });
-                    // Add address if it's a delivery order (with dedup check server-side)
-                    if (isDelivery && address && !address.toLowerCase().includes('self pickup')) {
-                        await fetch(`${apiBase}/customers/${cleanCustPhone}/addresses`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ address, landmark: landmark || '' })
-                        });
-                    }
-                } catch(e) {
-                    // Non-fatal: silently fail, localStorage backup exists
-                    console.warn('Customer profile sync failed (non-fatal):', e.message);
+                        body: JSON.stringify({ address, landmark: landmark || '' })
+                    }).catch(() => {});
                 }
             }
 
-            // Restore button state
-            window.isSubmittingOrder = false;
-            submitBtns.forEach((b, i) => {
-                b.disabled = false;
-                b.innerHTML = origBtnTexts[i];
-            });
-
+            // Build WhatsApp Message
             const message = window.buildWhatsAppMessage({
                 isCOD,
                 cart,
@@ -4158,7 +4130,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const phoneTarget = '916370680744';
             const encodedMessage = encodeURIComponent(message);
             const whatsappUrl = 'https://wa.me/' + phoneTarget + '?text=' + encodedMessage;
-            
+
+            // ⚡ OPEN WHATSAPP SIMULTANEOUSLY (Instant without waiting for server roundtrip)
+            try {
+                const waWin = window.open(whatsappUrl, '_blank');
+                if (!waWin || waWin.closed || typeof waWin.closed === 'undefined') {
+                    setTimeout(() => { window.location.href = whatsappUrl; }, 100);
+                }
+            } catch(e) {
+                setTimeout(() => { window.location.href = whatsappUrl; }, 100);
+            }
+
+            // ⚡ SIMULTANEOUS BACKGROUND SAVE TO DATABASE
+            saveOrderToDatabase(orderPayload).catch(err => console.warn('Background order save note:', err));
+
+            // Restore button state
+            window.isSubmittingOrder = false;
+            submitBtns.forEach((b, i) => {
+                b.disabled = false;
+                b.innerHTML = origBtnTexts[i];
+            });
+
             if (!isCOD) {
                 localStorage.setItem('paymentInitiated', 'true');
                 
@@ -4415,7 +4407,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         btnGps.style.background = '#28a745';
                         const dist = calculateDistance(lat, lng, RESTAURANT_LAT, RESTAURANT_LNG);
                         const roundedKm = Math.max(1, Math.round(dist));
-                        const currentRate = window.adminDeliveryRate || 30;
+                        const currentRate = Number(window.adminDeliveryRate || 30);
                         deliveryCharge = roundedKm * currentRate;
                         deliveryStatus = 'AVAILABLE';
                         updateCartUI();
@@ -5894,67 +5886,153 @@ window.logoutCustomer = function() {
 };
 window.switchCustomerAccount = window.logoutCustomer;
 
-window.openChangePasswordPrompt = async function(phone, email) {
-    const newPass = prompt('Set your 4-character PIN or custom password (e.g. 1234):');
-    if (!newPass || newPass.trim().length < 3) {
-        if (newPass !== null) alert('Password / PIN must be at least 3 characters');
-        return;
-    }
+window.openChangePasswordPrompt = function(phone, email) {
+    const existing = document.getElementById('custom-pin-modal');
+    if (existing) existing.remove();
 
-    try {
-        const apiBase = window.ADMIN_API_BASE_URL || 'https://admin.littiwale.co.in/api';
-        const res = await fetch(`${apiBase}/customer/change-password`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                phone: phone,
-                email: email,
-                newPassword: newPass.trim()
-            })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-            if (typeof window.showToast === 'function') window.showToast('✅ PIN / Password updated successfully!', 'success');
-            else alert('✅ PIN / Password updated successfully!');
-        } else {
-            alert(data.error || 'Could not update password');
+    const modal = document.createElement('div');
+    modal.id = 'custom-pin-modal';
+    modal.style.cssText = `
+        position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+        display: flex; align-items: center; justify-content: center; z-index: 999999; padding: 20px;
+        font-family: 'Poppins', sans-serif; animation: fadeIn 0.25s ease;
+    `;
+
+    modal.innerHTML = `
+        <div style="background: linear-gradient(135deg, #181924, #0e1017); border: 1.5px solid rgba(245,158,11,0.35); border-radius: 20px; max-width: 420px; width: 100%; padding: 28px 24px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.8); position: relative;">
+            <button type="button" id="btn-close-pin-modal" style="position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.08); border: none; color: #94a3b8; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 15px;">✕</button>
+            <div style="font-size: 40px; margin-bottom: 8px;">🔑</div>
+            <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px;">Set / Change Quick PIN</h3>
+            <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 20px;">
+                Enter a 4-character PIN (e.g. <code>1234</code>) so you can easily sign in anytime using your mobile number or email.
+            </p>
+            <div style="margin-bottom: 16px; text-align: left;">
+                <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; display: block; margin-bottom: 6px;">New 4-Digit PIN *</label>
+                <input type="password" id="modal-new-pin" maxlength="8" placeholder="Enter PIN (e.g. 1234)" style="width: 100%; padding: 12px 14px; background: #12131a; border: 1.5px solid rgba(245,158,11,0.3); border-radius: 10px; color: #fff; font-family: 'Poppins',sans-serif; font-size: 16px; text-align: center; letter-spacing: 4px; outline: none; box-sizing: border-box;">
+            </div>
+            <div id="modal-pin-err" style="color: #ef4444; font-size: 12px; min-height: 18px; margin-bottom: 14px;"></div>
+            <button type="button" id="btn-submit-new-pin" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 14px; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; width: 100%; box-shadow: 0 6px 20px rgba(245,158,11,0.4);">
+                💾 Save PIN
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    const pinInput = document.getElementById('modal-new-pin');
+    if (pinInput) pinInput.focus();
+
+    document.getElementById('btn-close-pin-modal').addEventListener('click', () => modal.remove());
+
+    document.getElementById('btn-submit-new-pin').addEventListener('click', async () => {
+        const pin = pinInput?.value?.trim();
+        const errEl = document.getElementById('modal-pin-err');
+        const submitBtn = document.getElementById('btn-submit-new-pin');
+        if (!pin || pin.length < 3) {
+            if (errEl) errEl.textContent = 'PIN must be at least 3 characters';
+            return;
         }
-    } catch(e) {
-        alert('Error updating password');
-    }
+
+        if (errEl) errEl.textContent = '';
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Saving PIN...'; }
+
+        try {
+            const apiBase = window.ADMIN_API_BASE_URL || 'https://admin.littiwale.co.in/api';
+            const res = await fetch(`${apiBase}/customer/change-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, email, newPassword: pin })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                modal.remove();
+                if (typeof window.showToast === 'function') window.showToast('✅ 4-Digit PIN updated successfully!', 'success');
+                else if (typeof window.showAlert === 'function') window.showAlert('Your 4-Digit PIN has been saved successfully!', { title: 'PIN Updated', icon: '🔑', type: 'success' });
+            } else {
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '💾 Save PIN'; }
+                if (errEl) errEl.textContent = data.error || 'Could not update PIN';
+            }
+        } catch(e) {
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '💾 Save PIN'; }
+            if (errEl) errEl.textContent = 'Connection error. Please try again.';
+        }
+    });
 };
 
-window.openAddPhonePrompt = async function(email) {
-    const phone = prompt('Enter your 10-digit Mobile Number:');
-    if (!phone) return;
-    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
-    if (cleanPhone.length !== 10) {
-        alert('Please enter a valid 10-digit mobile number');
-        return;
-    }
+window.openAddPhonePrompt = function(email) {
+    const existing = document.getElementById('custom-phone-modal');
+    if (existing) existing.remove();
 
-    try {
-        const apiBase = window.ADMIN_API_BASE_URL || 'https://admin.littiwale.co.in/api';
-        const res = await fetch(`${apiBase}/customer/update-profile`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                email: email,
-                phone: cleanPhone
-            })
-        });
-        const data = await res.json();
-        if (res.ok && data.success && data.customer) {
-            localStorage.setItem('littiwale_customer_profile', JSON.stringify(data.customer));
-            localStorage.setItem('littiwale_customer_phone', data.customer.phone);
-            alert('✅ Mobile number linked successfully!');
-            window.renderCustomerOrdersUI();
-        } else {
-            alert(data.error || 'Could not update phone number');
+    const modal = document.createElement('div');
+    modal.id = 'custom-phone-modal';
+    modal.style.cssText = `
+        position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+        display: flex; align-items: center; justify-content: center; z-index: 999999; padding: 20px;
+        font-family: 'Poppins', sans-serif; animation: fadeIn 0.25s ease;
+    `;
+
+    modal.innerHTML = `
+        <div style="background: linear-gradient(135deg, #181924, #0e1017); border: 1.5px solid rgba(56,189,248,0.35); border-radius: 20px; max-width: 420px; width: 100%; padding: 28px 24px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.8); position: relative;">
+            <button type="button" id="btn-close-phone-modal" style="position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.08); border: none; color: #94a3b8; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 15px;">✕</button>
+            <div style="font-size: 40px; margin-bottom: 8px;">📱</div>
+            <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px;">Link Mobile Number</h3>
+            <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 20px;">
+                Link your 10-digit mobile number for 1-tap WhatsApp order updates and instant reordering.
+            </p>
+            <div style="margin-bottom: 16px; text-align: left;">
+                <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; display: block; margin-bottom: 6px;">10-Digit Mobile Number *</label>
+                <div style="display: flex; align-items: center; background: #12131a; border: 1.5px solid rgba(56,189,248,0.3); border-radius: 10px; padding: 0 12px;">
+                    <span style="color: #f97316; font-weight: 800; font-size: 14px; margin-right: 8px;">+91</span>
+                    <input type="tel" id="modal-new-phone" maxlength="10" placeholder="9876543210" style="width: 100%; padding: 12px 0; background: transparent; border: none; color: #fff; font-family: 'Poppins',sans-serif; font-size: 15px; outline: none;">
+                </div>
+            </div>
+            <div id="modal-phone-err" style="color: #ef4444; font-size: 12px; min-height: 18px; margin-bottom: 14px;"></div>
+            <button type="button" id="btn-submit-new-phone" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 14px; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; width: 100%; box-shadow: 0 6px 20px rgba(2,132,199,0.4);">
+                🔗 Link Mobile Number
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    const phoneInput = document.getElementById('modal-new-phone');
+    if (phoneInput) phoneInput.focus();
+
+    document.getElementById('btn-close-phone-modal').addEventListener('click', () => modal.remove());
+
+    document.getElementById('btn-submit-new-phone').addEventListener('click', async () => {
+        const phoneVal = phoneInput?.value?.replace(/\D/g, '').slice(-10);
+        const errEl = document.getElementById('modal-phone-err');
+        const submitBtn = document.getElementById('btn-submit-new-phone');
+        if (!phoneVal || phoneVal.length !== 10) {
+            if (errEl) errEl.textContent = 'Please enter a valid 10-digit mobile number';
+            return;
         }
-    } catch(e) {
-        alert('Error saving phone number');
-    }
+
+        if (errEl) errEl.textContent = '';
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Linking...'; }
+
+        try {
+            const apiBase = window.ADMIN_API_BASE_URL || 'https://admin.littiwale.co.in/api';
+            const res = await fetch(`${apiBase}/customer/update-profile`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, phone: phoneVal })
+            });
+            const data = await res.json();
+            if (res.ok && data.success && data.customer) {
+                localStorage.setItem('littiwale_customer_profile', JSON.stringify(data.customer));
+                localStorage.setItem('littiwale_customer_phone', data.customer.phone);
+                modal.remove();
+                if (typeof window.showToast === 'function') window.showToast('✅ Mobile number linked successfully!', 'success');
+                window.renderCustomerOrdersUI();
+            } else {
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '🔗 Link Mobile Number'; }
+                if (errEl) errEl.textContent = data.error || 'Could not link mobile number';
+            }
+        } catch(e) {
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '🔗 Link Mobile Number'; }
+            if (errEl) errEl.textContent = 'Connection error. Please try again.';
+        }
+    });
 };
 
 window.handleCustomerPhoneSubmit = function(e) {

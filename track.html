@@ -1014,6 +1014,11 @@
                     }
 
                     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+                    const isLoggedIn = Boolean(localStorage.getItem('littiwale_customer_profile') || localStorage.getItem('littiwale_customer_phone'));
+                    if (isLoggedIn) {
+                        window.location.replace('orders.html');
+                        return;
+                    }
                     renderPhoneLookup();
                 } else {
                     // Server error — retry silently, don't flip to Not Found
@@ -1030,8 +1035,12 @@
         // Phone lookup form — shown when no active order ID is available or order is deleted
         function renderPhoneLookup() {
             if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-            const container = document.getElementById('tracking-main-container');
             const isLoggedIn = Boolean(localStorage.getItem('littiwale_customer_profile') || localStorage.getItem('littiwale_customer_phone'));
+            if (isLoggedIn) {
+                window.location.replace('orders.html');
+                return;
+            }
+            const container = document.getElementById('tracking-main-container');
 
             container.innerHTML = `
                 <div class="order-card" style="text-align:center; padding:40px 20px; max-width:480px; margin:0 auto; font-family:'Poppins',sans-serif;">
