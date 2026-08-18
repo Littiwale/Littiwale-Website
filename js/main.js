@@ -5978,9 +5978,9 @@ window.fetchCustomerOrders = async function(identifier) {
     if (!container) return;
 
     container.innerHTML = `
-        <div style="text-align:center; padding: 50px 20px; color: #94a3b8;">
-            <div class="spinner" style="margin: 0 auto 16px; width: 36px; height: 36px; border:3px solid rgba(255,255,255,0.1); border-top-color: #f59e0b; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
-            <div style="font-size: 14px; font-weight: 700; color: #fff;">Loading your profile & orders...</div>
+        <div style="text-align:center; padding: 50px 20px; color: #94a3b8; font-family:'Poppins',sans-serif;">
+            <div class="spinner" style="margin: 0 auto 16px; width: 38px; height: 38px; border:3px solid rgba(255,255,255,0.1); border-top-color: #f59e0b; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+            <div style="font-size: 15px; font-weight: 700; color: #fff;">Loading your profile & orders...</div>
             <div style="font-size: 12px; margin-top: 4px; color: #64748b;">${identifier}</div>
         </div>
     `;
@@ -6011,14 +6011,24 @@ window.fetchCustomerOrders = async function(identifier) {
 
         const custName = finalCustomer?.name || 'Customer';
         const custEmail = finalCustomer?.email || '';
-        const custPhone = finalCustomer?.phone || (identifier.includes('@') ? '' : identifier);
+        const rawPhone = finalCustomer?.phone || (identifier && !identifier.includes('@') ? identifier : '');
+        const custPhone = (rawPhone && rawPhone !== 'null' && rawPhone !== 'undefined') ? rawPhone.replace(/\D/g, '').slice(-10) : '';
         const avatarUrl = finalCustomer?.avatarUrl || '';
-        const initial = custName.charAt(0).toUpperCase();
+        const initial = custName.charAt(0).toUpperCase() || 'L';
 
-        const address = finalCustomer?.address || data.customer?.address || '';
-        const landmark = finalCustomer?.landmark || data.customer?.landmark || '';
+        // Address resolution
+        let address = '';
+        let landmark = '';
+        if (finalCustomer?.address && typeof finalCustomer.address === 'string') {
+            address = finalCustomer.address;
+            landmark = finalCustomer.landmark || '';
+        } else if (Array.isArray(finalCustomer?.addresses) && finalCustomer.addresses.length > 0) {
+            const defAddr = finalCustomer.addresses.find(a => a.isDefault) || finalCustomer.addresses[0];
+            address = defAddr?.address || '';
+            landmark = defAddr?.landmark || '';
+        }
 
-        // Check for active order in progress
+        // Active Order in progress check
         const activeOrder = orders.find(o => o.status === 'pending' || o.status === 'accepted' || o.status === 'confirmed' || o.status === 'dispatched');
 
         let liveOrderHtml = '';
@@ -6027,15 +6037,15 @@ window.fetchCustomerOrders = async function(identifier) {
             const shortId = activeTrackId ? String(activeTrackId).slice(-6).toUpperCase() : 'LW';
             const statusLabel = activeOrder.status === 'dispatched' ? 'Out for Delivery' : (activeOrder.status === 'accepted' || activeOrder.status === 'confirmed' ? 'Preparing in Kitchen' : 'Order Placed (Pending)');
             liveOrderHtml = `
-                <div class="cust-live-order-banner" style="background:linear-gradient(135deg, rgba(245,158,11,0.18), rgba(217,119,6,0.08)); border:1.5px solid #f59e0b; border-radius:14px; padding:14px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                <div class="cust-live-order-banner" style="background:linear-gradient(135deg, rgba(245,158,11,0.2), rgba(217,119,6,0.08)); border:1.5px solid #f59e0b; border-radius:16px; padding:16px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
                     <div class="cust-live-order-left" style="display:flex; align-items:center; gap:12px;">
-                        <div class="cust-live-order-icon" style="font-size:26px;">🛵</div>
+                        <div class="cust-live-order-icon" style="font-size:28px;">🛵</div>
                         <div>
-                            <div class="cust-live-order-title" style="font-weight:800; font-size:14px; color:#fff;">Live Order: #${shortId}</div>
+                            <div class="cust-live-order-title" style="font-weight:800; font-size:14.5px; color:#fff;">Live Order: #${shortId}</div>
                             <div class="cust-live-order-sub" style="font-size:12px; color:#f59e0b; font-weight:700;">${statusLabel}</div>
                         </div>
                     </div>
-                    <a href="track.html?id=${activeTrackId}" class="cust-live-order-btn" style="background:#f59e0b; color:#000; font-size:12px; font-weight:800; padding:8px 14px; border-radius:8px; text-decoration:none;">Track Live Status →</a>
+                    <a href="track.html?id=${activeTrackId}" class="cust-live-order-btn" style="background:#f59e0b; color:#000; font-family:'Poppins',sans-serif; font-size:12.5px; font-weight:800; padding:9px 16px; border-radius:8px; text-decoration:none; box-shadow:0 4px 15px rgba(245,158,11,0.35);">Track Live Status →</a>
                 </div>
             `;
         }
@@ -6043,13 +6053,13 @@ window.fetchCustomerOrders = async function(identifier) {
         let ordersListHtml = '';
         if (orders.length === 0) {
             ordersListHtml = `
-                <div class="cust-lookup-box" style="margin-top: 10px; text-align:center; padding:30px 20px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:14px;">
-                    <div style="font-size:36px; margin-bottom:10px;">🍲</div>
-                    <h4 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 6px;">No Past Orders Yet</h4>
-                    <p style="font-size: 12.5px; color: #94a3b8; margin-bottom: 20px;">
+                <div class="cust-lookup-box" style="text-align:center; padding:36px 20px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:16px;">
+                    <div style="font-size:42px; margin-bottom:12px;">🍲</div>
+                    <h4 style="font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 6px;">No Past Orders Yet</h4>
+                    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 22px; max-width: 400px; margin-left:auto; margin-right:auto; line-height:1.5;">
                         Ready for authentic Taste of Desi Swag? Explore our chef-special Littis, Combos, and Thalis.
                     </p>
-                    <a href="/menu" class="cust-lookup-btn" style="text-decoration:none; display:inline-block; padding:12px 24px; border-radius:10px; background:#f59e0b; color:#000; font-weight:800;">Explore Menu & Order Now</a>
+                    <a href="/menu" class="cust-lookup-btn" style="text-decoration:none; display:inline-block; padding:12px 28px; border-radius:10px; background:#f59e0b; color:#000; font-weight:800; font-family:'Poppins',sans-serif; box-shadow:0 6px 20px rgba(245,158,11,0.4);">Explore Menu & Order Now</a>
                 </div>
             `;
         } else {
@@ -6067,31 +6077,31 @@ window.fetchCustomerOrders = async function(identifier) {
                 let actionButtons = '';
                 if (isLive) {
                     actionButtons = `
-                        <a href="track.html?id=${trackId}" class="cust-live-order-btn" style="padding:7px 14px; font-size:12px; font-weight:800; border-radius:8px; text-decoration:none; background:#f59e0b; color:#000;">
+                        <a href="track.html?id=${trackId}" class="cust-live-order-btn" style="padding:8px 16px; font-size:12px; font-weight:800; border-radius:8px; text-decoration:none; background:#f59e0b; color:#000;">
                             <span>📍 Track Order →</span>
                         </a>
                     `;
                 } else {
                     actionButtons = `
-                        <button type="button" class="cust-view-order-btn" onclick="window.viewPastOrderDetails('${ord._id}')" title="View Order Details & Bill" style="padding:6px 12px; font-size:11.5px; font-weight:700; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:transparent; color:#fff; cursor:pointer;">
+                        <button type="button" class="cust-view-order-btn" onclick="window.viewPastOrderDetails('${ord._id}')" title="View Order Details & Bill" style="padding:7px 14px; font-size:12px; font-weight:700; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:transparent; color:#fff; cursor:pointer;">
                             <span>👁️ View Details</span>
                         </button>
-                        <button type="button" class="cust-reorder-btn" onclick="window.reorderPastOrder('${ord._id}')" title="Add all items to cart" style="padding:6px 12px; font-size:11.5px; font-weight:800; border-radius:8px; border:none; background:#f59e0b; color:#000; cursor:pointer;">
+                        <button type="button" class="cust-reorder-btn" onclick="window.reorderPastOrder('${ord._id}')" title="Add all items to cart" style="padding:7px 14px; font-size:12px; font-weight:800; border-radius:8px; border:none; background:#f59e0b; color:#000; cursor:pointer;">
                             <span>Reorder</span>
                         </button>
                     `;
                 }
 
                 return `
-                    <div class="cust-past-order-card" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px; margin-bottom:12px;">
-                        <div class="cust-order-top-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                            <span class="cust-order-id" style="font-weight:900; font-family:monospace; color:#f59e0b;">#${shortId}</span>
-                            <span style="font-size:10.5px; font-weight:800; color:${statusColor}; background:rgba(255,255,255,0.06); padding:2px 8px; border-radius:12px;">${statusText}</span>
+                    <div class="cust-past-order-card" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:16px; margin-bottom:14px;">
+                        <div class="cust-order-top-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <span class="cust-order-id" style="font-weight:900; font-family:monospace; color:#f59e0b; font-size:15px;">#${shortId}</span>
+                            <span style="font-size:11px; font-weight:800; color:${statusColor}; background:rgba(255,255,255,0.06); padding:3px 10px; border-radius:12px;">${statusText}</span>
                         </div>
-                        <div class="cust-order-date" style="font-size:11.5px; color:#94a3b8; margin-bottom:6px;">${dateStr}</div>
-                        <div class="cust-order-items" style="font-size:13px; color:#e2e8f0; margin-bottom:10px;">${itemsStr}</div>
-                        <div class="cust-order-footer-row" style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed rgba(255,255,255,0.08); padding-top:8px;">
-                            <span class="cust-order-total" style="font-size:15px; font-weight:900; color:#fbbf24;">₹${total}</span>
+                        <div class="cust-order-date" style="font-size:12px; color:#94a3b8; margin-bottom:8px;">${dateStr}</div>
+                        <div class="cust-order-items" style="font-size:13.5px; color:#e2e8f0; margin-bottom:12px; line-height:1.4;">${itemsStr}</div>
+                        <div class="cust-order-footer-row" style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed rgba(255,255,255,0.08); padding-top:10px;">
+                            <span class="cust-order-total" style="font-size:16px; font-weight:900; color:#fbbf24;">₹${total}</span>
                             <div style="display:flex; gap:8px; align-items:center;">
                                 ${actionButtons}
                             </div>
@@ -6102,132 +6112,133 @@ window.fetchCustomerOrders = async function(identifier) {
         }
 
         container.innerHTML = `
-            <!-- Customer Luxury Profile Header -->
-            <div class="cust-profile-header-card" style="background:linear-gradient(135deg, rgba(245,158,11,0.12), rgba(255,255,255,0.02)); border:1px solid rgba(245,158,11,0.25); border-radius:16px; padding:18px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;">
-                <div style="display:flex; align-items:center; gap:14px;">
-                    ${avatarUrl ? `
-                        <img src="${avatarUrl}" alt="${custName}" style="width:50px; height:50px; border-radius:50%; border:2px solid #f59e0b; object-fit:cover;">
-                    ` : `
-                        <div style="width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg, #f59e0b, #d97706); color:#000; font-weight:900; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 0 15px rgba(245,158,11,0.4);">
-                            ${initial}
+            <div style="font-family:'Poppins', sans-serif;">
+                <!-- Luxury Profile Header Card -->
+                <div class="cust-profile-header-card" style="background:linear-gradient(135deg, rgba(245,158,11,0.14) 0%, rgba(18,19,26,0.95) 100%); border:1px solid rgba(245,158,11,0.3); border-radius:20px; padding:22px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        ${avatarUrl ? `
+                            <img src="${avatarUrl}" alt="${custName}" style="width:58px; height:58px; border-radius:50%; border:2px solid #f59e0b; object-fit:cover; box-shadow:0 0 20px rgba(245,158,11,0.4);">
+                        ` : `
+                            <div style="width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg, #f59e0b, #d97706); color:#000; font-weight:900; font-size:24px; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(245,158,11,0.4);">
+                                ${initial}
+                            </div>
+                        `}
+                        <div>
+                            <div style="font-size:18px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+                                <span>${custName}</span>
+                                <span style="font-size:10.5px; background:rgba(34,197,94,0.18); color:#22c55e; border:1px solid rgba(34,197,94,0.35); padding:2px 8px; border-radius:12px; font-weight:700;">✓ Verified</span>
+                            </div>
+                            <div style="font-size:13px; color:#cbd5e1; margin-top:2px;">
+                                ${custEmail ? `📧 ${custEmail}` : ''}
+                            </div>
+                            <div style="font-size:12.5px; color:#f59e0b; font-weight:700; margin-top:4px; display:flex; align-items:center; gap:8px;">
+                                ${custPhone ? `📱 +91 ${custPhone}` : `<button type="button" onclick="window.openAddPhonePrompt('${custEmail}')" style="background:rgba(245,158,11,0.18); border:1px dashed #f59e0b; color:#fbbf24; padding:3px 10px; border-radius:6px; font-size:11.5px; cursor:pointer; font-weight:700;">+ Link Mobile Number</button>`}
+                            </div>
                         </div>
-                    `}
+                    </div>
                     <div>
-                        <div style="font-size:16px; font-weight:800; color:#fff; display:flex; align-items:center; gap:6px;">
-                            <span>${custName}</span>
-                            <span style="font-size:10px; background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3); padding:2px 6px; border-radius:10px; font-weight:700;">✓ Verified</span>
-                        </div>
-                        <div style="font-size:12.5px; color:#cbd5e1; margin-top:2px;">
-                            ${custEmail ? `📧 ${custEmail}` : ''}
-                        </div>
-                        <div style="font-size:12px; color:#f59e0b; font-weight:700; margin-top:2px; display:flex; align-items:center; gap:6px;">
-                            📱 ${custPhone ? `+91 ${custPhone}` : 'No phone linked'}
-                            ${!custPhone ? `<button type="button" onclick="window.openAddPhonePrompt('${custEmail}')" style="background:none; border:none; color:#38bdf8; text-decoration:underline; font-size:11px; cursor:pointer; font-weight:700;">+ Link Mobile</button>` : ''}
-                        </div>
+                        <button type="button" onclick="window.logoutCustomer()" title="Logout" style="background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#ef4444; font-size:12.5px; font-weight:800; padding:8px 16px; border-radius:10px; cursor:pointer; transition:all 0.2s ease;">
+                            🚪 Sign Out
+                        </button>
                     </div>
                 </div>
-                <div>
-                    <button type="button" onclick="window.logoutCustomer()" title="Logout" style="background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#ef4444; font-size:12px; font-weight:700; padding:6px 12px; border-radius:8px; cursor:pointer;">
-                        🚪 Sign Out
+
+                <!-- 3 Modern Navigation Tabs -->
+                <div style="display:flex; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:4px; margin-bottom:20px; gap:6px;">
+                    <button type="button" id="cust-tab-orders" onclick="window.switchProfileTab('orders')" style="flex:1; padding:10px; font-size:13px; font-weight:800; border:none; border-radius:8px; background:#f59e0b; color:#000; cursor:pointer; transition:all 0.2s ease; box-shadow:0 4px 15px rgba(245,158,11,0.35);">
+                        📦 My Orders (${orders.length})
+                    </button>
+                    <button type="button" id="cust-tab-address" onclick="window.switchProfileTab('address')" style="flex:1; padding:10px; font-size:13px; font-weight:800; border:none; border-radius:8px; background:transparent; color:#cbd5e1; cursor:pointer; transition:all 0.2s ease;">
+                        📍 Saved Address
+                    </button>
+                    <button type="button" id="cust-tab-security" onclick="window.switchProfileTab('security')" style="flex:1; padding:10px; font-size:13px; font-weight:800; border:none; border-radius:8px; background:transparent; color:#cbd5e1; cursor:pointer; transition:all 0.2s ease;">
+                        🔒 Security & PIN
                     </button>
                 </div>
-            </div>
 
-            <!-- 3 Modern Navigation Tabs -->
-            <div style="display:flex; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:4px; margin-bottom:18px; gap:4px;">
-                <button type="button" id="cust-tab-orders" onclick="window.switchProfileTab('orders')" style="flex:1; padding:8px; font-size:12.5px; font-weight:800; border:none; border-radius:8px; background:#f59e0b; color:#000; cursor:pointer;">
-                    📦 My Orders (${orders.length})
-                </button>
-                <button type="button" id="cust-tab-address" onclick="window.switchProfileTab('address')" style="flex:1; padding:8px; font-size:12.5px; font-weight:800; border:none; border-radius:8px; background:transparent; color:#cbd5e1; cursor:pointer;">
-                    📍 Saved Address
-                </button>
-                <button type="button" id="cust-tab-security" onclick="window.switchProfileTab('security')" style="flex:1; padding:8px; font-size:12.5px; font-weight:800; border:none; border-radius:8px; background:transparent; color:#cbd5e1; cursor:pointer;">
-                    🔒 Security & PIN
-                </button>
-            </div>
+                <!-- SECTION 1: MY ORDERS -->
+                <div id="cust-sec-orders">
+                    ${liveOrderHtml}
+                    ${ordersListHtml}
+                </div>
 
-            <!-- SECTION 1: MY ORDERS -->
-            <div id="cust-sec-orders">
-                ${liveOrderHtml}
-                ${ordersListHtml}
-            </div>
-
-            <!-- SECTION 2: SAVED ADDRESS WITH GPS LIVE LOCATION -->
-            <div id="cust-sec-address" style="display:none; font-family:'Poppins', sans-serif;">
-                ${address ? `
-                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(245,158,11,0.25); border-radius:14px; padding:18px; margin-bottom:16px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                            <span style="font-size:11px; font-weight:800; text-transform:uppercase; color:#f59e0b; letter-spacing:0.8px;">📍 Primary Delivery Address</span>
-                            <button type="button" onclick="window.toggleAddressEditForm()" style="background:rgba(245,158,11,0.15); border:1px solid #f59e0b; color:#f59e0b; font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px; cursor:pointer;">✏️ Edit Address</button>
-                        </div>
-                        <div style="font-size:14px; color:#ffffff; font-weight:700;">${custName} • 📱 ${custPhone ? `+91 ${custPhone}` : 'No phone linked'}</div>
-                        <div style="font-size:13px; color:#cbd5e1; margin-top:4px; line-height:1.4;">${address}</div>
-                        ${landmark ? `<div style="font-size:12px; color:#94a3b8; margin-top:2px;">📍 Landmark: ${landmark}</div>` : ''}
-                        ${finalCustomer?.latitude && finalCustomer?.longitude ? `
-                            <div style="margin-top:10px; padding:8px 12px; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.25); border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-                                <span style="font-size:11.5px; color:#22c55e; font-weight:700;">📍 GPS Linked (${Number(finalCustomer.latitude).toFixed(4)}, ${Number(finalCustomer.longitude).toFixed(4)})</span>
-                                <a href="https://maps.google.com/?q=${finalCustomer.latitude},${finalCustomer.longitude}" target="_blank" style="font-size:11px; color:#38bdf8; text-decoration:none; font-weight:800;">🗺️ Open in Google Maps →</a>
+                <!-- SECTION 2: SAVED ADDRESS WITH GPS LIVE LOCATION -->
+                <div id="cust-sec-address" style="display:none;">
+                    ${address ? `
+                        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(245,158,11,0.25); border-radius:16px; padding:20px; margin-bottom:18px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                <span style="font-size:11px; font-weight:800; text-transform:uppercase; color:#f59e0b; letter-spacing:0.8px;">📍 Primary Delivery Address</span>
+                                <button type="button" onclick="window.toggleAddressEditForm()" style="background:rgba(245,158,11,0.15); border:1px solid #f59e0b; color:#f59e0b; font-size:11.5px; font-weight:700; padding:5px 12px; border-radius:6px; cursor:pointer;">✏️ Edit Address</button>
                             </div>
-                        ` : ''}
+                            <div style="font-size:14.5px; color:#ffffff; font-weight:700;">${custName} ${custPhone ? `• 📱 +91 ${custPhone}` : ''}</div>
+                            <div style="font-size:13.5px; color:#cbd5e1; margin-top:4px; line-height:1.45;">${address}</div>
+                            ${landmark ? `<div style="font-size:12.5px; color:#94a3b8; margin-top:3px;">📍 Landmark: ${landmark}</div>` : ''}
+                            ${finalCustomer?.latitude && finalCustomer?.longitude ? `
+                                <div style="margin-top:12px; padding:10px 14px; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.25); border-radius:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                                    <span style="font-size:12px; color:#22c55e; font-weight:700;">📍 GPS Linked (${Number(finalCustomer.latitude).toFixed(4)}, ${Number(finalCustomer.longitude).toFixed(4)})</span>
+                                    <a href="https://maps.google.com/?q=${finalCustomer.latitude},${finalCustomer.longitude}" target="_blank" style="font-size:11.5px; color:#38bdf8; text-decoration:none; font-weight:800;">🗺️ Open in Google Maps →</a>
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+
+                    <!-- Address Add / Edit Form -->
+                    <div id="cust-address-form-box" style="${address ? 'display:none;' : 'display:block;'} background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:20px;">
+                        <h4 style="font-size:14.5px; font-weight:800; color:#f59e0b; margin-bottom:14px;">🏠 ${address ? 'Edit Delivery Address' : 'Add New Delivery Address'}</h4>
+                        <form onsubmit="window.handleSaveCustomerAddress(event)">
+                            <div style="margin-bottom:14px;">
+                                <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px; text-transform:uppercase;">Recipient Name *</label>
+                                <input type="text" id="cust-addr-name" value="${custName}" style="width:100%; padding:11px 14px; background:#161822; border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-family:'Poppins',sans-serif; font-size:13.5px;" required>
+                            </div>
+                            <div style="margin-bottom:14px;">
+                                <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px; text-transform:uppercase;">Mobile Number * (For Delivery Call)</label>
+                                <div style="display:flex; align-items:center; background:#161822; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0 12px;">
+                                    <span style="color:#f59e0b; font-weight:800; font-size:13.5px; margin-right:8px;">+91</span>
+                                    <input type="tel" id="cust-addr-phone" value="${custPhone || ''}" placeholder="10-digit mobile" maxlength="10" pattern="[0-9]{10}" style="width:100%; background:transparent; border:none; color:#fff; font-family:'Poppins',sans-serif; font-size:13.5px; padding:11px 0; outline:none;" required>
+                                </div>
+                            </div>
+                            <div style="margin-bottom:14px;">
+                                <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px; text-transform:uppercase;">House / Flat / Street / Area Address *</label>
+                                <textarea id="cust-addr-text" rows="2" placeholder="e.g. Flat 302, Royal Residency, Main Road, Barbil" style="width:100%; padding:11px 14px; background:#161822; border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-family:'Poppins',sans-serif; font-size:13.5px; resize:vertical;" required>${address}</textarea>
+                            </div>
+                            <div style="margin-bottom:16px;">
+                                <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px; text-transform:uppercase;">Landmark (Optional)</label>
+                                <input type="text" id="cust-addr-landmark" value="${landmark}" placeholder="e.g. Near Shiv Temple / Behind Petrol Pump" style="width:100%; padding:11px 14px; background:#161822; border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-family:'Poppins',sans-serif; font-size:13.5px;">
+                            </div>
+
+                            <!-- 📍 GPS LIVE LOCATION CAPTURE BUTTON -->
+                            <div style="margin-bottom:18px; background:#12131a; border:1px dashed rgba(245,158,11,0.4); border-radius:12px; padding:14px; text-align:center;">
+                                <button type="button" id="btn-fetch-gps" onclick="window.fetchLiveGPSLocation()" style="background:rgba(245,158,11,0.18); border:1px solid #f59e0b; color:#fbbf24; font-family:'Poppins',sans-serif; font-weight:800; font-size:13px; padding:9px 18px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">
+                                    <span>📍 Use My Current GPS Location</span>
+                                </button>
+                                <input type="hidden" id="cust-addr-lat" value="${finalCustomer?.latitude || ''}">
+                                <input type="hidden" id="cust-addr-lng" value="${finalCustomer?.longitude || ''}">
+                                <div id="gps-status-msg" style="font-size:12px; color:#94a3b8; margin-top:8px;">
+                                    ${finalCustomer?.latitude ? `✅ GPS Coordinates saved (${Number(finalCustomer.latitude).toFixed(4)}, ${Number(finalCustomer.longitude).toFixed(4)})` : 'Click above to link your exact live pin for fast delivery!'}
+                                </div>
+                            </div>
+
+                            <div style="display:flex; gap:10px;">
+                                <button type="submit" id="btn-save-address" style="flex:1; background:#f59e0b; color:#000; font-family:'Poppins',sans-serif; font-weight:800; font-size:14px; border:none; padding:13px; border-radius:8px; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px; box-shadow:0 6px 20px rgba(245,158,11,0.35);">
+                                    💾 Save Address
+                                </button>
+                                ${address ? `<button type="button" onclick="window.toggleAddressEditForm()" style="background:transparent; border:1px solid rgba(255,255,255,0.2); color:#cbd5e1; font-family:'Poppins',sans-serif; font-size:13px; padding:0 16px; border-radius:8px; cursor:pointer;">Cancel</button>` : ''}
+                            </div>
+                        </form>
                     </div>
-                ` : ''}
-
-                <!-- Address Add / Edit Form -->
-                <div id="cust-address-form-box" style="${address ? 'display:none;' : 'display:block;'} background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:18px;">
-                    <h4 style="font-size:14px; font-weight:800; color:#f59e0b; margin-bottom:12px;">🏠 ${address ? 'Edit Delivery Address' : 'Add New Delivery Address'}</h4>
-                    <form onsubmit="window.handleSaveCustomerAddress(event)">
-                        <div style="margin-bottom:12px;">
-                            <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px; text-transform:uppercase;">Recipient Name *</label>
-                            <input type="text" id="cust-addr-name" value="${custName}" style="width:100%; padding:10px 14px; background:#161822; border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-family:'Poppins',sans-serif; font-size:13px;" required>
-                        </div>
-                        <div style="margin-bottom:12px;">
-                            <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px; text-transform:uppercase;">Mobile Number * (For Delivery Call)</label>
-                            <div style="display:flex; align-items:center; background:#161822; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0 12px;">
-                                <span style="color:#f59e0b; font-weight:800; font-size:13px; margin-right:8px;">+91</span>
-                                <input type="tel" id="cust-addr-phone" value="${custPhone || ''}" placeholder="10-digit mobile" maxlength="10" pattern="[0-9]{10}" style="width:100%; background:transparent; border:none; color:#fff; font-family:'Poppins',sans-serif; font-size:13.5px; padding:10px 0; outline:none;" required>
-                            </div>
-                        </div>
-                        <div style="margin-bottom:12px;">
-                            <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px; text-transform:uppercase;">House / Flat / Street / Area Address *</label>
-                            <textarea id="cust-addr-text" rows="2" placeholder="e.g. Flat 302, Royal Residency, Main Road, Barbil" style="width:100%; padding:10px 14px; background:#161822; border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-family:'Poppins',sans-serif; font-size:13px; resize:vertical;" required>${address}</textarea>
-                        </div>
-                        <div style="margin-bottom:14px;">
-                            <label style="font-size:11px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px; text-transform:uppercase;">Landmark (Optional)</label>
-                            <input type="text" id="cust-addr-landmark" value="${landmark}" placeholder="e.g. Near Shiv Temple / Behind Petrol Pump" style="width:100%; padding:10px 14px; background:#161822; border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-family:'Poppins',sans-serif; font-size:13px;">
-                        </div>
-
-                        <!-- 📍 GPS LIVE LOCATION CAPTURE BUTTON -->
-                        <div style="margin-bottom:16px; background:#12131a; border:1px dashed rgba(245,158,11,0.4); border-radius:10px; padding:12px; text-align:center;">
-                            <button type="button" id="btn-fetch-gps" onclick="window.fetchLiveGPSLocation()" style="background:rgba(245,158,11,0.18); border:1px solid #f59e0b; color:#fbbf24; font-family:'Poppins',sans-serif; font-weight:800; font-size:12.5px; padding:8px 16px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
-                                <span>📍 Use My Current GPS Location</span>
-                            </button>
-                            <input type="hidden" id="cust-addr-lat" value="${finalCustomer?.latitude || ''}">
-                            <input type="hidden" id="cust-addr-lng" value="${finalCustomer?.longitude || ''}">
-                            <div id="gps-status-msg" style="font-size:11.5px; color:#94a3b8; margin-top:6px;">
-                                ${finalCustomer?.latitude ? `✅ GPS Coordinates saved (${Number(finalCustomer.latitude).toFixed(4)}, ${Number(finalCustomer.longitude).toFixed(4)})` : 'Click above to link your exact live pin for fast delivery!'}
-                            </div>
-                        </div>
-
-                        <div style="display:flex; gap:10px;">
-                            <button type="submit" id="btn-save-address" style="flex:1; background:#f59e0b; color:#000; font-family:'Poppins',sans-serif; font-weight:800; font-size:13.5px; border:none; padding:12px; border-radius:8px; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px;">
-                                💾 Save Address
-                            </button>
-                            ${address ? `<button type="button" onclick="window.toggleAddressEditForm()" style="background:transparent; border:1px solid rgba(255,255,255,0.2); color:#cbd5e1; font-family:'Poppins',sans-serif; font-size:12px; padding:0 14px; border-radius:8px; cursor:pointer;">Cancel</button>` : ''}
-                        </div>
-                    </form>
                 </div>
-            </div>
 
-            <!-- SECTION 3: SECURITY & PIN -->
-            <div id="cust-sec-security" style="display:none; font-family:'Poppins', sans-serif;">
-                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px;">
-                    <h4 style="font-size:14px; font-weight:800; color:#f59e0b; margin-bottom:6px;">🔑 Quick 4-Digit Login PIN</h4>
-                    <p style="font-size:12.5px; color:#94a3b8; margin-bottom:14px; line-height:1.5;">
-                        Set a quick 4-character PIN or permanent password so you can instantly log in from any device using just your Phone Number!
-                    </p>
-                    <button type="button" onclick="window.openChangePasswordPrompt('${custPhone || ''}', '${custEmail}')" style="background:#f59e0b; color:#000; font-family:'Poppins',sans-serif; font-weight:800; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; font-size:13px;">
-                        ✨ Set / Change Quick PIN
-                    </button>
+                <!-- SECTION 3: SECURITY & PIN -->
+                <div id="cust-sec-security" style="display:none;">
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:20px;">
+                        <h4 style="font-size:14.5px; font-weight:800; color:#f59e0b; margin-bottom:6px;">🔑 Quick 4-Digit Login PIN</h4>
+                        <p style="font-size:13px; color:#94a3b8; margin-bottom:16px; line-height:1.5;">
+                            Set a quick 4-character PIN or permanent password so you can instantly log in from any device using just your Mobile Number!
+                        </p>
+                        <button type="button" onclick="window.openChangePasswordPrompt('${custPhone || ''}', '${custEmail}')" style="background:#f59e0b; color:#000; font-family:'Poppins',sans-serif; font-weight:800; border:none; padding:11px 22px; border-radius:8px; cursor:pointer; font-size:13.5px; box-shadow:0 6px 20px rgba(245,158,11,0.35);">
+                            ✨ Set / Change Quick PIN
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
