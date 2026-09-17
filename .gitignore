@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs and debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+data/logs/
+
+# Large dev spreadsheets and raw scripts
+*.xlsx
+*.xls
+*.pdf
+menu_scripts/
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

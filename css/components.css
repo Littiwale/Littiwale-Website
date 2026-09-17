@@ -28,7 +28,7 @@
 .hero-zomato { 
     position: relative; 
     padding: 8rem 0; 
-    background-image: url('../images/hero-banner.png'); 
+    background-image: url('../images/hero-banner.webp'); 
     background-size: cover;
     background-position: center;
     color: var(--color-white); 

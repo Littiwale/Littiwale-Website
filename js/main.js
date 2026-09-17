@@ -187,12 +187,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Default bundled image map (100% verified dish images from /images/menu/Full Menu/)
     const DEFAULT_IMAGE_MAP = {
-        "aaj diet bhool ja": "images/menu/Craziest Deal Menu/aaj-diet-bhool-ja.png",
-        "tera jo mann wo khila de": "images/menu/Craziest Deal Menu/tera-jo-mann-wo-khila-de.png",
-        "tera jo mann khila de": "images/menu/Craziest Deal Menu/tera-jo-mann-wo-khila-de.png",
-        "pet bhar combo": "images/menu/Craziest Deal Menu/pet-bhar-combo.png",
-        "kuch bhi khila de": "images/menu/Craziest Deal Menu/kuch-bhi-khila-de.png",
-        "bhook lagi hai boss": "images/menu/Craziest Deal Menu/bhook-lagi-hai-boss.png",
+        "aaj diet bhool ja": "images/menu/Craziest Deal Menu/aaj-diet-bhool-ja.webp",
+        "tera jo mann wo khila de": "images/menu/Craziest Deal Menu/tera-jo-mann-wo-khila-de.webp",
+        "tera jo mann khila de": "images/menu/Craziest Deal Menu/tera-jo-mann-wo-khila-de.webp",
+        "pet bhar combo": "images/menu/Craziest Deal Menu/pet-bhar-combo.webp",
+        "kuch bhi khila de": "images/menu/Craziest Deal Menu/kuch-bhi-khila-de.webp",
+        "bhook lagi hai boss": "images/menu/Craziest Deal Menu/bhook-lagi-hai-boss.webp",
         "mumbai street vada pav": "images/menu/Full Menu/Star Special/vadapav.webp",
         "authentic bihari litti chokha": "images/menu/Full Menu/Star Special/littichokha.webp",
         "desi delight chick-a-litti": "images/menu/Full Menu/Star Special/littichicken.webp",
@@ -859,12 +859,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!grid) return;
 
         const defaultReels = [
-            { badge: 'Popular', badgeClass: 'popular', image: 'images/instagram/reel1.png', link: 'https://www.instagram.com/reel/DM0OaRuTorz/' },
-            { badge: 'Loved', badgeClass: 'loved', image: 'images/instagram/reel2.png', link: 'https://www.instagram.com/reel/DVOCmnIk-Yt/' },
-            { badge: 'Popular', badgeClass: 'popular', image: 'images/instagram/reel3.png', link: 'https://www.instagram.com/reel/DUsneR7E1Vh/' },
-            { badge: 'Popular', badgeClass: 'popular', image: 'images/instagram/reel4.png', link: 'https://www.instagram.com/reel/DU20uoDE9vY/' },
-            { badge: 'Loved', badgeClass: 'loved', image: 'images/instagram/reel5.png', link: 'https://www.instagram.com/reel/DUVd2y6k_bG/' },
-            { badge: 'Popular', badgeClass: 'popular', image: 'images/instagram/reel6.png', link: 'https://www.instagram.com/reel/DTcsHKbE2C7/' }
+            { badge: 'Popular', badgeClass: 'popular', image: 'images/instagram/reel1.webp', link: 'https://www.instagram.com/reel/DM0OaRuTorz/' },
+            { badge: 'Loved', badgeClass: 'loved', image: 'images/instagram/reel2.webp', link: 'https://www.instagram.com/reel/DVOCmnIk-Yt/' },
+            { badge: 'Popular', badgeClass: 'popular', image: 'images/instagram/reel3.webp', link: 'https://www.instagram.com/reel/DUsneR7E1Vh/' },
+            { badge: 'Popular', badgeClass: 'popular', image: 'images/instagram/reel4.webp', link: 'https://www.instagram.com/reel/DU20uoDE9vY/' },
+            { badge: 'Loved', badgeClass: 'loved', image: 'images/instagram/reel5.webp', link: 'https://www.instagram.com/reel/DUVd2y6k_bG/' },
+            { badge: 'Popular', badgeClass: 'popular', image: 'images/instagram/reel6.webp', link: 'https://www.instagram.com/reel/DTcsHKbE2C7/' }
         ];
 
         let list = reelsData;
@@ -923,7 +923,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const slug = cleanTitle.replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-        return `images/menu/Craziest Deal Menu/${slug}.png`;
+        return `images/menu/Craziest Deal Menu/${slug}.webp`;
     }
 
     // Helper: Determine Smart 3-Tier Spicy Chilli Icon (Clean Emoji Badge, No Text!)
@@ -3724,7 +3724,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div id="payment-step-3" class="payment-step" style="display: none; text-align: center;">
                             <h3 style="font-family: var(--font-heading); margin-bottom:10px;">Scan to Pay: ₹<span id="final-pay-amount">0</span></h3>
                             <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:15px;">
-                                <img src="images/upi-qr.jpeg" alt="UPI QR Code" style="width: 200px; height: 200px; margin: 0 auto; border-radius:10px; box-shadow:var(--shadow-sm);">
+                                <img src="images/upi-qr.webp" alt="UPI QR Code" style="width: 200px; height: 200px; margin: 0 auto; border-radius:10px; box-shadow:var(--shadow-sm);">
                             </div>
                             <p style="font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; color:var(--text-primary);">UPI: manjukarmakar3-2@okaxis</p>
                             <button id="btn-copy-upi" class="btn btn-outline mb-4" style="font-size: 0.9rem; padding: 6px 20px; border-radius: 20px; display:inline-block; width:auto; border-width:2px; font-weight:600;">Copy UPI ID</button>
@@ -4128,11 +4128,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const encodedMessage = encodeURIComponent(message);
             const whatsappUrl = 'https://wa.me/' + phoneTarget + '?text=' + encodedMessage;
 
-            // ⚡ INSTANT DIRECT LAUNCH TO WHATSAPP
-            window.location.href = whatsappUrl;
-
-            // ⚡ SIMULTANEOUS BACKGROUND SAVE TO DATABASE
-            saveOrderToDatabase(orderPayload).catch(err => console.warn('Background order save note:', err));
+            // ⚡ Save order to database FIRST (ensure it is saved before navigating)
+            let createdOrder = null;
+            try {
+                const saveResult = await saveOrderToDatabase(orderPayload);
+                if (saveResult && saveResult.success) {
+                    createdOrder = saveResult.data;
+                }
+            } catch (err) {
+                console.warn('Order save note:', err);
+            }
 
             // Restore button state
             window.isSubmittingOrder = false;
@@ -4689,7 +4694,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             for (let i = 1; i <= maxChecks; i++) {
                 const img = new Image();
-                const url = `images/announcements/current-offer${i}.png`;
+                const url = `images/announcements/current-offer${i}.webp`;
                 img.onload = () => {
                     validImages.push({ index: i, url: url });
                     checkDone();
@@ -5215,6 +5220,124 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // ── Smart Menu Search Algorithm (Synonyms, Multi-token & Typo Tolerance) ──
+        var LW_MENU_SYNONYMS = {
+            'rice': ['rice', 'chawal', 'bhat', 'basmati', 'fried rice', 'pulao', 'khichdi'],
+            'chawal': ['rice', 'chawal', 'bhat', 'basmati'],
+            'bhat': ['rice', 'chawal', 'bhat'],
+            'extra': ['extra', 'extras', 'addon', 'add-on', 'side', 'sides'],
+            'extras': ['extra', 'extras', 'addon', 'add-on', 'side', 'sides'],
+            'roti': ['roti', 'chapati', 'paratha', 'naan', 'phulka', 'bread', 'laccha', 'chakuli'],
+            'chapati': ['roti', 'chapati', 'paratha', 'phulka'],
+            'paratha': ['paratha', 'roti', 'laccha', 'lacha'],
+            'pitha': ['pitha', 'chakuli'],
+            'dahi': ['dahi', 'curd', 'raita', 'yogurt'],
+            'curd': ['dahi', 'curd', 'raita', 'yogurt'],
+            'sabzi': ['sabzi', 'curry', 'bhaji', 'tarkari', 'gravy'],
+            'paneer': ['paneer', 'panir', 'cheese', 'cottage cheese'],
+            'chicken': ['chicken', 'chiken', 'chikn', 'murgh', 'murg', 'nonveg', 'non-veg'],
+            'egg': ['egg', 'anda', 'ande', 'omlet', 'omelette', 'nonveg'],
+            'litti': ['litti', 'liti', 'sattu', 'chokha'],
+            'chokha': ['chokha', 'bharta', 'aloo', 'baingan'],
+            'noodles': ['noodles', 'noodle', 'nodles', 'hakka', 'chowmein', 'chow'],
+            'drink': ['drink', 'drinks', 'cold drink', 'pepsi', 'coke', 'beverage', 'water'],
+            'sweet': ['sweet', 'sweets', 'mithai', 'dessert', 'gulab jamun']
+        };
+
+        function lwLevenshtein(a, b) {
+            if (a === b) return 0;
+            if (a.length === 0) return b.length;
+            if (b.length === 0) return a.length;
+            var matrix = [];
+            for (var i = 0; i <= b.length; i++) matrix[i] = [i];
+            for (var j = 0; j <= a.length; j++) matrix[0][j] = j;
+            for (var i = 1; i <= b.length; i++) {
+                for (var j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j] + 1);
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        function lwScoreDish(dish, query) {
+            if (!query) return 1;
+            var q = query.trim().toLowerCase();
+            if (!q) return 1;
+
+            var name = (dish.name || '').toLowerCase();
+            var cat = (dish.category || '').toLowerCase();
+            var desc = (dish.description || '').toLowerCase();
+            var kw = (dish.keywords || '').toLowerCase();
+
+            var score = 0;
+
+            if (name === q) score += 200;
+            else if (name.startsWith(q)) score += 120;
+            else if (name.includes(q)) score += 80;
+            else if (lwLevenshtein(name, q) <= (q.length <= 4 ? 1 : 2)) score += 140;
+
+            if (cat === q) score += 50;
+            else if (cat.includes(q)) score += 30;
+
+            if (kw && kw.includes(q)) score += 70;
+
+            var tokens = q.split(/\s+/).filter(Boolean);
+            var allTokensMatched = true;
+
+            tokens.forEach(function(token) {
+                var tokenMatched = false;
+                if (name.includes(token)) { score += 30; tokenMatched = true; }
+                if (cat.includes(token)) { score += 18; tokenMatched = true; }
+                if (kw.includes(token)) { score += 25; tokenMatched = true; }
+                if (desc.includes(token)) { score += 6; tokenMatched = true; }
+
+                var synList = LW_MENU_SYNONYMS[token] || [];
+                if (!synList.length) {
+                    for (var k in LW_MENU_SYNONYMS) {
+                        if (lwLevenshtein(token, k) <= (token.length <= 4 ? 1 : 2)) {
+                            synList = LW_MENU_SYNONYMS[k];
+                            score += 15;
+                            break;
+                        }
+                    }
+                }
+                for (var i = 0; i < synList.length; i++) {
+                    var s = synList[i];
+                    if (name === s) { score += 60; tokenMatched = true; }
+                    else if (name.includes(s)) { score += 20; tokenMatched = true; }
+                    if (kw.includes(s)) { score += 20; tokenMatched = true; }
+                    if (cat.includes(s)) { score += 12; tokenMatched = true; }
+                    if (desc.includes(s)) { score += 4; tokenMatched = true; }
+                }
+
+                if (!tokenMatched) {
+                    var hayWords = (name + ' ' + cat + ' ' + desc + ' ' + kw).split(/[\s,()•+\\/-]+/).filter(Boolean);
+                    var maxDist = token.length <= 4 ? 1 : 2;
+                    var fuzzy = hayWords.some(function(w) { return lwLevenshtein(token, w) <= maxDist; });
+                    if (fuzzy) { score += 12; tokenMatched = true; }
+                }
+
+                if (!tokenMatched) allTokensMatched = false;
+            });
+
+            return allTokensMatched ? score : 0;
+        }
+
+        function lwSmartSearch(items, query) {
+            if (!query || !query.trim()) return items || [];
+            var q = query.trim();
+            var scored = (items || [])
+                .map(function(d) { return { dish: d, score: lwScoreDish(d, q) }; })
+                .filter(function(s) { return s.score > 0; })
+                .sort(function(a, b) { return b.score - a.score; })
+                .map(function(s) { return s.dish; });
+            return scored;
+        }
+
         // ── Build dropdown suggestion list ────────────────────────────────────
         function lwRenderDropdown(query) {
             dropdown.innerHTML = '';
@@ -5230,10 +5353,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            var matched = menuData.filter(function(item) {
-                var hay = (item.name + ' ' + (item.category || '') + ' ' + (item.description || '')).toLowerCase();
-                return hay.includes(q);
-            });
+            var matched = lwSmartSearch(menuData, q);
             var unique = lwDeduplicateItems(matched);
 
             if (!unique.length) {
@@ -5319,10 +5439,7 @@ document.addEventListener('DOMContentLoaded', () => {
             var q = query.trim().toLowerCase();
             if (!q) { lwResetSearch(); return; }
 
-            var matched = menuData.filter(function(item) {
-                var hay = (item.name + ' ' + (item.category || '') + ' ' + (item.description || '')).toLowerCase();
-                return hay.includes(q);
-            });
+            var matched = lwSmartSearch(menuData, q);
 
             if (filterNotice) filterNotice.style.display = 'block';
             renderMenu(matched); // renderMenu applies currentDietaryFilter internally
