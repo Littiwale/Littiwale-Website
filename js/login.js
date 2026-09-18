@@ -8,6 +8,22 @@ window.ADMIN_SERVER_ORIGIN = (window.location.hostname === 'localhost' || window
 
 window.ADMIN_API_BASE_URL = `${window.ADMIN_SERVER_ORIGIN}/api`;
 
+// ============================================================
+// INSTANT BACKGROUND PRE-WARMUP (Eliminates Vercel Cold Starts)
+// ============================================================
+(function warmUpBackend() {
+    const ping = () => {
+        try {
+            fetch(`${window.ADMIN_API_BASE_URL}/health`, { method: 'GET', keepalive: true }).catch(() => {});
+        } catch (e) {}
+    };
+    // 1. Immediate silent ping on page load
+    ping();
+    // 2. Ping again if user focuses or starts typing (ensures container stays hot)
+    window.addEventListener('focus', ping, { once: true });
+    document.addEventListener('input', ping, { once: true });
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
     const tabLogin = document.getElementById('tab-login');
     const tabSignup = document.getElementById('tab-signup');
