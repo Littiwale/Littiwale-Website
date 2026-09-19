@@ -2656,18 +2656,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const subtotalEl = document.getElementById('cart-subtotal-amount');
         const deliveryEl = document.getElementById('cart-delivery-amount');
         const totalEl = document.getElementById('cart-total-amount');
-        
-        if (!container || !summary || !totalEl) return;
+        const footerCta = document.getElementById('cart-footer-cta');
+        const checkoutBtnTotal = document.getElementById('checkout-btn-total');
+        const stickyCheckoutBtn = document.getElementById('checkout-btn');
+
+        if (!container || !totalEl) {
+            if (footerCta) {
+                footerCta.style.display = cart.length > 0 ? 'flex' : 'none';
+            }
+            if (checkoutBtnTotal) {
+                const currentTotal = cart.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 0), 0);
+                checkoutBtnTotal.textContent = `₹${currentTotal}`;
+            }
+            if (stickyCheckoutBtn && cart.length === 0) {
+                stickyCheckoutBtn.disabled = true;
+                stickyCheckoutBtn.style.opacity = '0.6';
+            }
+            return;
+        }
 
         if (cart.length === 0) {
             container.innerHTML = '<div class="empty-cart-msg" style="text-align:center; padding:40px 20px; color:#9ca3af; font-size:1.05rem;">Your cart is empty</div>';
-            summary.style.display = 'none';
+            if (summary) summary.style.display = 'none';
             const couponSection = document.getElementById('coupon-section');
             if (couponSection) couponSection.style.display = 'none';
             const freeDeliveryCard = document.getElementById('free-delivery-card');
             if (freeDeliveryCard) freeDeliveryCard.style.display = 'none';
-            const footerCta = document.getElementById('cart-footer-cta');
             if (footerCta) footerCta.style.display = 'none';
+            if (stickyCheckoutBtn) {
+                stickyCheckoutBtn.disabled = true;
+                stickyCheckoutBtn.style.opacity = '0.6';
+            }
             
             // Sync checkout.html specific elements for empty state
             const chkContainer = document.getElementById('checkout-items-container');
@@ -2842,9 +2861,11 @@ document.addEventListener('DOMContentLoaded', () => {
             summary.style.display = 'block';
             
             // Sync Sticky Bottom Action Bar Buttons
-            const footerCta = document.getElementById('cart-footer-cta');
-            const checkoutBtnTotal = document.getElementById('checkout-btn-total');
             if (footerCta) footerCta.style.display = 'flex';
+            if (stickyCheckoutBtn) {
+                stickyCheckoutBtn.disabled = false;
+                stickyCheckoutBtn.style.opacity = '1';
+            }
             if (checkoutBtnTotal) checkoutBtnTotal.textContent = `₹${finalTotal}`;
             
             // Sync checkout.html specific elements
