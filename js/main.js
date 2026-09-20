@@ -4017,6 +4017,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const address = isDelivery ? getVal('checkout-address', 'cust-address') : 'Self Pickup (Takeaway)';
             const landmark = isDelivery ? (document.getElementById('checkout-landmark')?.value || '').trim() : '';
+
+            if (isDelivery && !address) {
+                window.showAlert('Please provide your delivery address before placing the order.', { title: 'Address Required', icon: '📍', type: 'warning' });
+                window.isSubmittingOrder = false;
+                submitBtns.forEach((b, i) => {
+                    b.disabled = false;
+                    b.innerHTML = origBtnTexts[i];
+                });
+                return;
+            }
             
             let subtotalAmount = 0;
             cart.forEach(item => {
@@ -4155,9 +4165,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const saveResult = await saveOrderToDatabase(orderPayload);
                 if (saveResult && saveResult.success) {
                     createdOrder = saveResult.data;
+                } else {
+                    throw new Error(saveResult?.error || 'Could not save order');
                 }
             } catch (err) {
                 console.warn('Order save note:', err);
+                window.isSubmittingOrder = false;
+                submitBtns.forEach((b, i) => {
+                    b.disabled = false;
+                    b.innerHTML = origBtnTexts[i];
+                });
+                window.showAlert('Order could not be saved. Please verify the delivery address and try again.', { title: 'Order Not Placed', icon: '⚠️', type: 'error' });
+                return;
             }
 
             // Restore button state
