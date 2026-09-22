@@ -1956,6 +1956,54 @@ border-right: 1px solid #facc15;
     animation: fadeInSlide 0.3s ease forwards;
 }
 
+@media (max-width: 768px) {
+    #checkout-section {
+        padding: 24px 0 32px !important;
+        margin-top: 64px !important;
+    }
+
+    #checkout-section .container {
+        width: min(100% - 24px, 640px);
+    }
+
+    .checkout-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 16px !important;
+        margin-top: 20px !important;
+    }
+
+    .checkout-grid > div {
+        padding: 16px !important;
+        border-radius: 12px !important;
+    }
+
+    .checkout-grid h3 {
+        font-size: 1.05rem;
+    }
+
+    .payment-modal {
+        align-items: flex-start;
+        padding: max(12px, env(safe-area-inset-top)) 10px max(12px, env(safe-area-inset-bottom));
+        overflow-y: auto;
+    }
+
+    .payment-modal-content {
+        width: 100%;
+        max-width: 520px;
+        max-height: calc(100dvh - 24px);
+        overflow-y: auto;
+        margin: 0 auto;
+        padding: 20px 16px;
+        border-radius: 14px;
+    }
+
+    #checkout-place-order-btn,
+    #clear-cart-global {
+        min-height: 48px;
+        font-size: 1rem !important;
+    }
+}
+
 /* ==========================================================================
    Responsive Design
    ========================================================================== */
