@@ -1352,6 +1352,7 @@
             const delFee = isTakeaway ? 0 : Number(order.deliveryCharge || 0);
             const subtotal = Number(order.subtotal || (finalTotal - delFee));
             const discount = Number(order.discount || 0);
+            const assignedRider = order.deliveryBoy || order.assignedDeliveryBoy;
 
             const isStep1 = true;
             const isStep2 = status === 'accepted' || status === 'confirmed' || status === 'dispatched' || status === 'delivered';
@@ -1483,6 +1484,14 @@
                                 </div>
                                 <h2 class="status-title">${statusTitle}</h2>
                                 <p class="status-subtitle">${statusDesc}</p>
+
+                                ${(status === 'accepted' || status === 'confirmed') && !isTakeaway && assignedRider?.name ? `
+                                <div style="margin:14px auto 0; max-width:360px; padding:10px 14px; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); border-radius:12px; text-align:left;">
+                                    <div style="font-size:11px; color:#60a5fa; font-weight:800; text-transform:uppercase;">Delivery Boy Assigned</div>
+                                    <div style="font-size:14px; color:#fff; font-weight:800; margin-top:3px;">${assignedRider.name}</div>
+                                    <div style="font-size:12px; color:#cbd5e1; margin-top:2px;">+91 ${assignedRider.phone || 'N/A'}</div>
+                                </div>
+                                ` : ''}
 
                                 ${(status === 'accepted' || status === 'confirmed' || status === 'dispatched' || status === 'delivered') ? `
                                 <div style="display:flex; justify-content:center; margin-top:14px;">
