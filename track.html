@@ -1353,6 +1353,10 @@
             const subtotal = Number(order.subtotal || (finalTotal - delFee));
             const discount = Number(order.discount || 0);
             const assignedRider = order.deliveryBoy || order.assignedDeliveryBoy;
+            const riderPhone = String(assignedRider?.phone || order.deliveryBoyPhone || '').replace(/\D/g, '').slice(-10);
+            const amountPaid = Number(order.amountPaid || 0) || (order.paymentCollectedByStore ? Number(finalTotal) : 0);
+            const amountDue = Math.max(0, Number(finalTotal) - amountPaid);
+            const paymentSummaryText = amountDue > 0 ? `₹${amountPaid} received • ₹${amountDue} due` : `Paid ₹${amountPaid}`;
 
             const isStep1 = true;
             const isStep2 = status === 'accepted' || status === 'confirmed' || status === 'dispatched' || status === 'delivered';
@@ -1489,7 +1493,11 @@
                                 <div style="margin:14px auto 0; max-width:360px; padding:10px 14px; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); border-radius:12px; text-align:left;">
                                     <div style="font-size:11px; color:#60a5fa; font-weight:800; text-transform:uppercase;">Delivery Boy Assigned</div>
                                     <div style="font-size:14px; color:#fff; font-weight:800; margin-top:3px;">${assignedRider.name}</div>
-                                    <div style="font-size:12px; color:#cbd5e1; margin-top:2px;">+91 ${assignedRider.phone || 'N/A'}</div>
+                                    ${riderPhone ? `<div style="font-size:12px; color:#cbd5e1; margin-top:2px;">+91 ${riderPhone}</div>
+                                    <div style="display:flex; gap:8px; margin-top:10px;">
+                                        <a href="tel:+91${riderPhone}" style="flex:1; padding:9px; background:#2563eb; color:#fff; text-align:center; text-decoration:none; border-radius:8px; font-size:12px; font-weight:800;">Call Rider</a>
+                                        <a href="https://wa.me/91${riderPhone}?text=${encodeURIComponent(`Hi, regarding Littiwale order #${shortId}`)}" target="_blank" rel="noopener" style="flex:1; padding:9px; background:#16a34a; color:#fff; text-align:center; text-decoration:none; border-radius:8px; font-size:12px; font-weight:800;">WhatsApp Rider</a>
+                                    </div>` : '<div style="font-size:12px; color:#cbd5e1; margin-top:4px;">Rider contact will appear when available.</div>'}
                                 </div>
                                 ` : ''}
 
@@ -1544,7 +1552,7 @@
                                     <div style="text-align:right;">
                                         <div style="font-size:11px; color:#94a3b8;">Payment Summary</div>
                                         <div style="font-size:13px; font-weight:800; color:${order.paymentCollectedByStore ? '#34d399' : '#fbbf24'};">
-                                            ${order.paymentCollectedByStore ? '✅ Already Paid (₹0 Due)' : `💵 ₹${finalTotal} (Pay at Counter)`}
+                                            ${paymentSummaryText}${isTakeaway && amountDue > 0 ? ' (Pay at Counter)' : ''}
                                         </div>
                                     </div>
                                 </div>
@@ -1575,15 +1583,15 @@
                                     </div>
                                     <div style="text-align:right;">
                                         <div style="font-size:11px; color:#94a3b8;">Payment Summary</div>
-                                        <div style="font-size:13px; font-weight:800; color:${order.paymentCollectedByStore ? '#34d399' : '#fbbf24'};">
-                                            ${order.paymentCollectedByStore ? '✅ Already Paid (₹0 Due)' : `💵 ₹${finalTotal} (Cash on Delivery)`}
+                                        <div style="font-size:13px; font-weight:800; color:${amountDue === 0 ? '#34d399' : '#fbbf24'};">
+                                            ${paymentSummaryText}
                                         </div>
                                     </div>
                                 </div>
-                                <a href="tel:+91${String(order.deliveryBoy?.phone || order.assignedDeliveryBoy?.phone || order.deliveryBoyPhone || '6370680744').replace(/\D/g,'').slice(-10)}" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:11px; background:linear-gradient(135deg, #3b82f6, #2563eb); color:#fff; font-weight:800; font-size:13px; text-decoration:none; border-radius:10px; box-shadow:0 4px 14px rgba(59,130,246,0.35); transition:transform 0.2s;">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                                    <span>Call Delivery Contact (+91 ${String(order.deliveryBoy?.phone || order.assignedDeliveryBoy?.phone || order.deliveryBoyPhone || '6370680744').replace(/\D/g,'').slice(-10)})</span>
-                                </a>
+                                ${riderPhone ? `<div style="display:flex; gap:8px;">
+                                    <a href="tel:+91${riderPhone}" style="flex:1; display:flex; align-items:center; justify-content:center; padding:11px 8px; background:linear-gradient(135deg, #3b82f6, #2563eb); color:#fff; font-weight:800; font-size:12px; text-decoration:none; border-radius:10px;">Call Rider</a>
+                                    <a href="https://wa.me/91${riderPhone}?text=${encodeURIComponent(`Hi, regarding Littiwale order #${shortId}`)}" target="_blank" rel="noopener" style="flex:1; display:flex; align-items:center; justify-content:center; padding:11px 8px; background:#16a34a; color:#fff; font-weight:800; font-size:12px; text-decoration:none; border-radius:10px;">WhatsApp Rider</a>
+                                </div>` : '<div style="font-size:12px; color:#cbd5e1; text-align:center;">Rider contact is not available yet. Please contact restaurant support.</div>'}
                             </div>
                             `) : '')}
                         </div>
