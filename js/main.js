@@ -473,7 +473,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         spicyLevel: item.spicyLevel || ((item.name && /thecha/i.test(item.name)) ? 3 : (item.isSpicy ? 1 : 0)),
                         image: resolvedImage,
                         isCraziestDeal: item.isCraziestDeal === true || item.category === 'Craziest Deals of the Hour' || (item.category && item.category.toLowerCase().includes('craziest deal')),
-                        isCombo: item.isCombo || false
+                        isCombo: item.isCombo || false,
+                        options: Array.isArray(item.options) ? item.options : [],
+                        variant: item.variant || ''
                     });
                 });
 
@@ -2438,10 +2440,10 @@ document.addEventListener('DOMContentLoaded', () => {
             ];
 
             let optionsToPresent = null;
-            if (isThali) {
-                optionsToPresent = defaultThaliOptions;
-            } else if (menuItem && menuItem.options && menuItem.options.length > 0) {
+            if (menuItem && Array.isArray(menuItem.options) && menuItem.options.length > 0) {
                 optionsToPresent = menuItem.options.map(opt => typeof opt === 'string' ? { label: opt, desc: '' } : opt);
+            } else if (isThali) {
+                optionsToPresent = defaultThaliOptions;
             }
 
             if (optionsToPresent && optionsToPresent.length > 0) {
@@ -2453,7 +2455,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (optionsNameEl) {
                         optionsNameEl.innerHTML = `
                             <strong style="color:#ffffff; font-size:1.15rem; display:block; margin-bottom:4px;">${name}</strong>
-                            <span style="font-size:0.85rem; color:#f59e0b; font-weight:700;">Select your Thali Combination:</span>
+                            <span style="font-size:0.85rem; color:#f59e0b; font-weight:700;">${isThali ? 'Select your Thali Combination:' : 'Select an option:'}</span>
                         `;
                     }
                     container.innerHTML = '';
