@@ -1402,11 +1402,18 @@
             }
 
             const timeStr = order.createdAt ? new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+            const escapeItemName = value => String(value ?? '').replace(/[&<>"']/g, character => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[character]);
             const itemsHtml = (order.items || []).map(it => `
                 <div class="slip-item-row">
                     <div class="slip-item-left">
                         <span class="slip-item-qty">${it.quantity}x</span>
-                        <span class="slip-item-name">${it.name}</span>
+                        <span class="slip-item-name">${escapeItemName(it.name)}</span>
                     </div>
                     <span class="slip-item-price">₹${it.subtotal || (it.price * it.quantity)}</span>
                 </div>

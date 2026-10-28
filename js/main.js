@@ -4,6 +4,16 @@ window.ADMIN_SERVER_ORIGIN = (window.location.hostname === 'localhost' || window
 
 window.ADMIN_API_BASE_URL = `${window.ADMIN_SERVER_ORIGIN}/api`;
 
+window.escapeOrderItemName = function(value) {
+    return String(value ?? '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[character]);
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener("error", (e) => console.error("Global Error:", e.message));
 
@@ -6319,7 +6329,7 @@ window.fetchCustomerOrders = async function(identifier) {
                 const shortId = trackId ? String(trackId).slice(-6).toUpperCase() : 'LW-ORD';
                 const dateStr = ord.createdAt ? new Date(ord.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent';
                 const total = ord.finalTotal || ord.subtotal || 0;
-                const itemsStr = (ord.items || []).map(i => `${i.quantity}x ${i.name}`).join(', ');
+                const itemsStr = (ord.items || []).map(i => `${i.quantity}x ${window.escapeOrderItemName(i.name)}`).join(', ');
                 const rawStatus = (ord.status || 'pending').toLowerCase();
                 const isLive = rawStatus === 'pending' || rawStatus === 'accepted' || rawStatus === 'confirmed' || rawStatus === 'dispatched';
                 const statusColor = rawStatus === 'delivered' ? '#22c55e' : (rawStatus === 'cancelled' ? '#ef4444' : '#f59e0b');
@@ -7078,5 +7088,4 @@ function updateNavAuthButton() {
 
 window.addEventListener('DOMContentLoaded', updateNavAuthButton);
 window.addEventListener('load', updateNavAuthButton);
-
 

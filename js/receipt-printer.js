@@ -7,6 +7,16 @@
   let audioCtx = null;
   let isPrinting = false;
 
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, character => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[character]);
+  }
+
   function initAudio() {
     if (!audioCtx) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -243,7 +253,7 @@
     const items = orderData.items || [];
     const itemsRows = items.length > 0 ? items.map(item => `
       <tr>
-        <td>${item.quantity || 1}x ${item.name || 'Dish Item'}</td>
+        <td>${item.quantity || 1}x ${escapeHtml(item.name || 'Dish Item')}</td>
         <td>₹${Number(item.price || 0) * (item.quantity || 1)}</td>
       </tr>
     `).join('') : `
@@ -411,7 +421,7 @@
     const rowsHtml = items.length > 0 ? items.map((it, idx) => `
       <tr style="border-bottom: 1px solid #f1f5f9;">
         <td style="padding:12px; text-align:center; color:#64748b; font-size:12px;">${idx + 1}</td>
-        <td style="padding:12px; font-weight:700; color:#0f172a;">${it.name || 'Dish Item'}</td>
+        <td style="padding:12px; font-weight:700; color:#0f172a;">${escapeHtml(it.name || 'Dish Item')}</td>
         <td style="padding:12px; text-align:center; font-weight:600;">${it.quantity || 1}</td>
         <td style="padding:12px; text-align:right; color:#475569;">₹${it.price || 0}</td>
         <td style="padding:12px; text-align:right; font-weight:800; color:#0f172a;">₹${(Number(it.price || 0) * (it.quantity || 1))}</td>
