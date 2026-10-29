@@ -469,6 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         _id: id,
                         name: item.name,
                         category: item.category,
+                        subcategory: item.subcategory || '',
                         price: Number(item.price) || 0,
                         originalPrice: item.originalPrice ? Number(item.originalPrice) : undefined,
                         description: (item.description && item.description !== 'nan' && item.description !== 'undefined') ? item.description : '',
@@ -485,7 +486,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         isCraziestDeal: item.isCraziestDeal === true || item.category === 'Craziest Deals of the Hour' || (item.category && item.category.toLowerCase().includes('craziest deal')),
                         isCombo: item.isCombo || false,
                         options: Array.isArray(item.options) ? item.options : [],
-                        variant: item.variant || ''
+                        variant: item.variant || '',
+                        variants: Array.isArray(item.variants) ? item.variants : []
                     });
                 });
 
@@ -1080,7 +1082,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!apiCategories || !Array.isArray(apiCategories) || apiCategories.length === 0) return;
         window.liveCategories = apiCategories;
         const activeCats = apiCategories
-            .filter(c => c.isAvailable !== false && c.isActive !== false)
+            .filter(c => !c.parentId && c.isAvailable !== false && c.isActive !== false)
             .sort((a, b) => (Number(a.displayOrder) || 0) - (Number(b.displayOrder) || 0))
             .map(c => c.name);
         if (activeCats.length > 0) {
@@ -1374,6 +1376,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let btnHtml = '';
         const itemImg = group.image;
+        const customVariants = group.customVariants || [];
 
         let allOutOfStock = true;
         const isOutletView = (typeof currentLocationFilter !== 'undefined' && currentLocationFilter === 'outlet');
@@ -1448,6 +1451,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 ${switchBtn}
             `;
+        } else if (customVariants.length) {
+            allOutOfStock = isOutletView || customVariants.every(option => option.inStock === false);
+            btnHtml = isOutletView
+                ? `<div style="width:100%; display:flex; flex-direction:column; gap:8px;">
+                     <div style="color:#ef4444; font-size:0.85rem; font-weight:bold; text-align:center;">Not available at Physical Outlet</div>
+                     <button class="add-to-cart-btn" style="background:linear-gradient(135deg,#7c3aed 0%,#a78bfa 100%); color:#fff; border:none; font-weight:600;" onclick="document.querySelector('[data-loc=\\'cloud\\']').click();">☁️ Check Cloud Kitchen Menu</button>
+                   </div>`
+                : '<div class="custom-menu-variants"></div>';
         } 
         // Case 2: Standard Single Item
         else {
@@ -1517,7 +1528,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Determine price display
         let priceDisplay = '';
-        if (v1 && v2) {
+        if (customVariants.length) {
+            const prices = customVariants.map(option => Number(option.price) || 0);
+            priceDisplay = prices.length === 1
+                ? `₹${prices[0]}`
+                : `₹${Math.min(...prices)} - ₹${Math.max(...prices)}`;
+        } else if (v1 && v2) {
             priceDisplay = `₹${v1.price} <span style="font-size:0.75rem; color:#94a3b8; font-weight:normal;">(${v1Label})</span> • ₹${v2.price} <span style="font-size:0.75rem; color:#94a3b8; font-weight:normal;">(${v2Label})</span>`;
         } else {
             const stdItem = group.variants.standard || group.variants.half || group.variants.full || group.variants.opt1;
@@ -1553,6 +1569,57 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${btnHtml}
             </div>
         `;
+
+        const customVariantContainer = card.querySelector('.custom-menu-variants');
+        if (customVariantContainer) {
+            customVariantContainer.style.cssText = 'display:flex; flex-direction:column; gap:6px;';
+            customVariants.forEach(option => {
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:8px;';
+                const label = document.createElement('span');
+                label.textContent = `${option.label} · ₹${option.price}`;
+                const addButton = document.createElement('button');
+                addButton.type = 'button';
+                addButton.className = 'add-to-cart-btn';
+                addButton.textContent = option.inStock === false ? 'Out of stock' : 'Add';
+                addButton.disabled = option.inStock === false;
+                addButton.addEventListener('click', () => addToCart(option.id, group.displayName, option.price, itemImg, option.label));
+                row.append(label, addButton);
+                customVariantContainer.appendChild(row);
+            });
+
+            if (!isOutletView && !allOutOfStock) {
+                const imgContainer = card.querySelector('.menu-img-container');
+                if (imgContainer) {
+                    const picker = document.createElement('select');
+                    picker.className = 'mob-variant-select';
+                    picker.setAttribute('aria-label', `Choose ${group.displayName} variant`);
+                    customVariants.forEach((option, index) => {
+                        const choice = document.createElement('option');
+                        choice.value = String(index);
+                        choice.textContent = `${option.label} · ₹${option.price}`;
+                        choice.disabled = option.inStock === false;
+                        picker.appendChild(choice);
+                    });
+                    const firstAvailable = customVariants.findIndex(option => option.inStock !== false);
+                    if (firstAvailable >= 0) picker.value = String(firstAvailable);
+                    const mobileAdd = document.createElement('button');
+                    mobileAdd.type = 'button';
+                    mobileAdd.className = 'mob-add-btn';
+                    mobileAdd.textContent = 'ADD +';
+                    mobileAdd.addEventListener('click', () => {
+                        const option = customVariants[Number(picker.value)];
+                        if (option && option.inStock !== false) {
+                            addToCart(option.id, group.displayName, option.price, itemImg, option.label);
+                        }
+                    });
+                    const mobileControls = document.createElement('div');
+                    mobileControls.className = 'mob-variant-controls';
+                    mobileControls.append(picker, mobileAdd);
+                    imgContainer.appendChild(mobileControls);
+                }
+            }
+        }
 
         // ---- MOBILE OVERLAY BUTTONS (injected inside image container) ----
         const imgContainer = card.querySelector('.menu-img-container');
@@ -1730,6 +1797,9 @@ document.addEventListener('DOMContentLoaded', () => {
             items.forEach(item => {
                 const itemImg = getItemImage(item.name);
                 const price = item.price || item.full || item.half || 50;
+                const displayPrice = Array.isArray(item.variants) && item.variants.length
+                    ? item.variants.map(option => `${option.label} ₹${option.price}`).join(' · ')
+                    : `₹${price}`;
                 const displayName = item.name.replace(/\((Half|Full|half|full)\)/g, "").trim();
                 const desc = (item.description && item.description !== 'nan' && item.description !== 'undefined') ? item.description : 'Freshly prepared at Barbil Physical Outlet.';
 
@@ -1747,7 +1817,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 14px; min-height: 20px;">${desc}</p>
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
-                            <div style="color: var(--amber-gold); font-weight: 800; font-size: 1.15rem;">₹${price}</div>
+                            <div style="color: var(--amber-gold); font-weight: 800; font-size: 1.05rem;">${displayPrice}</div>
                             <a href="tel:+916370680744" class="btn btn-outline" style="padding: 6px 14px; font-size: 0.8rem; border-radius: 20px; border-color: rgba(244,180,0,0.4); color: var(--amber-gold);">
                                 <i class="fas fa-phone-alt" style="margin-right: 4px;"></i> Call Outlet
                             </a>
@@ -1767,6 +1837,32 @@ document.addEventListener('DOMContentLoaded', () => {
             const rawName = item.name || '';
             const lowerName = rawName.toLowerCase();
             const category = item.category || 'Other';
+            const itemId = String(item._id || item.id || getNormalizedName(rawName));
+
+            if (Array.isArray(item.variants) && item.variants.length > 0) {
+                const baseName = getNormalizedName(rawName);
+                const groupKey = `${category}_${baseName}`;
+                baseGroups[groupKey] = {
+                    name: baseName,
+                    displayName: rawName,
+                    category,
+                    subcategory: item.subcategory || '',
+                    description: item.description,
+                    image: getItemImage(rawName),
+                    variants: {
+                        standard: { ...item, id: itemId }
+                    },
+                    customVariants: item.variants.map((variant, index) => ({
+                        id: `${itemId}-variant-${index}`,
+                        name: `${rawName} (${variant.label})`,
+                        label: String(variant.label || ''),
+                        price: Number(variant.price) || 0,
+                        inStock: item.inStock !== false && variant.isAvailable !== false,
+                        description: item.description
+                    }))
+                };
+                return;
+            }
 
             // Check if item has dual options in brackets separated by / like "(Sweet / Salted)"
             const slashMatch = rawName.match(/\(([^/)]+)\s*\/\s*([^/)]+)\)/);
@@ -1783,6 +1879,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: baseName,
                     displayName: displayName,
                     category: category,
+                    subcategory: item.subcategory || '',
                     description: item.description,
                     image: getItemImage(item.name),
                     variants: {
@@ -1816,6 +1913,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: baseName,
                     displayName: displayName,
                     category: category,
+                    subcategory: item.subcategory || '',
                     description: item.description,
                     image: getItemImage(item.name),
                     variants: {}
@@ -1825,6 +1923,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (item.description && item.description !== 'nan' && item.description !== 'undefined' && item.description.trim() !== '') {
                 baseGroups[groupKey].description = item.description;
             }
+            if (item.subcategory) baseGroups[groupKey].subcategory = item.subcategory;
 
             if (lowerName.includes('(half)')) {
                 baseGroups[groupKey].variants.half = item;
@@ -1946,15 +2045,38 @@ document.addEventListener('DOMContentLoaded', () => {
             catHeader.innerHTML = `<h2 style="font-family: var(--font-heading); color: var(--primary-color); border-bottom: 2px solid var(--primary-color); display: inline-block; padding-bottom: 5px;">${category}</h2>`;
             menuGrid.appendChild(catHeader);
 
-            groupedByCategory[category]
-                .sort((a, b) => {
-                    const priceA = (a.variants && a.variants.length > 0) ? Math.min(...a.variants.map(v => v.price)) : (a.price || 0);
-                    const priceB = (b.variants && b.variants.length > 0) ? Math.min(...b.variants.map(v => v.price)) : (b.price || 0);
+            const groupedBySubcategory = {};
+            groupedByCategory[category].forEach(group => {
+                const subcategory = group.subcategory || '';
+                if (!groupedBySubcategory[subcategory]) groupedBySubcategory[subcategory] = [];
+                groupedBySubcategory[subcategory].push(group);
+            });
+
+            const subcategoryOrder = (window.liveCategories || [])
+                .filter(item => item.parentId && window.liveCategories.some(parent => parent._id === item.parentId && parent.name === category))
+                .sort((a, b) => (Number(a.displayOrder) || 0) - (Number(b.displayOrder) || 0))
+                .map(item => item.name);
+            const orderedSubcategories = [...new Set([...subcategoryOrder, ...Object.keys(groupedBySubcategory)])];
+
+            orderedSubcategories.forEach(subcategory => {
+                const groups = groupedBySubcategory[subcategory];
+                if (!groups || !groups.length) return;
+                if (subcategory) {
+                    const subHeader = document.createElement('div');
+                    subHeader.style.cssText = 'grid-column:1/-1; margin:10px 0 4px; color:var(--text-secondary); font-weight:700; font-size:1.05rem;';
+                    subHeader.textContent = subcategory;
+                    menuGrid.appendChild(subHeader);
+                }
+                groups.sort((a, b) => {
+                    const priceA = (a.customVariants || []).length
+                        ? Math.min(...a.customVariants.map(variant => Number(variant.price) || 0))
+                        : (a.variants && a.variants.length > 0 ? Math.min(...a.variants.map(v => v.price)) : (a.price || 0));
+                    const priceB = (b.customVariants || []).length
+                        ? Math.min(...b.customVariants.map(variant => Number(variant.price) || 0))
+                        : (b.variants && b.variants.length > 0 ? Math.min(...b.variants.map(v => v.price)) : (b.price || 0));
                     return (Number(priceA) || 0) - (Number(priceB) || 0);
-                })
-                .forEach(group => {
-                    menuGrid.appendChild(createMenuCard(group));
-                });
+                }).forEach(group => menuGrid.appendChild(createMenuCard(group)));
+            });
         });
         
         if (isMenuExpanded) {
@@ -4067,6 +4189,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 items: cart.map(item => ({
                     id: item.id || item._id || '',
                     name: item.name,
+                    selectedOption: item.selectedOption || '',
                     price: Number(item.price) || 0,
                     quantity: Number(item.quantity) || 1,
                     subtotal: (Number(item.price) || 0) * (Number(item.quantity) || 1)
@@ -7088,4 +7211,3 @@ function updateNavAuthButton() {
 
 window.addEventListener('DOMContentLoaded', updateNavAuthButton);
 window.addEventListener('load', updateNavAuthButton);
-

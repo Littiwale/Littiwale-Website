@@ -660,6 +660,36 @@ img {
         z-index: 10 !important;
     }
 
+    .menu-card .menu-img-container .mob-variant-controls {
+        position: absolute;
+        bottom: 6px;
+        left: 4px;
+        right: 4px;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .mob-variant-select {
+        width: 100%;
+        min-width: 0;
+        height: 28px;
+        border-radius: 7px;
+        padding: 2px 4px;
+        background: #18181b;
+        color: #fff;
+        border: 1px solid #22c55e;
+        font-size: 0.7rem;
+    }
+
+    .mob-variant-controls .mob-add-btn {
+        position: static !important;
+        transform: none !important;
+        width: 100% !important;
+        height: 26px !important;
+    }
+
     .mob-add-btn {
         width: 84px !important;
         height: 30px !important;
