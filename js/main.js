@@ -194,7 +194,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let menuImageMap = {};
     const menuGrid = document.getElementById('menu-grid');
     const categoryFilters = document.getElementById('category-filters');
-
     // Default bundled image map (100% verified dish images from /images/menu/Full Menu/)
     const DEFAULT_IMAGE_MAP = {
         "aaj diet bhool ja": "images/menu/Craziest Deal Menu/aaj-diet-bhool-ja.webp",
@@ -210,7 +209,6 @@ document.addEventListener('DOMContentLoaded', () => {
         "a1 swag combo - non veg": "images/menu/Full Menu/Star Special/swagnonveg.webp",
         "a1 punjab da swag": "images/menu/Full Menu/Star Special/punjabswag.webp",
         "masterchef special thecha chowmein": "images/menu/Full Menu/Star Special/thechachowmein.webp",
-        "mumbai butter pav bhaji": "images/menu/Full Menu/Star Special/pavbhaji.webp",
         "veg pizza": "images/menu/Full Menu/Pizza/vp.webp",
         "corn pizza": "images/menu/Full Menu/Pizza/cp.webp",
         "paneer pizza": "images/menu/Full Menu/Pizza/pp.webp",
@@ -356,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function initMenu() {
         // Fast Instant Render from Local Cache (0ms)
         try {
-            const cachedMenuStr = localStorage.getItem('lw_cached_menu_v2');
+            const cachedMenuStr = localStorage.getItem('lw_cached_menu_v3');
             if (cachedMenuStr) {
                 const cachedArr = JSON.parse(cachedMenuStr);
                 if (Array.isArray(cachedArr) && cachedArr.length > 0 && (!menuData || menuData.length === 0)) {
@@ -487,7 +485,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         isCombo: item.isCombo || false,
                         options: Array.isArray(item.options) ? item.options : [],
                         variant: item.variant || '',
-                        variants: Array.isArray(item.variants) ? item.variants : []
+                        variants: Array.isArray(item.variants)
+                            ? item.variants.map(variant => ({
+                                ...variant,
+                                image: variant.image && variant.image.startsWith('/api/assets/')
+                                    ? `${ADMIN_SERVER_ORIGIN}${variant.image}`
+                                    : variant.image || ''
+                            }))
+                            : []
                     });
                 });
 
@@ -496,7 +501,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 menuImageMap = Object.assign({}, DEFAULT_IMAGE_MAP, finalMap);
                 isMenuDataLoaded = true;
                 try {
-                    localStorage.setItem('lw_cached_menu_v2', JSON.stringify(finalMenu));
+                    localStorage.setItem('lw_cached_menu_v3', JSON.stringify(menuData));
                 } catch(e) {}
                 initMenuDisplay();
             } else if (!menuData || menuData.length === 0) {
@@ -1583,7 +1588,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 addButton.className = 'add-to-cart-btn';
                 addButton.textContent = option.inStock === false ? 'Out of stock' : 'Add';
                 addButton.disabled = option.inStock === false;
-                addButton.addEventListener('click', () => addToCart(option.id, group.displayName, option.price, itemImg, option.label));
+                addButton.addEventListener('click', () => {
+                    addToCart(option.id, group.displayName, option.price, option.image || itemImg, option.label);
+                    const image = card.querySelector('.menu-img');
+                    if (image && option.image) image.src = option.image;
+                    const description = card.querySelector(`#desc-${baseId}`);
+                    if (description && option.description) description.textContent = option.description;
+                });
                 row.append(label, addButton);
                 customVariantContainer.appendChild(row);
             });
@@ -1601,6 +1612,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         choice.disabled = option.inStock === false;
                         picker.appendChild(choice);
                     });
+                    picker.addEventListener('change', () => {
+                        const option = customVariants[Number(picker.value)];
+                        const image = card.querySelector('.menu-img');
+                        if (image && option?.image) image.src = option.image;
+                        const description = card.querySelector(`#desc-${baseId}`);
+                        if (description && option?.description) description.textContent = option.description;
+                    });
                     const firstAvailable = customVariants.findIndex(option => option.inStock !== false);
                     if (firstAvailable >= 0) picker.value = String(firstAvailable);
                     const mobileAdd = document.createElement('button');
@@ -1610,7 +1628,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     mobileAdd.addEventListener('click', () => {
                         const option = customVariants[Number(picker.value)];
                         if (option && option.inStock !== false) {
-                            addToCart(option.id, group.displayName, option.price, itemImg, option.label);
+                            addToCart(option.id, group.displayName, option.price, option.image || itemImg, option.label);
                         }
                     });
                     const mobileControls = document.createElement('div');
@@ -1858,7 +1876,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         label: String(variant.label || ''),
                         price: Number(variant.price) || 0,
                         inStock: item.inStock !== false && variant.isAvailable !== false,
-                        description: item.description
+                        description: String(variant.description || item.description || ''),
+                        image: String(variant.image || '')
                     }))
                 };
                 return;

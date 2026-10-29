@@ -1,4 +1,4 @@
-const CACHE_NAME = 'littiwale-client-pwa-v1.1';
+const CACHE_NAME = 'littiwale-client-pwa-v1.3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -12,7 +12,7 @@ const STATIC_ASSETS = [
   '/js/main.js',
   '/js/restaurant-timing.js',
   '/css/style.css?v=20261029-order-choice',
-  '/js/main.js?v=20261029-order-choice',
+  '/js/main.js?v=20261029-priced-variants',
   '/js/restaurant-timing.js?v=20261029-order-choice',
   '/js/receipt-printer.js',
   '/images/logo.png',
