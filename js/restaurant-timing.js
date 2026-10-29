@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const pagePath = window.location.pathname.replace(/\/+$/, '').toLowerCase();
+    if (pagePath.endsWith('/track.html') || pagePath.endsWith('/track')) return;
+
     // Inject CSS for the popup and sticky banner
     const timingStyles = `
         #restaurant-closed-overlay {

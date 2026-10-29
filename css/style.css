@@ -1982,6 +1982,39 @@ border-right: 1px solid #facc15;
 .payment-modal.show .payment-modal-content {
     transform: translateY(0);
 }
+#partner-popup {
+    z-index: 100001;
+}
+.partner-popup-content {
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+}
+.partner-order-options {
+    display: grid;
+    gap: 10px;
+}
+.partner-order-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 48px;
+    padding: 11px 16px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: 800;
+    text-decoration: none;
+    transition: filter 0.2s ease, transform 0.2s ease;
+}
+.partner-order-option:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+.partner-order-zomato { background: #e23744; }
+.partner-order-menu { background: #f97316; }
+.partner-order-call { background: #2563eb; }
+.partner-order-whatsapp { background: #25d366; color: #071b0e; }
 .payment-step {
     animation: fadeInSlide 0.3s ease forwards;
 }

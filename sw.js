@@ -1,4 +1,4 @@
-const CACHE_NAME = 'littiwale-client-pwa-v1.0';
+const CACHE_NAME = 'littiwale-client-pwa-v1.1';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -11,6 +11,9 @@ const STATIC_ASSETS = [
   '/css/receipt-printer.css',
   '/js/main.js',
   '/js/restaurant-timing.js',
+  '/css/style.css?v=20261029-order-choice',
+  '/js/main.js?v=20261029-order-choice',
+  '/js/restaurant-timing.js?v=20261029-order-choice',
   '/js/receipt-printer.js',
   '/images/logo.png',
   '/manifest.json'
@@ -123,4 +126,3 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
-

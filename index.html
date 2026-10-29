@@ -129,7 +129,7 @@
     <link rel="apple-touch-icon" href="/images/logo.png">
     <link rel="manifest" href="/manifest.json">
 
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=20261029-order-choice">
     <link rel="stylesheet" href="css/animations.css">
 
     <link
@@ -1203,16 +1203,23 @@
 
     <!-- PARTNER MODAL -->
     <div id="partner-popup" class="payment-modal">
-        <div class="payment-modal-content" style="max-width: 400px; text-align: center;">
-            <button id="close-partner-popup" class="close-btn" style="position: absolute; right: 20px; top: 15px;">&times;</button>
-            <div style="font-size: 3rem; margin-bottom: 10px; line-height: 1;">🛵</div>
-            <h2 style="font-family: var(--font-heading); color: var(--primary-color); margin-bottom: 15px;">Choose Your Preferred Ordering Option</h2>
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <button onclick="window.location.href='/menu'" class="btn btn-primary" style="font-size: 1.1rem; padding: 12px; font-weight: bold; border:none;">
-                    Order Directly from Website
-                </button>
-                <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" class="btn" style="background:#e23744; color:#fff; font-size: 1.1rem; padding: 12px; border-radius: 8px; font-weight: bold; text-decoration:none;">
-                    Zomato
+        <div class="payment-modal-content partner-popup-content" style="max-width: 420px; text-align: center;">
+            <button id="close-partner-popup" class="close-btn" aria-label="Close ordering options" style="position: absolute; right: 20px; top: 15px;">&times;</button>
+            <div style="font-size: 2.5rem; margin-bottom: 8px; line-height: 1;">🛵</div>
+            <h2 style="font-family: var(--font-heading); color: var(--primary-color); margin: 0 24px 6px;">How would you like to order?</h2>
+            <p style="color: var(--text-secondary); margin: 0 0 16px; font-size: 0.9rem;">Choose your preferred way to order from Littiwale.</p>
+            <div class="partner-order-options">
+                <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" rel="noopener noreferrer" class="partner-order-option partner-order-zomato">
+                    <i class="fas fa-utensils" aria-hidden="true"></i> Order on Zomato
+                </a>
+                <a href="/menu" class="partner-order-option partner-order-menu">
+                    <i class="fas fa-bag-shopping" aria-hidden="true"></i> Order here
+                </a>
+                <a href="tel:+916370680744" class="partner-order-option partner-order-call">
+                    <i class="fas fa-phone" aria-hidden="true"></i> Call restaurant
+                </a>
+                <a href="https://wa.me/916370680744" target="_blank" rel="noopener noreferrer" class="partner-order-option partner-order-whatsapp">
+                    <i class="fab fa-whatsapp" aria-hidden="true"></i> WhatsApp restaurant
                 </a>
             </div>
         </div>
@@ -1457,8 +1464,8 @@
         }
     </script>
 
-    <script src="js/main.js"></script>
-    <script src="js/restaurant-timing.js"></script>
+    <script src="js/main.js?v=20261029-order-choice"></script>
+    <script src="js/restaurant-timing.js?v=20261029-order-choice"></script>
 
     <div id="cart-toast"></div>
 </body>

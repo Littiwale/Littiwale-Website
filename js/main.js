@@ -5786,6 +5786,7 @@ window.openPartnerModal = function() {
     if (modal) {
         modal.style.display = 'flex';
         setTimeout(() => modal.classList.add('show'), 10);
+        document.body.style.overflow = 'hidden';
     }
 };
 
@@ -5794,6 +5795,7 @@ window.closePartnerModal = function() {
     if (modal) {
         modal.classList.remove('show');
         setTimeout(() => modal.style.display = 'none', 300);
+        document.body.style.overflow = '';
     }
 };
 
@@ -5813,6 +5815,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    const path = window.location.pathname.replace(/\/+$/, '').toLowerCase() || '/';
+    if (path === '/' || path === '/index' || path === '/index.html') {
+        window.openPartnerModal();
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && partnerModal?.classList.contains('show')) {
+            window.closePartnerModal();
+        }
+    });
 });
 
 // Live Sync Hero & About Us from Admin Panel API
