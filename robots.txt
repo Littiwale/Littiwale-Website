@@ -1,5 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /checkout.html
+Disallow: /track.html
+Disallow: /orders.html
+Disallow: /login.html
 
 # Sitemap for Search Engine Crawlers
 Sitemap: https://littiwale.co.in/sitemap.xml

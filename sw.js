@@ -1,4 +1,4 @@
-const CACHE_NAME = 'littiwale-client-pwa-v1.4-universal-variants';
+const CACHE_NAME = 'littiwale-client-pwa-v1.5-seo-favicons';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -15,6 +15,10 @@ const STATIC_ASSETS = [
   '/js/main.js?v=20261119-universal-variants',
   '/js/restaurant-timing.js?v=20261119-universal-variants',
   '/js/receipt-printer.js',
+  '/favicon.ico',
+  '/images/favicon-48x48.png',
+  '/images/favicon-96x96.png',
+  '/images/favicon-192x192.png',
   '/images/logo.png',
   '/manifest.json'
 ];

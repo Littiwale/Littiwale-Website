@@ -4,7 +4,7 @@
   <!-- Homepage -->
   <url>
     <loc>https://littiwale.co.in/</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-11-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -12,7 +12,7 @@
   <!-- Full Digital Food Menu -->
   <url>
     <loc>https://littiwale.co.in/menu</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-11-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
@@ -20,41 +20,9 @@
   <!-- Physical Outlet Menu -->
   <url>
     <loc>https://littiwale.co.in/outlet-menu</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-11-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
-  </url>
-
-  <!-- Customer My Orders & Account -->
-  <url>
-    <loc>https://littiwale.co.in/orders.html</loc>
-    <lastmod>2026-08-16</lastmod>
-    <changefreq>always</changefreq>
-    <priority>0.80</priority>
-  </url>
-
-  <!-- Live Order Tracking -->
-  <url>
-    <loc>https://littiwale.co.in/track.html</loc>
-    <lastmod>2026-08-16</lastmod>
-    <changefreq>always</changefreq>
-    <priority>0.80</priority>
-  </url>
-
-  <!-- Secure Checkout -->
-  <url>
-    <loc>https://littiwale.co.in/checkout.html</loc>
-    <lastmod>2026-08-18</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.70</priority>
-  </url>
-
-  <!-- Customer Login & Register -->
-  <url>
-    <loc>https://littiwale.co.in/login.html</loc>
-    <lastmod>2026-08-18</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.70</priority>
   </url>
 
 </urlset>
