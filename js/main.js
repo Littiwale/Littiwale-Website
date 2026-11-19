@@ -1458,12 +1458,43 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         } else if (customVariants.length) {
             allOutOfStock = isOutletView || customVariants.every(option => option.inStock === false);
-            btnHtml = isOutletView
-                ? `<div style="width:100%; display:flex; flex-direction:column; gap:8px;">
-                     <div style="color:#ef4444; font-size:0.85rem; font-weight:bold; text-align:center;">Not available at Physical Outlet</div>
-                     <button class="add-to-cart-btn" style="background:linear-gradient(135deg,#7c3aed 0%,#a78bfa 100%); color:#fff; border:none; font-weight:600;" onclick="document.querySelector('[data-loc=\\'cloud\\']').click();">☁️ Check Cloud Kitchen Menu</button>
-                   </div>`
-                : '<div class="custom-menu-variants"></div>';
+            const prices = customVariants.map(option => Number(option.price) || 0);
+            const minPrice = prices.length ? Math.min(...prices) : 0;
+            const effBaseId = (group.variants.standard || customVariants[0]).id.replace(/-variant-\d+|-opt-\d+/g, '');
+            const gKey = group.groupKey || group.name;
+
+            if (allOutOfStock) {
+                if (isOutletView) {
+                    btnHtml = `
+                        <div style="width:100%; display: flex; flex-direction: column; gap: 8px;">
+                            <div style="color: #ef4444; font-size: 0.85rem; font-weight: bold; text-align: center;">Not available at Physical Outlet</div>
+                            <button class="add-to-cart-btn" style="background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%); color: #fff; border: none; font-weight: 600; box-shadow: 0 4px 15px rgba(124,58,237,0.3);" onclick="document.querySelector('[data-loc=\\'cloud\\']').click();">
+                                ☁️ Check Cloud Kitchen Menu
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    btnHtml = `
+                        <div style="width:100%;">
+                            <button class="add-to-cart-btn" style="background:#333; color:#888; border:1px solid #444; cursor:not-allowed;" disabled>Out of stock</button>
+                        </div>
+                    `;
+                }
+            } else {
+                btnHtml = `
+                    <div id="menu-btn-container-${effBaseId}" style="width:100%;">
+                        <button id="menu-add-btn-${effBaseId}" class="add-to-cart-btn add-to-cart" onclick="event.stopPropagation(); window.openGroupVariantSheet('${gKey}')">
+                            <span class="btn-desktop-text">Choose Options — from ₹${minPrice}</span>
+                            <span class="btn-mobile-text">ADD +</span>
+                        </button>
+                        <div id="menu-qty-ctrl-${effBaseId}" class="menu-qty-ctrl" style="display:none; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.85); border: 1.5px solid #22c55e; border-radius:10px; padding:2px; height: 32px; cursor:pointer;" onclick="event.stopPropagation(); window.openGroupVariantSheet('${gKey}')">
+                            <span style="margin:auto; font-weight:800; color:#22c55e; font-size:0.9rem;"><span id="menu-qty-val-${effBaseId}">0</span> in Cart · Options ✎</span>
+                        </div>
+                    </div>
+                `;
+                card._mobVariantGroupKey = gKey;
+                card._mobVariantBaseId = effBaseId;
+            }
         } 
         // Case 2: Standard Single Item
         else {
@@ -1575,70 +1606,6 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        const customVariantContainer = card.querySelector('.custom-menu-variants');
-        if (customVariantContainer) {
-            customVariantContainer.style.cssText = 'display:flex; flex-direction:column; gap:6px;';
-            customVariants.forEach(option => {
-                const row = document.createElement('div');
-                row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:8px;';
-                const label = document.createElement('span');
-                label.textContent = `${option.label} · ₹${option.price}`;
-                const addButton = document.createElement('button');
-                addButton.type = 'button';
-                addButton.className = 'add-to-cart-btn';
-                addButton.textContent = option.inStock === false ? 'Out of stock' : 'Add';
-                addButton.disabled = option.inStock === false;
-                addButton.addEventListener('click', () => {
-                    addToCart(option.id, group.displayName, option.price, option.image || itemImg, option.label);
-                    const image = card.querySelector('.menu-img');
-                    if (image && option.image) image.src = option.image;
-                    const description = card.querySelector(`#desc-${baseId}`);
-                    if (description && option.description) description.textContent = option.description;
-                });
-                row.append(label, addButton);
-                customVariantContainer.appendChild(row);
-            });
-
-            if (!isOutletView && !allOutOfStock) {
-                const imgContainer = card.querySelector('.menu-img-container');
-                if (imgContainer) {
-                    const picker = document.createElement('select');
-                    picker.className = 'mob-variant-select';
-                    picker.setAttribute('aria-label', `Choose ${group.displayName} variant`);
-                    customVariants.forEach((option, index) => {
-                        const choice = document.createElement('option');
-                        choice.value = String(index);
-                        choice.textContent = `${option.label} · ₹${option.price}`;
-                        choice.disabled = option.inStock === false;
-                        picker.appendChild(choice);
-                    });
-                    picker.addEventListener('change', () => {
-                        const option = customVariants[Number(picker.value)];
-                        const image = card.querySelector('.menu-img');
-                        if (image && option?.image) image.src = option.image;
-                        const description = card.querySelector(`#desc-${baseId}`);
-                        if (description && option?.description) description.textContent = option.description;
-                    });
-                    const firstAvailable = customVariants.findIndex(option => option.inStock !== false);
-                    if (firstAvailable >= 0) picker.value = String(firstAvailable);
-                    const mobileAdd = document.createElement('button');
-                    mobileAdd.type = 'button';
-                    mobileAdd.className = 'mob-add-btn';
-                    mobileAdd.textContent = 'ADD +';
-                    mobileAdd.addEventListener('click', () => {
-                        const option = customVariants[Number(picker.value)];
-                        if (option && option.inStock !== false) {
-                            addToCart(option.id, group.displayName, option.price, option.image || itemImg, option.label);
-                        }
-                    });
-                    const mobileControls = document.createElement('div');
-                    mobileControls.className = 'mob-variant-controls';
-                    mobileControls.append(picker, mobileAdd);
-                    imgContainer.appendChild(mobileControls);
-                }
-            }
-        }
-
         // ---- MOBILE OVERLAY BUTTONS (injected inside image container) ----
         const imgContainer = card.querySelector('.menu-img-container');
         if (imgContainer) {
@@ -1647,13 +1614,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const v1Qty = getCartQty(v1.id);
                 const v2Qty = getCartQty(v2.id);
                 const totalInCart = v1Qty + v2Qty;
+                const gKey = group.groupKey || group.name;
 
                 const mobAddBtn = document.createElement('button');
                 mobAddBtn.className = 'mob-add-btn';
+                mobAddBtn.id = `mob-add-${baseId}`;
                 mobAddBtn.textContent = 'ADD +';
 
                 const mobQty = document.createElement('div');
                 mobQty.className = 'mob-qty-ctrl';
+                mobQty.id = `mob-qty-${baseId}`;
                 mobQty.innerHTML = `
                     <button class="mq-minus sq-btn">−</button>
                     <span class="mq-val">${totalInCart > 0 ? totalInCart : 1}</span>
@@ -1670,20 +1640,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 mobAddBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    openHFVariantSheet(group.displayName, v1, v2, itemImg, mobAddBtn, v1Label, v2Label);
+                    window.openGroupVariantSheet(gKey);
+                });
+                mobQty.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    window.openGroupVariantSheet(gKey);
                 });
 
-                mobQty.querySelector('.mq-plus').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openHFVariantSheet(group.displayName, v1, v2, itemImg, mobAddBtn, v1Label, v2Label);
+                imgContainer.appendChild(mobAddBtn);
+                imgContainer.appendChild(mobQty);
+
+            } else if (card._mobVariantGroupKey && !allOutOfStock) {
+                // Custom Variants / Choices / Options
+                const gKey = card._mobVariantGroupKey;
+                const baseId = card._mobVariantBaseId;
+                let totalInCart = 0;
+                customVariants.forEach(cv => {
+                    totalInCart += getCartQty(cv.id) || 0;
                 });
-                mobQty.querySelector('.mq-minus').addEventListener('click', (e) => {
+
+                const mobAddBtn = document.createElement('button');
+                mobAddBtn.className = 'mob-add-btn';
+                mobAddBtn.id = `mob-add-${baseId}`;
+                mobAddBtn.textContent = 'ADD +';
+
+                const mobQty = document.createElement('div');
+                mobQty.className = 'mob-qty-ctrl';
+                mobQty.id = `mob-qty-${baseId}`;
+                mobQty.innerHTML = `
+                    <button class="mq-minus sq-btn">−</button>
+                    <span class="mq-val">${totalInCart > 0 ? totalInCart : 1}</span>
+                    <button class="mq-plus sq-btn">+</button>
+                `;
+
+                if (totalInCart > 0) {
+                    mobAddBtn.style.display = 'none';
+                    mobQty.style.display = 'flex';
+                } else {
+                    mobAddBtn.style.display = 'flex';
+                    mobQty.style.display = 'none';
+                }
+
+                mobAddBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    openHFVariantSheet(group.displayName, v1, v2, itemImg, mobAddBtn, v1Label, v2Label);
+                    window.openGroupVariantSheet(gKey);
                 });
-                mobQty.querySelector('.mq-val').addEventListener('click', (e) => {
+                mobQty.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    openHFVariantSheet(group.displayName, v1, v2, itemImg, mobAddBtn, v1Label, v2Label);
+                    window.openGroupVariantSheet(gKey);
                 });
 
                 imgContainer.appendChild(mobAddBtn);
@@ -1861,6 +1865,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const baseName = getNormalizedName(rawName);
                 const groupKey = `${category}_${baseName}`;
                 baseGroups[groupKey] = {
+                    groupKey: groupKey,
                     name: baseName,
                     displayName: rawName,
                     category,
@@ -1895,6 +1900,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const itemId = String(item._id || item.id || baseName);
 
                 baseGroups[groupKey] = {
+                    groupKey: groupKey,
                     name: baseName,
                     displayName: displayName,
                     category: category,
@@ -1929,6 +1935,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!baseGroups[groupKey]) {
                 let displayName = rawName.replace(/\((Half|Full|half|full)\)/g, "").trim();
                 baseGroups[groupKey] = {
+                    groupKey: groupKey,
                     name: baseName,
                     displayName: displayName,
                     category: category,
@@ -1956,8 +1963,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 baseGroups[groupKey].variants.standard = item;
+
+                // Check if this standard item has choices/options or is a Thali
+                const isThali = (rawName && /thali/i.test(rawName)) || (category && /thali/i.test(category));
+                const hasOptions = Array.isArray(item.options) && item.options.length > 0;
+                if (hasOptions || isThali) {
+                    const defaultThaliOptions = [
+                        { label: 'Rice + Dal', desc: 'Steamed Basmati Rice with Homestyle Tadka Dal' },
+                        { label: '5 Roti (5 Pcs)', desc: '5 Fresh Hot Whole Wheat Tawa Rotis' },
+                        { label: 'Mix (Rice + Dal + 2 Rotis)', desc: 'Mini Rice, Homestyle Dal & 2 Hot Rotis' }
+                    ];
+                    const rawOpts = hasOptions ? item.options : defaultThaliOptions;
+                    baseGroups[groupKey].customVariants = rawOpts.map((opt, index) => {
+                        const optLabel = typeof opt === 'string' ? opt : (opt.label || opt.name || 'Option ' + (index + 1));
+                        const optDesc = typeof opt === 'object' ? (opt.desc || opt.description || '') : '';
+                        const optPrice = Number(typeof opt === 'object' && opt.price !== undefined ? opt.price : item.price) || Number(item.price) || 0;
+                        return {
+                            id: `${itemId}-opt-${index}`,
+                            name: `${rawName} (${optLabel})`,
+                            label: optLabel,
+                            price: optPrice,
+                            inStock: item.inStock !== false,
+                            description: optDesc || item.description || '',
+                            image: item.image || ''
+                        };
+                    });
+                }
             }
         });
+
+        // Ensure every group has groupKey and save to window.allGroupedMenu
+        Object.keys(baseGroups).forEach(k => {
+            baseGroups[k].groupKey = k;
+        });
+        window.allGroupedMenu = baseGroups;
         return baseGroups;
     }
 
@@ -2291,22 +2330,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     const distanceKm = calculateDistance(userLat, userLng, RESTAURANT_LAT, RESTAURANT_LNG);
                     const roundedKm = Math.max(1, Math.round(distanceKm));
                     const currentRate = Number(window.adminDeliveryRate || 30);
-                    deliveryCharge = roundedKm * currentRate;
-                    deliveryStatus = 'AVAILABLE';
+                    if (roundedKm > 15) {
+                        deliveryStatus = 'UNAVAILABLE';
+                        deliveryCharge = 0;
+                    } else {
+                        deliveryCharge = roundedKm * currentRate;
+                        deliveryStatus = 'AVAILABLE';
+                    }
                     updateCartUI();
                 },
                 (error) => {
-                    console.warn("Location access denied or failed. Delivery status unknown.");
+                    console.warn("Location access denied or failed. Setting baseline delivery rate.");
                     deliveryStatus = 'UNKNOWN';
-                    deliveryCharge = 0;
+                    deliveryCharge = Number(window.adminDeliveryRate || 30);
                     updateCartUI();
                 },
                 { timeout: 10000 }
             );
         } else {
-            console.warn("Geolocation not supported. Delivery status unknown.");
+            console.warn("Geolocation not supported. Setting baseline delivery rate.");
             deliveryStatus = 'UNKNOWN';
-            deliveryCharge = 0;
+            deliveryCharge = Number(window.adminDeliveryRate || 30);
             updateCartUI();
         }
     }
@@ -2398,10 +2442,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // MOBILE MENU CARD HELPERS
     // ============================================================
 
-    /** Get current cart quantity for a given item id */
+    /** Get current cart quantity for a given item id or option */
     function getCartQty(id) {
-        const item = cart.find(c => c.id === id);
-        return item ? item.quantity : 0;
+        if (!id) return 0;
+        const exact = cart.find(c => c.id === id);
+        if (exact) return exact.quantity;
+        const prefixItems = cart.filter(c => c.id.startsWith(id + '_') || c.id.startsWith(id + '-'));
+        if (prefixItems.length === 1) return prefixItems[0].quantity;
+        if (prefixItems.length > 1) {
+            return prefixItems.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+        }
+        return 0;
     }
 
     /** Update mobile overlay qty control and sync cart */
@@ -2424,107 +2475,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (valEl) valEl.textContent = newQty;
     };
 
-    /** Inject & open the Variant (Half/Full or Options) bottom sheet */
-    function openHFVariantSheet(itemName, v1, v2, img, mobAddBtn, v1Label = 'Half', v2Label = 'Full') {
-        // Inject sheet HTML once
-        if (!document.getElementById('hf-variant-sheet')) {
-            document.body.insertAdjacentHTML('beforeend', `
-                <div id="hf-sheet-overlay"></div>
-                <div id="hf-variant-sheet">
-                    <div class="hf-sheet-handle"></div>
-                    <div class="hf-sheet-title" id="hf-sheet-name"></div>
-                    <div class="hf-sheet-subtitle" id="hf-sheet-subtitle">Choose your option</div>
-                    <div class="hf-sheet-options">
-                        <div class="hf-sheet-opt" id="hf-opt-half">
-                            <div class="hf-sheet-opt-label" id="hf-label-v1">Half</div>
-                            <div class="hf-sheet-opt-price" id="hf-half-price"></div>
-                            <div class="hf-sheet-opt-qty">
-                                <button class="sq-btn sq-minus" id="hf-half-minus">−</button>
-                                <span class="sq-val" id="hf-half-val">0</span>
-                                <button class="sq-btn sq-plus" id="hf-half-plus">+</button>
-                            </div>
-                        </div>
-                        <div class="hf-sheet-opt" id="hf-opt-full">
-                            <div class="hf-sheet-opt-label" id="hf-label-v2">Full</div>
-                            <div class="hf-sheet-opt-price" id="hf-full-price"></div>
-                            <div class="hf-sheet-opt-qty">
-                                <button class="sq-btn sq-minus" id="hf-full-minus">−</button>
-                                <span class="sq-val" id="hf-full-val">0</span>
-                                <button class="sq-btn sq-plus" id="hf-full-plus">+</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `);
-
-            // Dismiss on overlay click
-            document.getElementById('hf-sheet-overlay').addEventListener('click', closeHFSheet);
-        }
-
-        function syncMobButton() {
-            if (!mobAddBtn) return;
-            const total = (getCartQty(v1.id) || 0) + (getCartQty(v2.id) || 0);
-            if (total > 0) {
-                mobAddBtn.textContent = `${total} ✓`;
-                mobAddBtn.style.background = '#15803d';
-            } else {
-                mobAddBtn.textContent = 'ADD +';
-                mobAddBtn.style.background = '#16a34a';
-            }
-        }
-
-        // Populate
-        document.getElementById('hf-sheet-name').textContent = itemName;
-        const subTitleEl = document.getElementById('hf-sheet-subtitle');
-        if (subTitleEl) {
-            subTitleEl.textContent = (v1Label === 'Half' && v2Label === 'Full') ? 'Choose your portion size' : 'Choose your flavor / option';
-        }
-
-        const label1El = document.getElementById('hf-label-v1');
-        if (label1El) label1El.textContent = v1Label;
-        const label2El = document.getElementById('hf-label-v2');
-        if (label2El) label2El.textContent = v2Label;
-
-        document.getElementById('hf-half-price').textContent = `₹${v1.price}`;
-        document.getElementById('hf-full-price').textContent = `₹${v2.price}`;
-        document.getElementById('hf-half-val').textContent = getCartQty(v1.id) || 0;
-        document.getElementById('hf-full-val').textContent = getCartQty(v2.id) || 0;
-
-        // Wire buttons (remove old listeners by cloning)
-        ['hf-half-minus','hf-half-plus','hf-full-minus','hf-full-plus'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                const clone = el.cloneNode(true);
-                el.parentNode.replaceChild(clone, el);
-            }
-        });
-
-        document.getElementById('hf-half-plus')?.addEventListener('click', () => {
-            addToCart(v1.id, v1.name, v1.price, img);
-            document.getElementById('hf-half-val').textContent = getCartQty(v1.id);
-            syncMobButton();
-        });
-        document.getElementById('hf-half-minus')?.addEventListener('click', () => {
-            updateQuantity(v1.id, -1);
-            document.getElementById('hf-half-val').textContent = getCartQty(v1.id);
-            syncMobButton();
-        });
-        document.getElementById('hf-full-plus')?.addEventListener('click', () => {
-            addToCart(v2.id, v2.name, v2.price, img);
-            document.getElementById('hf-full-val').textContent = getCartQty(v2.id);
-            syncMobButton();
-        });
-        document.getElementById('hf-full-minus')?.addEventListener('click', () => {
-            updateQuantity(v2.id, -1);
-            document.getElementById('hf-full-val').textContent = getCartQty(v2.id);
-            syncMobButton();
-        });
-
-        // Open
-        document.getElementById('hf-sheet-overlay').classList.add('open');
-        document.getElementById('hf-variant-sheet').classList.add('open');
-    }
-
+    /** Close universal variant / portion bottom sheet */
     function closeHFSheet() {
         const sheet   = document.getElementById('hf-variant-sheet');
         const overlay = document.getElementById('hf-sheet-overlay');
@@ -2533,6 +2484,257 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.closeHFSheet = closeHFSheet;
 
+    /** Render options inside the universal bottom sheet */
+    function renderSheetOptions() {
+        const sheet = document.getElementById('hf-variant-sheet');
+        if (!sheet || !Array.isArray(sheet._currentVariants)) return;
+        const container = document.getElementById('hf-sheet-options-container');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        sheet._currentVariants.forEach(variant => {
+            const vId = variant.id;
+            const vLabel = variant.label || variant.name || 'Option';
+            const vPrice = Number(variant.price) || 0;
+            const vDesc = variant.description || variant.desc || '';
+            const inStock = variant.inStock !== false && variant.isAvailable !== false;
+            const qty = getCartQty(vId);
+
+            const row = document.createElement('div');
+            row.className = `hf-sheet-opt-row${inStock ? '' : ' out-of-stock'}`;
+            row.id = `hf-row-${vId}`;
+
+            let actionHtml = '';
+            if (!inStock) {
+                actionHtml = `<span class="hf-opt-oos">Out of stock</span>`;
+            } else if (qty > 0) {
+                actionHtml = `
+                    <div class="hf-opt-qty-pill">
+                        <button class="sq-btn sq-minus" data-id="${vId}" aria-label="Decrease quantity">−</button>
+                        <span class="sq-val" id="hf-val-${vId}">${qty}</span>
+                        <button class="sq-btn sq-plus" data-id="${vId}" aria-label="Increase quantity">+</button>
+                    </div>
+                `;
+            } else {
+                actionHtml = `
+                    <button class="add-to-cart-btn sq-add-btn" data-id="${vId}" style="padding: 7px 16px; font-size: 0.85rem; border-radius: 9px; width: auto; min-width: 80px; background:#16a34a; color:#fff; border:none; font-weight:700; cursor:pointer;">
+                        ADD +
+                    </button>
+                `;
+            }
+
+            row.innerHTML = `
+                <div class="hf-opt-info">
+                    <div class="hf-opt-label">${vLabel}</div>
+                    ${vDesc ? `<div class="hf-opt-desc">${vDesc}</div>` : ''}
+                    <div class="hf-opt-price">₹${vPrice}</div>
+                </div>
+                <div class="hf-opt-action" id="hf-action-${vId}">
+                    ${actionHtml}
+                </div>
+            `;
+
+            // Wire events
+            const addBtn = row.querySelector('.sq-add-btn');
+            if (addBtn) {
+                addBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    window.addToCart(vId, variant.name || `${sheet._currentTitle} (${vLabel})`, vPrice, sheet._currentImg, vLabel);
+                    renderSheetOptions();
+                });
+            }
+            const plusBtn = row.querySelector('.sq-plus');
+            if (plusBtn) {
+                plusBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    window.addToCart(vId, variant.name || `${sheet._currentTitle} (${vLabel})`, vPrice, sheet._currentImg, vLabel);
+                    renderSheetOptions();
+                });
+            }
+            const minusBtn = row.querySelector('.sq-minus');
+            if (minusBtn) {
+                minusBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    updateQuantity(vId, -1);
+                    renderSheetOptions();
+                });
+            }
+
+            container.appendChild(row);
+        });
+    }
+
+    /** Open Universal Variant & Option Sheet / Modal */
+    function openUniversalVariantSheet(title, variantsList, img, subtitle, groupKey) {
+        let overlay = document.getElementById('hf-sheet-overlay');
+        let sheet = document.getElementById('hf-variant-sheet');
+        if (!sheet) {
+            document.body.insertAdjacentHTML('beforeend', `
+                <div id="hf-sheet-overlay"></div>
+                <div id="hf-variant-sheet">
+                    <div class="hf-sheet-header">
+                        <div class="hf-sheet-handle"></div>
+                        <button class="hf-sheet-close-btn" id="hf-sheet-close" aria-label="Close">×</button>
+                        <div class="hf-sheet-title" id="hf-sheet-name"></div>
+                        <div class="hf-sheet-subtitle" id="hf-sheet-subtitle"></div>
+                    </div>
+                    <div class="hf-sheet-options" id="hf-sheet-options-container"></div>
+                </div>
+            `);
+            overlay = document.getElementById('hf-sheet-overlay');
+            sheet = document.getElementById('hf-variant-sheet');
+            overlay.addEventListener('click', closeHFSheet);
+            document.getElementById('hf-sheet-close').addEventListener('click', closeHFSheet);
+        }
+
+        const titleEl = document.getElementById('hf-sheet-name');
+        const subEl = document.getElementById('hf-sheet-subtitle');
+
+        if (titleEl) titleEl.textContent = title || 'Select Option';
+        if (subEl) subEl.textContent = subtitle || 'Customise your portion or choice';
+
+        sheet._currentGroupKey = groupKey;
+        sheet._currentVariants = variantsList;
+        sheet._currentImg = img || 'images/logo.png';
+        sheet._currentTitle = title;
+
+        renderSheetOptions();
+
+        overlay.classList.add('open');
+        sheet.classList.add('open');
+    }
+    window.openUniversalVariantSheet = openUniversalVariantSheet;
+
+    /** Universal group variant opener called from menu cards and add-to-cart */
+    window.openGroupVariantSheet = function(groupKey) {
+        let group = null;
+        if (window.allGroupedMenu) {
+            if (window.allGroupedMenu[groupKey]) {
+                group = window.allGroupedMenu[groupKey];
+            } else {
+                group = Object.values(window.allGroupedMenu).find(g => 
+                    g.groupKey === groupKey || 
+                    g.name === groupKey ||
+                    (g.displayName && g.displayName.toLowerCase() === String(groupKey).toLowerCase()) ||
+                    (g.variants && Object.values(g.variants).some(v => v && (v.id === groupKey || String(v.id).replace(/-half|_half|-full|_full|-opt\d+/g, '') === String(groupKey))))
+                );
+            }
+        }
+
+        // Fallback: search in menuData if not found in groupedMenu
+        if (!group && typeof menuData !== 'undefined' && Array.isArray(menuData)) {
+            const rawItem = menuData.find(i => String(i.id) === String(groupKey) || String(i._id) === String(groupKey) || i.name === groupKey);
+            if (rawItem) {
+                const rawName = rawItem.name || 'Item';
+                const itemId = String(rawItem._id || rawItem.id);
+                const isThali = (rawName && /thali/i.test(rawName)) || (rawItem.category && /thali/i.test(rawItem.category));
+                let variantsList = [];
+
+                if (Array.isArray(rawItem.variants) && rawItem.variants.length > 0) {
+                    variantsList = rawItem.variants.map((v, idx) => ({
+                        id: `${itemId}-variant-${idx}`,
+                        name: `${rawName} (${v.label})`,
+                        label: v.label,
+                        price: Number(v.price) || 0,
+                        inStock: rawItem.inStock !== false && v.isAvailable !== false,
+                        description: v.description || rawItem.description || ''
+                    }));
+                } else if (Array.isArray(rawItem.options) && rawItem.options.length > 0) {
+                    variantsList = rawItem.options.map((opt, idx) => {
+                        const optLabel = typeof opt === 'string' ? opt : (opt.label || opt.name || 'Option ' + (idx + 1));
+                        const optDesc = typeof opt === 'object' ? (opt.desc || opt.description || '') : '';
+                        const optPrice = Number(typeof opt === 'object' && opt.price !== undefined ? opt.price : rawItem.price) || Number(rawItem.price) || 0;
+                        return {
+                            id: `${itemId}-opt-${idx}`,
+                            name: `${rawName} (${optLabel})`,
+                            label: optLabel,
+                            price: optPrice,
+                            inStock: rawItem.inStock !== false,
+                            description: optDesc || rawItem.description || ''
+                        };
+                    });
+                } else if (isThali) {
+                    const defaultThaliOptions = [
+                        { label: 'Rice + Dal', desc: 'Steamed Basmati Rice with Homestyle Tadka Dal' },
+                        { label: '5 Roti (5 Pcs)', desc: '5 Fresh Hot Whole Wheat Tawa Rotis' },
+                        { label: 'Mix (Rice + Dal + 2 Rotis)', desc: 'Mini Rice, Homestyle Dal & 2 Hot Rotis' }
+                    ];
+                    variantsList = defaultThaliOptions.map((opt, idx) => ({
+                        id: `${itemId}-opt-${idx}`,
+                        name: `${rawName} (${opt.label})`,
+                        label: opt.label,
+                        price: Number(rawItem.price) || 0,
+                        inStock: rawItem.inStock !== false,
+                        description: opt.desc || ''
+                    }));
+                }
+
+                if (variantsList.length > 0) {
+                    openUniversalVariantSheet(rawName, variantsList, rawItem.image, 'Choose your portion / combination', itemId);
+                    return;
+                }
+            }
+        }
+
+        if (!group) {
+            console.warn('Group not found for variant sheet:', groupKey);
+            return;
+        }
+
+        const title = group.displayName || group.name || 'Select Option';
+        const img = group.image || 'images/logo.png';
+        let variantsList = [];
+        let subtitle = 'Choose your portion or choice';
+
+        if (Array.isArray(group.customVariants) && group.customVariants.length > 0) {
+            variantsList = group.customVariants;
+            subtitle = (title.toLowerCase().includes('thali')) ? 'Select your Thali Combination' : 'Choose your option / portion';
+        } else if (group.variants) {
+            const v1 = group.variants.half || group.variants.opt1;
+            const v2 = group.variants.full || group.variants.opt2;
+            if (v1 && v2) {
+                const v1Label = group.variants.half ? 'Half' : (group.variants.opt1?.label || 'Option 1');
+                const v2Label = group.variants.full ? 'Full' : (group.variants.opt2?.label || 'Option 2');
+                subtitle = (v1Label === 'Half' && v2Label === 'Full') ? 'Choose your portion size' : 'Choose your flavor / option';
+                variantsList = [
+                    {
+                        id: v1.id,
+                        name: v1.name || `${title} (${v1Label})`,
+                        label: v1Label,
+                        price: v1.price,
+                        inStock: v1.inStock !== false,
+                        description: group.halfDesc || v1.description || ''
+                    },
+                    {
+                        id: v2.id,
+                        name: v2.name || `${title} (${v2Label})`,
+                        label: v2Label,
+                        price: v2.price,
+                        inStock: v2.inStock !== false,
+                        description: group.fullDesc || v2.description || ''
+                    }
+                ];
+            }
+        }
+
+        if (variantsList.length > 0) {
+            openUniversalVariantSheet(title, variantsList, img, subtitle, group.groupKey || groupKey);
+        }
+    };
+
+    /** Backward compatibility alias for any existing caller */
+    window.openHFVariantSheet = function(itemName, v1, v2, img, mobAddBtn, v1Label = 'Half', v2Label = 'Full') {
+        if (v1 && v2) {
+            const variantsList = [
+                { id: v1.id, name: v1.name || `${itemName} (${v1Label})`, label: v1Label, price: v1.price, inStock: v1.inStock !== false },
+                { id: v2.id, name: v2.name || `${itemName} (${v2Label})`, label: v2Label, price: v2.price, inStock: v2.inStock !== false }
+            ];
+            openUniversalVariantSheet(itemName, variantsList, img, 'Choose your portion size', itemName);
+        } else {
+            window.openGroupVariantSheet(itemName);
+        }
+    };
 
     // Initialize Cart
     function initCart() {
@@ -2576,106 +2778,71 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (!selectedOption) {
-            const baseId = String(id).replace('_half', '').replace('_full', '');
-            const menuItem = (typeof menuData !== 'undefined' && Array.isArray(menuData)) ? menuData.find(i => String(i.id) === String(baseId) || String(i._id) === String(baseId)) : null;
-            
-            // Check if this item is a Thali dish
-            const isThali = (name && name.toLowerCase().includes('thali')) || 
-                            (menuItem && menuItem.category && menuItem.category.toLowerCase().includes('thali')) ||
-                            (menuItem && menuItem.name && menuItem.name.toLowerCase().includes('thali'));
-
-            const defaultThaliOptions = [
-                { label: 'Rice + Dal', desc: 'Steamed Basmati Rice with Homestyle Tadka Dal' },
-                { label: '5 Roti (5 Pcs)', desc: '5 Fresh Hot Whole Wheat Tawa Rotis' },
-                { label: 'Mix (Rice + Dal + 2 Rotis)', desc: 'Mini Rice, Homestyle Dal & 2 Hot Rotis' }
-            ];
-
-            let optionsToPresent = null;
-            if (menuItem && Array.isArray(menuItem.options) && menuItem.options.length > 0) {
-                optionsToPresent = menuItem.options.map(opt => typeof opt === 'string' ? { label: opt, desc: '' } : opt);
-            } else if (isThali) {
-                optionsToPresent = defaultThaliOptions;
+            let groupToOpen = null;
+            if (window.allGroupedMenu) {
+                if (window.allGroupedMenu[id]) {
+                    groupToOpen = window.allGroupedMenu[id];
+                } else {
+                    groupToOpen = Object.values(window.allGroupedMenu).find(g => 
+                        g.groupKey === id || 
+                        g.name === id ||
+                        (g.displayName && g.displayName.toLowerCase() === String(name).toLowerCase()) ||
+                        (g.variants && Object.values(g.variants).some(v => v && (v.id === id || String(v.id).replace(/-half|_half|-full|_full|-opt\d+/g, '') === String(id))))
+                    );
+                }
             }
 
-            if (optionsToPresent && optionsToPresent.length > 0) {
-                const optionsModal = document.getElementById('options-modal');
-                const optionsNameEl = document.getElementById('options-item-name');
-                const container = document.getElementById('options-container');
-                
-                if (optionsModal && container) {
-                    if (optionsNameEl) {
-                        optionsNameEl.innerHTML = `
-                            <strong style="color:#ffffff; font-size:1.15rem; display:block; margin-bottom:4px;">${name}</strong>
-                            <span style="font-size:0.85rem; color:#f59e0b; font-weight:700;">${isThali ? 'Select your Thali Combination:' : 'Select an option:'}</span>
-                        `;
-                    }
-                    container.innerHTML = '';
-                    
-                    optionsToPresent.forEach(optObj => {
-                        const optLabel = optObj.label || optObj;
-                        const optDesc = optObj.desc || '';
-                        
-                        const btn = document.createElement('button');
-                        btn.type = 'button';
-                        btn.className = 'btn btn-outline btn-block';
-                        btn.style.textAlign = 'left';
-                        btn.style.padding = '14px 18px';
-                        btn.style.borderRadius = '12px';
-                        btn.style.borderColor = 'rgba(255,255,255,0.15)';
-                        btn.style.background = 'rgba(255,255,255,0.04)';
-                        btn.style.display = 'flex';
-                        btn.style.alignItems = 'center';
-                        btn.style.justifyContent = 'space-between';
-                        btn.style.cursor = 'pointer';
-                        btn.style.transition = 'all 0.2s ease';
-                        btn.style.marginBottom = '4px';
+            if (groupToOpen && (
+                (Array.isArray(groupToOpen.customVariants) && groupToOpen.customVariants.length > 0) ||
+                (groupToOpen.variants && groupToOpen.variants.half && groupToOpen.variants.full) ||
+                (groupToOpen.variants && groupToOpen.variants.opt1 && groupToOpen.variants.opt2)
+            )) {
+                window.openGroupVariantSheet(groupToOpen.groupKey);
+                return false;
+            }
 
-                        btn.innerHTML = `
-                            <div>
-                                <div style="font-weight:800; font-size:1rem; color:#ffffff;">${optLabel}</div>
-                                ${optDesc ? `<div style="font-size:0.8rem; color:#9ca3af; margin-top:2px;">${optDesc}</div>` : ''}
-                            </div>
-                            <span style="font-size:1.1rem; color:#f59e0b; font-weight:900;">+</span>
-                        `;
+            const baseId = String(id).replace(/_half|-half|_full|-full|-opt\d+|-variant-\d+/g, '');
+            const menuItem = (typeof menuData !== 'undefined' && Array.isArray(menuData)) ? menuData.find(i => String(i.id) === String(baseId) || String(i._id) === String(baseId) || i.name === name) : null;
+            
+            const isThali = (name && /thali/i.test(name)) || 
+                            (menuItem && menuItem.category && /thali/i.test(menuItem.category)) ||
+                            (menuItem && menuItem.name && /thali/i.test(menuItem.name));
 
-                        btn.onmouseover = () => {
-                            btn.style.borderColor = '#f97316';
-                            btn.style.background = 'rgba(249,115,22,0.12)';
-                            btn.style.transform = 'translateY(-2px)';
-                        };
-                        btn.onmouseout = () => {
-                            btn.style.borderColor = 'rgba(255,255,255,0.15)';
-                            btn.style.background = 'rgba(255,255,255,0.04)';
-                            btn.style.transform = 'translateY(0)';
-                        };
+            const hasPricedVariants = menuItem && Array.isArray(menuItem.variants) && menuItem.variants.length > 0;
+            const hasOptions = menuItem && Array.isArray(menuItem.options) && menuItem.options.length > 0;
 
-                        btn.onclick = (e) => {
-                            if (e) e.stopPropagation();
-                            optionsModal.classList.remove('show');
-                            window.addToCart(id, name, price, image, optLabel);
-                        };
-                        container.appendChild(btn);
-                    });
-                    
-                    optionsModal.classList.add('show');
-                    return; // Wait for customer choice
-                }
+            if (hasPricedVariants || hasOptions || isThali) {
+                window.openGroupVariantSheet(baseId || id);
+                return false;
             }
         }
 
-        let cartId = selectedOption ? `${id}_${selectedOption.replace(/\s+/g, '-')}` : id;
-        let cartName = selectedOption ? `${name} (${selectedOption})` : name;
+        let cartId = id;
+        const optSlug = selectedOption ? String(selectedOption).trim().replace(/\s+/g, '-') : '';
+        if (optSlug && !id.includes(optSlug) && !id.includes('-variant-') && !id.includes('-opt-') && !id.endsWith('_half') && !id.endsWith('_full')) {
+            cartId = `${id}_${optSlug}`;
+        }
+
+        let cartName = name;
+        if (selectedOption && !name.toLowerCase().includes(`(${String(selectedOption).toLowerCase().trim()})`)) {
+            cartName = `${name} (${selectedOption})`;
+        }
 
         const existingItem = cart.find(item => item.id === cartId);
         
         if (existingItem) {
             existingItem.quantity += 1;
         } else {
-            cart.push({ id: cartId, name: cartName, price, image, quantity: 1, selectedOption });
+            cart.push({ id: cartId, name: cartName, price: Number(price) || 0, image, quantity: 1, selectedOption });
         }
         
         saveCart();
         updateCartUI();
+
+        // If variant sheet is open, sync its row quantities
+        if (document.getElementById('hf-variant-sheet')?.classList.contains('open')) {
+            renderSheetOptions();
+        }
         
         if (!toast.isActive(TOAST_ID)) {
             toast.success(`${cartName} added to cart!`, {
@@ -2733,7 +2900,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.updateQuantity = function(id, change) {
-        const itemIndex = cart.findIndex(item => item.id === id);
+        let itemIndex = cart.findIndex(item => item.id === id);
+        if (itemIndex === -1) {
+            itemIndex = cart.findIndex(item => item.id.startsWith(id + '_') || item.id.startsWith(id + '-'));
+        }
         if (itemIndex > -1) {
             cart[itemIndex].quantity += change;
             
@@ -2743,6 +2913,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             saveCart();
             updateCartUI();
+
+            // If variant sheet is open, sync its row quantities
+            if (document.getElementById('hf-variant-sheet')?.classList.contains('open')) {
+                renderSheetOptions();
+            }
         }
     };
 
@@ -3133,8 +3308,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const deskCtrl = card.querySelector('[id^="menu-qty-ctrl-"]');
                 const deskVal = card.querySelector('[id^="menu-qty-val-"]');
 
-                // Extract standard item ID
-                let fullId = card._mobStdItemId;
+                // Extract standard item ID or variant base ID
+                let fullId = card._mobVariantBaseId || card._mobStdItemId;
                 if (!fullId && deskAdd) {
                     fullId = deskAdd.id.replace('menu-add-btn-', '');
                 }
@@ -3143,8 +3318,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (fullId) {
-                    const matchingItems = cart.filter(item => item.id === fullId || item.id.startsWith(fullId + '_') || item.id.startsWith(fullId + '-'));
-                    const totalQty = matchingItems.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+                    let totalQty = 0;
+                    if (card._mobVariantGroupKey && window.allGroupedMenu && window.allGroupedMenu[card._mobVariantGroupKey]) {
+                        const grp = window.allGroupedMenu[card._mobVariantGroupKey];
+                        if (Array.isArray(grp.customVariants)) {
+                            grp.customVariants.forEach(cv => {
+                                const cItem = cart.find(i => i.id === cv.id);
+                                if (cItem) totalQty += Number(cItem.quantity) || 0;
+                            });
+                        }
+                    }
+                    cart.forEach(item => {
+                        const itId = String(item.id || '');
+                        if (itId === fullId || itId.startsWith(fullId + '_') || itId.startsWith(fullId + '-')) {
+                            if (!card._mobVariantGroupKey || !window.allGroupedMenu?.[card._mobVariantGroupKey]?.customVariants?.some(cv => cv.id === itId)) {
+                                totalQty += (Number(item.quantity) || 0);
+                            }
+                        }
+                    });
 
                     // Sync Desktop buttons
                     if (deskAdd && deskCtrl) {
@@ -4597,8 +4788,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         const dist = calculateDistance(lat, lng, RESTAURANT_LAT, RESTAURANT_LNG);
                         const roundedKm = Math.max(1, Math.round(dist));
                         const currentRate = Number(window.adminDeliveryRate || 30);
-                        deliveryCharge = roundedKm * currentRate;
-                        deliveryStatus = 'AVAILABLE';
+                        if (roundedKm > 15) {
+                            deliveryStatus = 'UNAVAILABLE';
+                            deliveryCharge = 0;
+                            if (typeof window.showAlert === 'function') {
+                                window.showAlert(`Your location is ${roundedKm} km away. We currently deliver up to 15 km only.`, { title: 'Delivery Unavailable', icon: '🚫', type: 'warning' });
+                            }
+                        } else {
+                            deliveryCharge = roundedKm * currentRate;
+                            deliveryStatus = 'AVAILABLE';
+                        }
                         updateCartUI();
                     };
 

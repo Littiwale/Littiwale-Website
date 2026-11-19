@@ -10,10 +10,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Littiwale">
     <title>Live Order Tracking | Littiwale Barbil</title>
-    <meta name="description" content="Track your live food order status from Littiwale Barbil. Real-time kitchen preparation, delivery progress, and rider updates.">
+    <meta name="description"
+        content="Track your live food order status from Littiwale Barbil. Real-time kitchen preparation, delivery progress, and rider updates.">
     <link rel="canonical" href="https://littiwale.co.in/track.html">
     <meta property="og:title" content="Live Order Tracking | Littiwale Barbil">
-    <meta property="og:description" content="Track your food preparation and delivery in real-time from Littiwale Barbil.">
+    <meta property="og:description"
+        content="Track your food preparation and delivery in real-time from Littiwale Barbil.">
     <meta property="og:image" content="https://littiwale.co.in/images/logo.png">
     <meta property="og:url" content="https://littiwale.co.in/track.html">
     <meta name="twitter:card" content="summary">
@@ -25,13 +27,15 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap"
+        rel="stylesheet">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Global Stylesheet -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=20261119-universal-variants">
     <link rel="stylesheet" href="css/receipt-printer.css">
 
     <style>
@@ -96,6 +100,7 @@
                 grid-template-columns: 1fr;
                 gap: 20px;
             }
+
             .track-container {
                 max-width: 540px;
                 margin: 20px auto 40px;
@@ -133,8 +138,13 @@
         }
 
         @keyframes roadMove {
-            from { stroke-dashoffset: 0; }
-            to { stroke-dashoffset: -40; }
+            from {
+                stroke-dashoffset: 0;
+            }
+
+            to {
+                stroke-dashoffset: -40;
+            }
         }
 
         .anim-vehicle-group {
@@ -142,10 +152,21 @@
         }
 
         @keyframes truckDriveMotion {
-            0% { transform: translate(-80px, 14px); }
-            30% { transform: translate(45px, 14px); }
-            70% { transform: translate(120px, 13.5px); }
-            100% { transform: translate(360px, 14px); }
+            0% {
+                transform: translate(-80px, 14px);
+            }
+
+            30% {
+                transform: translate(45px, 14px);
+            }
+
+            70% {
+                transform: translate(120px, 13.5px);
+            }
+
+            100% {
+                transform: translate(360px, 14px);
+            }
         }
 
         .anim-wheel {
@@ -154,8 +175,13 @@
         }
 
         @keyframes spinWheel {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .anim-headlight-beam {
@@ -163,8 +189,13 @@
         }
 
         @keyframes headlightPulse {
-            0% { opacity: 0.5; }
-            100% { opacity: 0.9; }
+            0% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 0.9;
+            }
         }
 
         .anim-flame {
@@ -173,8 +204,16 @@
         }
 
         @keyframes flameFlicker {
-            0% { transform: scaleY(0.92) scaleX(0.96); opacity: 0.85; }
-            100% { transform: scaleY(1.18) scaleX(1.04); opacity: 1; filter: drop-shadow(0 0 10px #f97316); }
+            0% {
+                transform: scaleY(0.92) scaleX(0.96);
+                opacity: 0.85;
+            }
+
+            100% {
+                transform: scaleY(1.18) scaleX(1.04);
+                opacity: 1;
+                filter: drop-shadow(0 0 10px #f97316);
+            }
         }
 
         .anim-steam {
@@ -182,9 +221,19 @@
         }
 
         @keyframes steamRise {
-            0% { transform: translateY(0) scaleX(1); opacity: 0; }
-            30% { opacity: 0.8; }
-            100% { transform: translateY(-20px) scaleX(1.3); opacity: 0; }
+            0% {
+                transform: translateY(0) scaleX(1);
+                opacity: 0;
+            }
+
+            30% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(-20px) scaleX(1.3);
+                opacity: 0;
+            }
         }
 
         .anim-radar-wave {
@@ -194,8 +243,15 @@
         }
 
         @keyframes radarPulse {
-            0% { transform: scale(0.6); opacity: 0.9; }
-            100% { transform: scale(1.6); opacity: 0; }
+            0% {
+                transform: scale(0.6);
+                opacity: 0.9;
+            }
+
+            100% {
+                transform: scale(1.6);
+                opacity: 0;
+            }
         }
 
         /* Delivered Stage: Truck arrives from left -> hits target -> transforms into glowing permanent Checkmark */
@@ -208,15 +264,19 @@
                 transform: translate(-140px, 34px);
                 opacity: 1;
             }
+
             55% {
                 transform: translate(90px, 34px);
                 opacity: 1;
             }
+
             72% {
                 transform: translate(130px, 34px) scale(0.85);
                 opacity: 0.6;
             }
-            82%, 100% {
+
+            82%,
+            100% {
                 transform: translate(145px, 34px) scale(0.2);
                 opacity: 0;
                 pointer-events: none;
@@ -230,19 +290,24 @@
         }
 
         @keyframes checkmarkBurstReveal {
-            0%, 65% {
+
+            0%,
+            65% {
                 transform: scale(0);
                 opacity: 0;
             }
+
             78% {
                 transform: scale(1.3);
                 opacity: 1;
                 filter: drop-shadow(0 0 28px #10b981);
             }
+
             88% {
                 transform: scale(0.94);
                 opacity: 1;
             }
+
             100% {
                 transform: scale(1);
                 opacity: 1;
@@ -251,8 +316,15 @@
         }
 
         @keyframes idleTickPulse {
-            0% { transform: scale(1); filter: drop-shadow(0 0 14px rgba(16, 185, 129, 0.5)); }
-            100% { transform: scale(1.06); filter: drop-shadow(0 0 28px rgba(16, 185, 129, 0.85)); }
+            0% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 14px rgba(16, 185, 129, 0.5));
+            }
+
+            100% {
+                transform: scale(1.06);
+                filter: drop-shadow(0 0 28px rgba(16, 185, 129, 0.85));
+            }
         }
 
         .anim-delivered-pulse-ring {
@@ -262,14 +334,18 @@
         }
 
         @keyframes pulseRingBurst {
-            0%, 68% {
+
+            0%,
+            68% {
                 transform: scale(0.4);
                 opacity: 0;
             }
+
             78% {
                 transform: scale(1);
                 opacity: 0.9;
             }
+
             100% {
                 transform: scale(1.7);
                 opacity: 0;
@@ -333,10 +409,25 @@
             animation: dotGlow 1.5s infinite;
         }
 
-        .pulse-dot.yellow { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
-        .pulse-dot.green { background: var(--green); box-shadow: 0 0 8px var(--green); }
-        .pulse-dot.blue { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
-        .pulse-dot.red { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+        .pulse-dot.yellow {
+            background: var(--gold);
+            box-shadow: 0 0 8px var(--gold);
+        }
+
+        .pulse-dot.green {
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+        }
+
+        .pulse-dot.blue {
+            background: var(--blue);
+            box-shadow: 0 0 8px var(--blue);
+        }
+
+        .pulse-dot.red {
+            background: #ef4444;
+            box-shadow: 0 0 8px #ef4444;
+        }
 
         /* Cancelled Stage: Cross pulse animation */
         .anim-cancelled-cross {
@@ -345,19 +436,48 @@
         }
 
         @keyframes crossPulseReveal {
-            0% { transform: scale(0); opacity: 0; }
-            70% { transform: scale(1.25); opacity: 1; filter: drop-shadow(0 0 20px #ef4444); }
-            100% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 14px rgba(239, 68, 68, 0.7)); }
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            70% {
+                transform: scale(1.25);
+                opacity: 1;
+                filter: drop-shadow(0 0 20px #ef4444);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+                filter: drop-shadow(0 0 14px rgba(239, 68, 68, 0.7));
+            }
         }
 
         @keyframes idleCrossPulse {
-            0% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5)); }
-            100% { transform: scale(1.08); filter: drop-shadow(0 0 24px rgba(239, 68, 68, 0.85)); }
+            0% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
+            }
+
+            100% {
+                transform: scale(1.08);
+                filter: drop-shadow(0 0 24px rgba(239, 68, 68, 0.85));
+            }
         }
 
         @keyframes dotGlow {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.3; transform: scale(1.3); }
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.3;
+                transform: scale(1.3);
+            }
         }
 
         .status-title {
@@ -468,7 +588,7 @@
             width: 100%;
             position: relative;
             z-index: 20;
-            filter: drop-shadow(0 10px 22px rgba(0,0,0,0.6));
+            filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.6));
         }
 
         .embedded-hood-top {
@@ -477,7 +597,7 @@
             border-radius: 16px 16px 3px 3px;
             background: linear-gradient(180deg, #2d3748 0%, #1a202c 45%, #0f172a 100%);
             border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.2), inset 0 -2px 4px rgba(0,0,0,0.8);
+            box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.2), inset 0 -2px 4px rgba(0, 0, 0, 0.8);
             position: relative;
             overflow: hidden;
             display: flex;
@@ -492,7 +612,7 @@
             left: 5%;
             width: 90%;
             height: 5px;
-            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
             border-radius: 999px;
         }
 
@@ -525,7 +645,7 @@
             height: 12px;
             background: #000000;
             border-radius: 2px;
-            box-shadow: inset 0 5px 10px rgba(0,0,0,0.95), inset 0 -1px 2px rgba(255,255,255,0.15);
+            box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.95), inset 0 -1px 2px rgba(255, 255, 255, 0.15);
             position: relative;
             z-index: 5;
         }
@@ -536,7 +656,7 @@
             margin-top: -4px;
             border-radius: 0 0 14px 14px;
             background: linear-gradient(180deg, #0f172a 0%, #1e293b 70%, #334155 100%);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
             z-index: 10;
         }
@@ -568,14 +688,17 @@
                 transform: translateY(-90%) rotateX(-16deg) translateZ(-30px);
                 opacity: 0.3;
             }
+
             30% {
                 transform: translateY(-55%) rotateX(-10deg) translateZ(15px);
                 opacity: 0.9;
             }
+
             70% {
                 transform: translateY(-15%) rotateX(-3deg) translateZ(5px);
                 opacity: 1;
             }
+
             100% {
                 transform: translateY(0%) rotateX(0deg) translateZ(0px);
                 opacity: 1;
@@ -738,25 +861,23 @@
             height: 24px;
             margin: 0 auto 4px;
             max-width: 190px;
-            background: repeating-linear-gradient(
-                90deg,
-                #000 0px,
-                #000 2px,
-                transparent 2px,
-                transparent 4px,
-                #000 4px,
-                #000 7px,
-                transparent 7px,
-                transparent 9px,
-                #000 9px,
-                #000 10px,
-                transparent 10px,
-                transparent 13px,
-                #000 13px,
-                #000 16px,
-                transparent 16px,
-                transparent 17px
-            );
+            background: repeating-linear-gradient(90deg,
+                    #000 0px,
+                    #000 2px,
+                    transparent 2px,
+                    transparent 4px,
+                    #000 4px,
+                    #000 7px,
+                    transparent 7px,
+                    transparent 9px,
+                    #000 9px,
+                    #000 10px,
+                    transparent 10px,
+                    transparent 13px,
+                    #000 13px,
+                    #000 16px,
+                    transparent 16px,
+                    transparent 17px);
         }
 
         .slip-barcode-text {
@@ -856,7 +977,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         @media (max-width: 768px) {
@@ -865,6 +988,7 @@
                 gap: 10px;
                 margin-top: 18px;
             }
+
             .btn-order-more {
                 grid-column: span 2;
             }
@@ -874,9 +998,11 @@
             .actions-grid {
                 grid-template-columns: 1fr;
             }
+
             .btn-order-more {
                 grid-column: span 1;
             }
+
             .track-container {
                 margin-top: 14px;
             }
@@ -884,165 +1010,166 @@
     </style>
 </head>
 
-    <!-- NAVBAR -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <button class="mobile-toggle hamburger" aria-label="Toggle navigation">
-                <i class="fas fa-bars"></i>
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="nav-container">
+        <button class="mobile-toggle hamburger" aria-label="Toggle navigation">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <a href="/" class="logo-link">
+            <img src="images/logo.png" class="nav-logo" alt="Litti Wale">
+        </a>
+
+        <ul class="nav-links">
+            <li><a href="/#home">Home</a></li>
+            <li><a href="/menu">Menu</a></li>
+            <li><a href="/#about">About</a></li>
+            <li><a href="/#reach">Reach Us</a></li>
+            <li><a href="/#connect">Social</a></li>
+            <li><a href="/menu" class="nav-get-deals-btn">Get Deals</a></li>
+        </ul>
+
+        <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" class="nav-my-orders-btn" onclick="openCustomerOrdersDrawer()"
+                title="View past orders & saved address">
+                <i class="fas fa-user-circle"></i>
+                <span>My Orders</span>
             </button>
 
-            <a href="/" class="logo-link">
-                <img src="images/logo.png" class="nav-logo" alt="Litti Wale">
+            <a href="javascript:void(0)" class="cart-link nav-cart-btn">
+                <i class="fas fa-shopping-cart"></i>
+                Cart
+                <span id="cart-count" class="cart-badge">0</span>
             </a>
-
-            <ul class="nav-links">
-                <li><a href="/#home">Home</a></li>
-                <li><a href="/menu">Menu</a></li>
-                <li><a href="/#about">About</a></li>
-                <li><a href="/#reach">Reach Us</a></li>
-                <li><a href="/#connect">Social</a></li>
-                <li><a href="/menu" class="nav-get-deals-btn">Get Deals</a></li>
-            </ul>
-
-            <div style="display:flex; align-items:center; gap:8px;">
-                <button type="button" class="nav-my-orders-btn" onclick="openCustomerOrdersDrawer()" title="View past orders & saved address">
-                    <i class="fas fa-user-circle"></i>
-                    <span>My Orders</span>
-                </button>
-
-                <a href="javascript:void(0)" class="cart-link nav-cart-btn">
-                    <i class="fas fa-shopping-cart"></i>
-                    Cart
-                    <span id="cart-count" class="cart-badge">0</span>
-                </a>
-            </div>
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <!-- Main Live Tracking Stage -->
-    <main class="track-container" id="tracking-main-container">
-        <div class="loading-wrap" id="loading-state">
-            <div class="spinner"></div>
-            <h3 style="font-size:1.1rem; margin-bottom:4px; font-weight:700;">Connecting to Kitchen...</h3>
-            <p style="font-size:13px; color:var(--text-muted);">Fetching live order status</p>
-        </div>
-    </main>
+<!-- Main Live Tracking Stage -->
+<main class="track-container" id="tracking-main-container">
+    <div class="loading-wrap" id="loading-state">
+        <div class="spinner"></div>
+        <h3 style="font-size:1.1rem; margin-bottom:4px; font-weight:700;">Connecting to Kitchen...</h3>
+        <p style="font-size:13px; color:var(--text-muted);">Fetching live order status</p>
+    </div>
+</main>
 
-    <script>
-        const ADMIN_API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-            ? 'http://localhost:5001/api' 
-            : 'https://admin.littiwale.co.in/api';
+<script>
+    const ADMIN_API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:5001/api'
+        : 'https://admin.littiwale.co.in/api';
 
-        let activeOrderId = null;
-        let pollTimer = null;
-        let prevStatus = null;
-        let _fetchErrorCount = 0;   // consecutive error counter
-        let _orderRendered = false; // have we successfully rendered once?
+    let activeOrderId = null;
+    let pollTimer = null;
+    let prevStatus = null;
+    let _fetchErrorCount = 0;   // consecutive error counter
+    let _orderRendered = false; // have we successfully rendered once?
 
-        function getTargetOrderId() {
-            const params = new URLSearchParams(window.location.search);
-            const fromQuery = params.get('orderId') || params.get('id');
-            // Guard: never treat literal string 'undefined' or 'null' as a valid ID
-            if (fromQuery && fromQuery !== 'undefined' && fromQuery !== 'null') return fromQuery;
+    function getTargetOrderId() {
+        const params = new URLSearchParams(window.location.search);
+        const fromQuery = params.get('orderId') || params.get('id');
+        // Guard: never treat literal string 'undefined' or 'null' as a valid ID
+        if (fromQuery && fromQuery !== 'undefined' && fromQuery !== 'null') return fromQuery;
 
-            try {
-                const stored = localStorage.getItem('littiWaleActiveOrder');
-                if (stored) {
-                    const parsed = JSON.parse(stored);
-                    const pid = parsed && (parsed.orderId || parsed.id || parsed._id);
-                    if (pid && pid !== 'undefined' && pid !== 'null') return pid;
-                }
-            } catch(e) {}
+        try {
+            const stored = localStorage.getItem('littiWaleActiveOrder');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                const pid = parsed && (parsed.orderId || parsed.id || parsed._id);
+                if (pid && pid !== 'undefined' && pid !== 'null') return pid;
+            }
+        } catch (e) { }
 
-            return null;
+        return null;
+    }
+
+    async function fetchLiveOrder() {
+        // No order ID at all — show phone lookup so customer can find their order
+        if (!activeOrderId) {
+            renderPhoneLookup();
+            return;
         }
 
-        async function fetchLiveOrder() {
-            // No order ID at all — show phone lookup so customer can find their order
-            if (!activeOrderId) {
-                renderPhoneLookup();
-                return;
-            }
-
-            try {
-                const cleanId = String(activeOrderId).replace(/^#/, '').trim();
-                const res = await fetch(`${ADMIN_API_BASE}/orders/${encodeURIComponent(cleanId)}`, { cache: 'no-store' });
-                if (res.ok) {
-                    const order = await res.json();
-                    if (order && (order._id || order.orderId || order.id)) {
-                        _fetchErrorCount = 0;
-                        if (prevStatus === 'pending' && (order.status === 'accepted' || order.status === 'confirmed')) {
-                            playCelebrationSound();
-                        }
-                        prevStatus = order.status;
-                        _orderRendered = true;
-                        // Always update localStorage cache with FRESH live status so refresh shows correct stage
-                        try {
-                            localStorage.setItem('littiWaleActiveOrder', JSON.stringify({ ...order, id: order.orderId || order._id || activeOrderId }));
-                        } catch(e) {}
-                        renderOrderView(order);
-                    } else {
-                        // Malformed response — retry silently
-                        _fetchErrorCount++;
-                        if (_fetchErrorCount >= 3 && !_orderRendered) renderNotFound();
+        try {
+            const cleanId = String(activeOrderId).replace(/^#/, '').trim();
+            const res = await fetch(`${ADMIN_API_BASE}/orders/${encodeURIComponent(cleanId)}`, { cache: 'no-store' });
+            if (res.ok) {
+                const order = await res.json();
+                if (order && (order._id || order.orderId || order.id)) {
+                    _fetchErrorCount = 0;
+                    if (prevStatus === 'pending' && (order.status === 'accepted' || order.status === 'confirmed')) {
+                        playCelebrationSound();
                     }
-                } else if (res.status === 404) {
-                    _fetchErrorCount++;
-                    // Stale/deleted order ID detected — remove dead cache
-                    try { localStorage.removeItem('littiWaleActiveOrder'); } catch(e) {}
-
-                    // Try auto-recovering by looking up customer's latest active order by saved phone
-                    const savedPhone = localStorage.getItem('littiwale_customer_phone');
-                    if (savedPhone) {
-                        try {
-                            const custRes = await fetch(`${ADMIN_API_BASE}/orders/customer/${savedPhone}`, { cache: 'no-store' });
-                            const custData = await custRes.json();
-                            if (custData && custData.hasOrders && custData.orders && custData.orders.length > 0) {
-                                const active = custData.orders.find(o => ['pending','accepted','confirmed','dispatched'].includes((o.status||'').toLowerCase())) || custData.orders[0];
-                                if (active) {
-                                    activeOrderId = active.orderId || active._id || active.id;
-                                    try {
-                                        localStorage.setItem('littiWaleActiveOrder', JSON.stringify({ ...active, id: activeOrderId }));
-                                    } catch(e) {}
-                                    _fetchErrorCount = 0;
-                                    _orderRendered = true;
-                                    renderOrderView(active);
-                                    return;
-                                }
-                            }
-                        } catch(err) {}
-                    }
-
-                    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-                    const isLoggedIn = Boolean(localStorage.getItem('littiwale_customer_profile') || localStorage.getItem('littiwale_customer_phone'));
-                    if (isLoggedIn) {
-                        window.location.replace('orders.html');
-                        return;
-                    }
-                    renderPhoneLookup();
+                    prevStatus = order.status;
+                    _orderRendered = true;
+                    // Always update localStorage cache with FRESH live status so refresh shows correct stage
+                    try {
+                        localStorage.setItem('littiWaleActiveOrder', JSON.stringify({ ...order, id: order.orderId || order._id || activeOrderId }));
+                    } catch (e) { }
+                    renderOrderView(order);
                 } else {
-                    // Server error — retry silently, don't flip to Not Found
+                    // Malformed response — retry silently
                     _fetchErrorCount++;
-                    console.warn('Track API error:', res.status);
+                    if (_fetchErrorCount >= 3 && !_orderRendered) renderNotFound();
                 }
-            } catch(e) {
-                // Network error — retry silently
+            } else if (res.status === 404) {
                 _fetchErrorCount++;
-                console.warn('Live poll error:', e);
+                // Stale/deleted order ID detected — remove dead cache
+                try { localStorage.removeItem('littiWaleActiveOrder'); } catch (e) { }
+
+                // Try auto-recovering by looking up customer's latest active order by saved phone
+                const savedPhone = localStorage.getItem('littiwale_customer_phone');
+                if (savedPhone) {
+                    try {
+                        const custRes = await fetch(`${ADMIN_API_BASE}/orders/customer/${savedPhone}`, { cache: 'no-store' });
+                        const custData = await custRes.json();
+                        if (custData && custData.hasOrders && custData.orders && custData.orders.length > 0) {
+                            const active = custData.orders.find(o => ['pending', 'accepted', 'confirmed', 'dispatched'].includes((o.status || '').toLowerCase())) || custData.orders[0];
+                            if (active) {
+                                activeOrderId = active.orderId || active._id || active.id;
+                                try {
+                                    localStorage.setItem('littiWaleActiveOrder', JSON.stringify({ ...active, id: activeOrderId }));
+                                } catch (e) { }
+                                _fetchErrorCount = 0;
+                                _orderRendered = true;
+                                renderOrderView(active);
+                                return;
+                            }
+                        }
+                    } catch (err) { }
+                }
+
+                if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+                const isLoggedIn = Boolean(localStorage.getItem('littiwale_customer_profile') || localStorage.getItem('littiwale_customer_phone'));
+                if (isLoggedIn) {
+                    window.location.replace('orders.html');
+                    return;
+                }
+                renderPhoneLookup();
+            } else {
+                // Server error — retry silently, don't flip to Not Found
+                _fetchErrorCount++;
+                console.warn('Track API error:', res.status);
             }
+        } catch (e) {
+            // Network error — retry silently
+            _fetchErrorCount++;
+            console.warn('Live poll error:', e);
         }
+    }
 
-        // Phone lookup form — shown when no active order ID is available or order is deleted
-        function renderPhoneLookup() {
-            if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-            const isLoggedIn = Boolean(localStorage.getItem('littiwale_customer_profile') || localStorage.getItem('littiwale_customer_phone'));
-            if (isLoggedIn) {
-                window.location.replace('orders.html');
-                return;
-            }
-            const container = document.getElementById('tracking-main-container');
+    // Phone lookup form — shown when no active order ID is available or order is deleted
+    function renderPhoneLookup() {
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        const isLoggedIn = Boolean(localStorage.getItem('littiwale_customer_profile') || localStorage.getItem('littiwale_customer_phone'));
+        if (isLoggedIn) {
+            window.location.replace('orders.html');
+            return;
+        }
+        const container = document.getElementById('tracking-main-container');
 
-            container.innerHTML = `
+        container.innerHTML = `
                 <div class="order-card" style="text-align:center; padding:40px 20px; max-width:480px; margin:0 auto; font-family:'Poppins',sans-serif;">
                     <div style="font-size:42px; margin-bottom:12px;">📦</div>
                     <h3 style="font-size:1.3rem; margin-bottom:8px; font-weight:800; color:#fff;">Order Status / Tracking</h3>
@@ -1073,82 +1200,82 @@
                     </div>
                 </div>
             `;
-            // Auto-fill if phone exists in localStorage
-            try {
-                const ph = localStorage.getItem('littiwale_customer_phone');
-                if (ph) {
-                    const inp = document.getElementById('track-phone-input');
-                    if (inp) { inp.value = ph; findOrderByPhone(); }
-                }
-            } catch(e) {}
-        }
+        // Auto-fill if phone exists in localStorage
+        try {
+            const ph = localStorage.getItem('littiwale_customer_phone');
+            if (ph) {
+                const inp = document.getElementById('track-phone-input');
+                if (inp) { inp.value = ph; findOrderByPhone(); }
+            }
+        } catch (e) { }
+    }
 
-        async function findOrderByPhone() {
-            const input = document.getElementById('track-phone-input');
-            const result = document.getElementById('track-phone-result');
-            if (!input || !result) return;
-            const rawPhone = input.value.replace(/\D/g, '').slice(-10);
-            if (rawPhone.length < 10) {
-                result.innerHTML = '<span style="color:#ef4444;">⚠️ Please enter a valid 10-digit mobile number.</span>';
+    async function findOrderByPhone() {
+        const input = document.getElementById('track-phone-input');
+        const result = document.getElementById('track-phone-result');
+        if (!input || !result) return;
+        const rawPhone = input.value.replace(/\D/g, '').slice(-10);
+        if (rawPhone.length < 10) {
+            result.innerHTML = '<span style="color:#ef4444;">⚠️ Please enter a valid 10-digit mobile number.</span>';
+            return;
+        }
+        result.innerHTML = '<span style="color:#94a3b8;">🔍 Looking up orders...</span>';
+        try {
+            const res = await fetch(`${ADMIN_API_BASE}/orders/customer/${rawPhone}`, { cache: 'no-store' });
+            const data = await res.json();
+            if (!data.success || !data.hasOrders || !data.orders.length) {
+                result.innerHTML = '<span style="color:#94a3b8;">No orders found for this number. Please check the number or place a new order.</span>';
                 return;
             }
-            result.innerHTML = '<span style="color:#94a3b8;">🔍 Looking up orders...</span>';
-            try {
-                const res = await fetch(`${ADMIN_API_BASE}/orders/customer/${rawPhone}`, { cache: 'no-store' });
-                const data = await res.json();
-                if (!data.success || !data.hasOrders || !data.orders.length) {
-                    result.innerHTML = '<span style="color:#94a3b8;">No orders found for this number. Please check the number or place a new order.</span>';
-                    return;
-                }
-                // Find active order (pending/accepted/dispatched)
-                const active = data.orders.find(o => ['pending','accepted','confirmed','dispatched'].includes((o.status||'').toLowerCase()));
-                if (active) {
-                    // Save and redirect to track with ID
-                    try { localStorage.setItem('littiWaleActiveOrder', JSON.stringify({ id: active._id })); } catch(e) {}
-                    try { localStorage.setItem('littiwale_customer_phone', rawPhone); } catch(e) {}
-                    activeOrderId = active._id;
-                    _fetchErrorCount = 0;
-                    // Show loading and start polling
-                    document.getElementById('tracking-main-container').innerHTML = `
+            // Find active order (pending/accepted/dispatched)
+            const active = data.orders.find(o => ['pending', 'accepted', 'confirmed', 'dispatched'].includes((o.status || '').toLowerCase()));
+            if (active) {
+                // Save and redirect to track with ID
+                try { localStorage.setItem('littiWaleActiveOrder', JSON.stringify({ id: active._id })); } catch (e) { }
+                try { localStorage.setItem('littiwale_customer_phone', rawPhone); } catch (e) { }
+                activeOrderId = active._id;
+                _fetchErrorCount = 0;
+                // Show loading and start polling
+                document.getElementById('tracking-main-container').innerHTML = `
                         <div class="loading-wrap">
                             <div class="spinner"></div>
                             <h3 style="font-size:1.1rem; margin-bottom:4px; font-weight:700;">Connecting to Kitchen...</h3>
                             <p style="font-size:13px; color:var(--text-muted);">Fetching live order status</p>
                         </div>`;
-                    fetchLiveOrder();
-                    if (!pollTimer) pollTimer = setInterval(fetchLiveOrder, 3000);
-                } else {
-                    // Only past/delivered/cancelled orders
-                    const latest = data.orders[0];
-                    const shortId = String(latest._id).slice(-6).toUpperCase();
-                    result.innerHTML = `<span style="color:#94a3b8;">Your last order <strong style="color:#fff;">#${shortId}</strong> was <strong style="color:#4ade80;">${(latest.status||'delivered').toUpperCase()}</strong>. No active orders right now.</span>`;
-                }
-            } catch(e) {
-                result.innerHTML = '<span style="color:#ef4444;">⚠️ Could not connect. Check your internet and try again.</span>';
+                fetchLiveOrder();
+                if (!pollTimer) pollTimer = setInterval(fetchLiveOrder, 3000);
+            } else {
+                // Only past/delivered/cancelled orders
+                const latest = data.orders[0];
+                const shortId = String(latest._id).slice(-6).toUpperCase();
+                result.innerHTML = `<span style="color:#94a3b8;">Your last order <strong style="color:#fff;">#${shortId}</strong> was <strong style="color:#4ade80;">${(latest.status || 'delivered').toUpperCase()}</strong>. No active orders right now.</span>`;
             }
+        } catch (e) {
+            result.innerHTML = '<span style="color:#ef4444;">⚠️ Could not connect. Check your internet and try again.</span>';
         }
+    }
 
-        function playCelebrationSound() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
-                gain.gain.setValueAtTime(0.25, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.4);
-            } catch(e) {}
-        }
+    function playCelebrationSound() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.25, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.4);
+        } catch (e) { }
+    }
 
-        // Clean & High-End Visual Stage Generator for all states
-        function getStageSceneSVG(status, isTakeaway) {
-            if (status === 'cancelled') {
-                return `
+    // Clean & High-End Visual Stage Generator for all states
+    function getStageSceneSVG(status, isTakeaway) {
+        if (status === 'cancelled') {
+            return `
                     <svg class="scene-svg" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <ellipse cx="190" cy="96" rx="140" ry="7" fill="rgba(239,68,68,0.15)" />
                         <line x1="20" y1="96" x2="360" y2="96" stroke="#27272a" stroke-width="2" stroke-linecap="round" />
@@ -1164,8 +1291,8 @@
                         </g>
                     </svg>
                 `;
-            } else if (status === 'pending') {
-                return `
+        } else if (status === 'pending') {
+            return `
                     <svg class="scene-svg" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <!-- Elegant Ground Platform -->
                         <ellipse cx="190" cy="96" rx="140" ry="7" fill="rgba(245,158,11,0.12)" />
@@ -1195,8 +1322,8 @@
                         </g>
                     </svg>
                 `;
-            } else if (status === 'accepted' || status === 'confirmed') {
-                return `
+        } else if (status === 'accepted' || status === 'confirmed') {
+            return `
                     <svg class="scene-svg" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <ellipse cx="190" cy="96" rx="140" ry="7" fill="rgba(249,115,22,0.15)" />
                         
@@ -1234,9 +1361,9 @@
                         </defs>
                     </svg>
                 `;
-            } else if (status === 'dispatched') {
-                if (isTakeaway) {
-                    return `
+        } else if (status === 'dispatched') {
+            if (isTakeaway) {
+                return `
                         <svg class="scene-svg" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <ellipse cx="190" cy="96" rx="140" ry="7" fill="rgba(34,197,94,0.18)" />
                             
@@ -1259,8 +1386,8 @@
                             </g>
                         </svg>
                     `;
-                }
-                return `
+            }
+            return `
                     <svg class="scene-svg" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <ellipse cx="190" cy="96" rx="150" ry="7" fill="rgba(249,115,22,0.15)" />
                         <line x1="10" y1="96" x2="370" y2="96" stroke="#3f3f46" stroke-width="2.5" stroke-linecap="round" />
@@ -1305,9 +1432,9 @@
                         </g>
                     </svg>
                 `;
-            } else {
-                // Delivered Stage
-                return `
+        } else {
+            // Delivered Stage
+            return `
                     <svg class="scene-svg" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <ellipse cx="190" cy="96" rx="150" ry="7" fill="rgba(16,185,129,0.2)" />
                         <line x1="20" y1="96" x2="360" y2="96" stroke="#27272a" stroke-width="2" stroke-linecap="round" />
@@ -1339,77 +1466,77 @@
                         </g>
                     </svg>
                 `;
-            }
+        }
+    }
+
+    function renderOrderView(order) {
+        window.currentTrackedOrder = order;
+        const container = document.getElementById('tracking-main-container');
+        const shortId = order._id ? String(order._id).slice(-6).toUpperCase() : 'LW-ORD';
+        const status = (order.status || 'pending').toLowerCase();
+        const isTakeaway = (order.orderType === 'takeaway' || order.orderType === 'pickup' || (order.customerAddress && /takeaway|self-pickup|pickup/i.test(order.customerAddress)));
+        const finalTotal = order.finalTotal || order.subtotal || 0;
+        const delFee = isTakeaway ? 0 : Number(order.deliveryCharge || 0);
+        const subtotal = Number(order.subtotal || (finalTotal - delFee));
+        const discount = Number(order.discount || 0);
+        const assignedRider = order.deliveryBoy || order.assignedDeliveryBoy;
+        const riderPhone = String(assignedRider?.phone || order.deliveryBoyPhone || '').replace(/\D/g, '').slice(-10);
+        const amountPaid = Number(order.amountPaid || 0) || (order.paymentCollectedByStore ? Number(finalTotal) : 0);
+        const amountDue = Math.max(0, Number(finalTotal) - amountPaid);
+        const paymentSummaryText = amountDue > 0 ? `₹${amountPaid} received • ₹${amountDue} due` : `Paid ₹${amountPaid}`;
+
+        const isStep1 = true;
+        const isStep2 = status === 'accepted' || status === 'confirmed' || status === 'dispatched' || status === 'delivered';
+        const isStep3 = status === 'dispatched' || status === 'delivered';
+        const isStep4 = status === 'delivered';
+
+        let statusBadgeClass = 'pending';
+        let dotClass = 'yellow';
+        let statusBadgeText = isTakeaway ? 'Pending Takeaway Confirmation' : 'Pending Confirmation';
+        let statusTitle = isTakeaway ? 'Takeaway Order Placed' : 'Order Placed';
+        let statusDesc = isTakeaway
+            ? 'We have received your takeaway order. The kitchen is reviewing items for counter preparation.'
+            : 'We have received your order. The kitchen is currently reviewing your items.';
+
+        if (status === 'accepted' || status === 'confirmed') {
+            statusBadgeClass = 'confirmed';
+            dotClass = 'green';
+            statusBadgeText = isTakeaway ? 'Preparing for Pickup' : 'Kitchen Preparing';
+            statusTitle = isTakeaway ? 'Preparing Your Takeaway' : 'Preparing in Kitchen';
+            statusDesc = 'Our chefs are freshly preparing your authentic meal with authentic spices and ghee.';
+        } else if (status === 'dispatched') {
+            statusBadgeClass = 'dispatched';
+            dotClass = isTakeaway ? 'green' : 'blue';
+            statusBadgeText = isTakeaway ? 'Ready for Pickup' : 'Out for Delivery';
+            statusTitle = isTakeaway ? 'Ready at Counter' : 'Out for Delivery';
+            statusDesc = isTakeaway
+                ? 'Your meal is freshly packed and ready for collection at our counter!'
+                : 'Your hot food has left the kitchen and is on the way to your delivery address.';
+        } else if (status === 'delivered') {
+            statusBadgeClass = 'delivered';
+            dotClass = 'green';
+            statusBadgeText = isTakeaway ? 'Order Picked Up' : 'Order Delivered';
+            statusTitle = isTakeaway ? 'Order Completed' : 'Order Delivered';
+            statusDesc = isTakeaway
+                ? 'Your meal was handed over successfully. Enjoy your delicious food!'
+                : 'Your meal was successfully delivered. Enjoy your delicious hot food!';
+        } else if (status === 'cancelled') {
+            statusBadgeClass = 'cancelled';
+            dotClass = 'red';
+            statusBadgeText = 'Order Cancelled';
+            statusTitle = 'Order Cancelled by Kitchen';
+            statusDesc = order.cancelReason ? `Reason: ${order.cancelReason}` : 'This order was cancelled by the restaurant. If you have completed payment, your refund will be processed.';
         }
 
-        function renderOrderView(order) {
-            window.currentTrackedOrder = order;
-            const container = document.getElementById('tracking-main-container');
-            const shortId = order._id ? String(order._id).slice(-6).toUpperCase() : 'LW-ORD';
-            const status = (order.status || 'pending').toLowerCase();
-            const isTakeaway = (order.orderType === 'takeaway' || order.orderType === 'pickup' || (order.customerAddress && /takeaway|self-pickup|pickup/i.test(order.customerAddress)));
-            const finalTotal = order.finalTotal || order.subtotal || 0;
-            const delFee = isTakeaway ? 0 : Number(order.deliveryCharge || 0);
-            const subtotal = Number(order.subtotal || (finalTotal - delFee));
-            const discount = Number(order.discount || 0);
-            const assignedRider = order.deliveryBoy || order.assignedDeliveryBoy;
-            const riderPhone = String(assignedRider?.phone || order.deliveryBoyPhone || '').replace(/\D/g, '').slice(-10);
-            const amountPaid = Number(order.amountPaid || 0) || (order.paymentCollectedByStore ? Number(finalTotal) : 0);
-            const amountDue = Math.max(0, Number(finalTotal) - amountPaid);
-            const paymentSummaryText = amountDue > 0 ? `₹${amountPaid} received • ₹${amountDue} due` : `Paid ₹${amountPaid}`;
-
-            const isStep1 = true;
-            const isStep2 = status === 'accepted' || status === 'confirmed' || status === 'dispatched' || status === 'delivered';
-            const isStep3 = status === 'dispatched' || status === 'delivered';
-            const isStep4 = status === 'delivered';
-
-            let statusBadgeClass = 'pending';
-            let dotClass = 'yellow';
-            let statusBadgeText = isTakeaway ? 'Pending Takeaway Confirmation' : 'Pending Confirmation';
-            let statusTitle = isTakeaway ? 'Takeaway Order Placed' : 'Order Placed';
-            let statusDesc = isTakeaway
-                ? 'We have received your takeaway order. The kitchen is reviewing items for counter preparation.'
-                : 'We have received your order. The kitchen is currently reviewing your items.';
-
-            if (status === 'accepted' || status === 'confirmed') {
-                statusBadgeClass = 'confirmed';
-                dotClass = 'green';
-                statusBadgeText = isTakeaway ? 'Preparing for Pickup' : 'Kitchen Preparing';
-                statusTitle = isTakeaway ? 'Preparing Your Takeaway' : 'Preparing in Kitchen';
-                statusDesc = 'Our chefs are freshly preparing your authentic meal with authentic spices and ghee.';
-            } else if (status === 'dispatched') {
-                statusBadgeClass = 'dispatched';
-                dotClass = isTakeaway ? 'green' : 'blue';
-                statusBadgeText = isTakeaway ? 'Ready for Pickup' : 'Out for Delivery';
-                statusTitle = isTakeaway ? 'Ready at Counter' : 'Out for Delivery';
-                statusDesc = isTakeaway 
-                    ? 'Your meal is freshly packed and ready for collection at our counter!'
-                    : 'Your hot food has left the kitchen and is on the way to your delivery address.';
-            } else if (status === 'delivered') {
-                statusBadgeClass = 'delivered';
-                dotClass = 'green';
-                statusBadgeText = isTakeaway ? 'Order Picked Up' : 'Order Delivered';
-                statusTitle = isTakeaway ? 'Order Completed' : 'Order Delivered';
-                statusDesc = isTakeaway 
-                    ? 'Your meal was handed over successfully. Enjoy your delicious food!'
-                    : 'Your meal was successfully delivered. Enjoy your delicious hot food!';
-            } else if (status === 'cancelled') {
-                statusBadgeClass = 'cancelled';
-                dotClass = 'red';
-                statusBadgeText = 'Order Cancelled';
-                statusTitle = 'Order Cancelled by Kitchen';
-                statusDesc = order.cancelReason ? `Reason: ${order.cancelReason}` : 'This order was cancelled by the restaurant. If you have completed payment, your refund will be processed.';
-            }
-
-            const timeStr = order.createdAt ? new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-            const escapeItemName = value => String(value ?? '').replace(/[&<>"']/g, character => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;'
-            })[character]);
-            const itemsHtml = (order.items || []).map(it => `
+        const timeStr = order.createdAt ? new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        const escapeItemName = value => String(value ?? '').replace(/[&<>"']/g, character => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        })[character]);
+        const itemsHtml = (order.items || []).map(it => `
                 <div class="slip-item-row">
                     <div class="slip-item-left">
                         <span class="slip-item-qty">${it.quantity}x</span>
@@ -1419,10 +1546,10 @@
                 </div>
             `).join('') || '<div style="color:#64748b; font-size:12px; text-align:center;">Items list unavailable</div>';
 
-            // Stepper HTML
-            let stepperHtml = '';
-            if (status === 'cancelled') {
-                stepperHtml = `
+        // Stepper HTML
+        let stepperHtml = '';
+        if (status === 'cancelled') {
+            stepperHtml = `
                     <div class="stepper-wrap">
                         <div class="step-item completed">
                             <div class="step-circle" style="background:#22c55e; border-color:#22c55e; color:#000;">✓</div>
@@ -1434,8 +1561,8 @@
                         </div>
                     </div>
                 `;
-            } else if (isTakeaway) {
-                stepperHtml = `
+        } else if (isTakeaway) {
+            stepperHtml = `
                     <div class="stepper-wrap">
                         <div class="step-item ${isStep1 ? (isStep2 ? 'completed' : 'active') : ''}">
                             <div class="step-circle">${isStep2 ? '✓' : '1'}</div>
@@ -1455,8 +1582,8 @@
                         </div>
                     </div>
                 `;
-            } else {
-                stepperHtml = `
+        } else {
+            stepperHtml = `
                     <div class="stepper-wrap">
                         <div class="step-item ${isStep1 ? (isStep2 ? 'completed' : 'active') : ''}">
                             <div class="step-circle">${isStep2 ? '✓' : '1'}</div>
@@ -1476,9 +1603,9 @@
                         </div>
                     </div>
                 `;
-            }
+        }
 
-            container.innerHTML = `
+        container.innerHTML = `
                 <div class="track-grid-layout">
                     <!-- Left Column: Live Animation Hero & 4-Stage Stepper -->
                     <div class="track-col-left">
@@ -1746,11 +1873,11 @@
                     </div>
                 </div>
             `;
-        }
+    }
 
-        function renderNotFound() {
-            const container = document.getElementById('tracking-main-container');
-            container.innerHTML = `
+    function renderNotFound() {
+        const container = document.getElementById('tracking-main-container');
+        container.innerHTML = `
                 <div class="order-card" style="text-align:center; padding:48px 20px; max-width:560px; margin:0 auto;">
                     <div style="font-size:36px; margin-bottom:12px; color:var(--text-muted);"><i class="fas fa-search"></i></div>
                     <h3 style="font-size:1.3rem; margin-bottom:8px; font-weight:700;">No Active Order Found</h3>
@@ -1760,144 +1887,214 @@
                     </a>
                 </div>
             `;
-        }
+    }
 
-        // 0ms Instant Cache-First Display (No connecting spinner delay!)
-        activeOrderId = getTargetOrderId();
-        try {
-            const stored = localStorage.getItem('littiWaleActiveOrder');
-            if (stored) {
-                const cachedOrder = JSON.parse(stored);
-                // IMPORTANT: Only use cache for fast display if it EXACTLY matches the current URL order.
-                // Never override activeOrderId with a different cached order (avoids showing old delivered order).
-                const cachedId = cachedOrder._id || cachedOrder.id;
-                if (cachedOrder && activeOrderId && String(cachedId) === String(activeOrderId)) {
-                    _orderRendered = true;
-                    renderOrderView(cachedOrder);
-                }
-                // If no activeOrderId from URL/params, allow cache as fallback
-                if (!activeOrderId && cachedId) {
-                    activeOrderId = cachedId;
-                }
+    // 0ms Instant Cache-First Display (No connecting spinner delay!)
+    activeOrderId = getTargetOrderId();
+    try {
+        const stored = localStorage.getItem('littiWaleActiveOrder');
+        if (stored) {
+            const cachedOrder = JSON.parse(stored);
+            // IMPORTANT: Only use cache for fast display if it EXACTLY matches the current URL order.
+            // Never override activeOrderId with a different cached order (avoids showing old delivered order).
+            const cachedId = cachedOrder._id || cachedOrder.id;
+            if (cachedOrder && activeOrderId && String(cachedId) === String(activeOrderId)) {
+                _orderRendered = true;
+                renderOrderView(cachedOrder);
             }
-        } catch(e) {}
-
-        // Fetch live updates in background & start continuous poller
-        fetchLiveOrder();
-        if (activeOrderId) {
-            pollTimer = setInterval(fetchLiveOrder, 3000);
+            // If no activeOrderId from URL/params, allow cache as fallback
+            if (!activeOrderId && cachedId) {
+                activeOrderId = cachedId;
+            }
         }
-    </script>
+    } catch (e) { }
 
-    <!-- FOOTER -->
-    <footer class="footer" style="background:#0a0a0a; padding:60px 0 20px; border-top:1px solid rgba(255,255,255,0.05); margin-top:auto;">
-        <div class="container" style="display:flex; flex-wrap:wrap; gap:40px; justify-content:space-between; margin-bottom:40px;">
-            <div class="footer-brand" style="flex:1; min-width:250px;">
-                <img src="images/logo.png" alt="Litti Wale" style="height:80px; margin-bottom:20px;">
-                <p style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; line-height:1.6; margin-bottom:20px;">The Soul of Bihar, Delivered.<br>Authentic Bihari flavours, made fresh daily in Barbil, Odisha.</p>
-                <div style="display:flex; gap:15px;">
-                    <a href="https://www.instagram.com/littiwaleofficial/" target="_blank" style="width:36px; height:36px; border-radius:8px; border:1px solid rgba(244,180,0,0.3); display:flex; align-items:center; justify-content:center; color:var(--primary-color, #f4b400); transition:all 0.3s ease;"><i class="fab fa-instagram"></i></a>
-                    <a href="https://www.facebook.com/share/18fQs5NEQU/" target="_blank" style="width:36px; height:36px; border-radius:8px; border:1px solid rgba(244,180,0,0.3); display:flex; align-items:center; justify-content:center; color:var(--primary-color, #f4b400); transition:all 0.3s ease;"><i class="fab fa-facebook-f"></i></a>
-                    <a href="https://wa.me/916370680744" target="_blank" style="width:36px; height:36px; border-radius:8px; border:1px solid rgba(244,180,0,0.3); display:flex; align-items:center; justify-content:center; color:var(--primary-color, #f4b400); transition:all 0.3s ease;"><i class="fab fa-whatsapp"></i></a>
-                </div>
-            </div>
+    // Fetch live updates in background & start continuous poller
+    fetchLiveOrder();
+    if (activeOrderId) {
+        pollTimer = setInterval(fetchLiveOrder, 3000);
+    }
+</script>
 
-            <div class="footer-links" style="flex:1; min-width:150px;">
-                <h4 style="color:var(--primary-color, #f4b400); font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:20px;">Explore</h4>
-                <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px;">
-                    <li><a href="/#why-us" style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Why Littiwale</a></li>
-                    <li><a href="/#how-it-works" style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">How It Works</a></li>
-                    <li><a href="/#membership-section" style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Membership Plans</a></li>
-                    <li><a href="/menu" style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Full Menu</a></li>
-                    <li><a href="/#catering-section" style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Catering Services</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-links" style="flex:1; min-width:150px;">
-                <h4 style="color:var(--primary-color, #f4b400); font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:20px;">Company</h4>
-                <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px;">
-                    <li><a href="/#about" style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">About Littiwale</a></li>
-                    <li><a href="/#reach" style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Reach Us</a></li>
-                    <li><a href="/#faq" style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">FAQ</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-contact" style="flex:2; min-width:300px; display:flex; flex-wrap:wrap; gap:30px;">
-                <div style="flex:1; min-width:140px;">
-                    <h4 style="color:var(--primary-color, #f4b400); font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:15px;">Cloud Kitchen</h4>
-                    <p style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; margin-bottom:12px; line-height:1.5;">Ward No. 7, Punjabi Para<br>Barbil, Odisha 758035</p>
-                    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;">
-                        <a href="tel:+916370680744" style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; display:flex; align-items:center; gap:8px; text-decoration:none;"><i class="fas fa-phone-alt" style="color:#E1306C;"></i> +91 63706 80744</a>
-                        <span style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; display:flex; align-items:center; gap:8px;"><i class="far fa-clock" style="color:var(--text-secondary, #a1a1aa);"></i> 9 AM – 11 PM, Daily</span>
-                        <a href="https://g.page/r/CYlrxD6jO24cEAE/review" target="_blank" style="color:var(--primary-color, #f4b400); font-size:0.85rem; display:flex; align-items:center; gap:8px; text-decoration:none; font-weight:700;"><i class="fas fa-star" style="color:#facc15;"></i> Review Cloud Kitchen</a>
-                    </div>
-                </div>
-                <div style="flex:1; min-width:140px;">
-                    <h4 style="color:#4ade80; font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:15px;">Physical Outlet</h4>
-                    <p style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; margin-bottom:12px; line-height:1.5;">Near Barbil Court, Back Side of Rabisons Mall<br>Barbil, Odisha</p>
-                    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;">
-                        <a href="tel:+916370680744" style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; display:flex; align-items:center; gap:8px; text-decoration:none;"><i class="fas fa-phone-alt" style="color:#4ade80;"></i> +91 63706 80744</a>
-                        <span style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; display:flex; align-items:center; gap:8px;"><i class="far fa-clock" style="color:var(--text-secondary, #a1a1aa);"></i> 8 AM – 10 PM (Sun Closed)</span>
-                        <a href="https://g.page/r/CWt0NauZrydZEAE/review" target="_blank" style="color:#4ade80; font-size:0.85rem; display:flex; align-items:center; gap:8px; text-decoration:none; font-weight:700;"><i class="fas fa-star" style="color:#facc15;"></i> Review Physical Outlet</a>
-                    </div>
-                </div>
-                <div style="width:100%;">
-                    <a href="/menu" class="btn btn-primary" style="display:inline-block; padding:10px 24px; font-size:0.9rem; border-radius:30px; border:none; color:#000; font-weight:800; text-decoration:none; cursor:pointer;">ORDER NOW <i class="fas fa-arrow-right"></i></a>
-                </div>
+<!-- FOOTER -->
+<footer class="footer"
+    style="background:#0a0a0a; padding:60px 0 20px; border-top:1px solid rgba(255,255,255,0.05); margin-top:auto;">
+    <div class="container"
+        style="display:flex; flex-wrap:wrap; gap:40px; justify-content:space-between; margin-bottom:40px;">
+        <div class="footer-brand" style="flex:1; min-width:250px;">
+            <img src="images/logo.png" alt="Litti Wale" style="height:80px; margin-bottom:20px;">
+            <p style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; line-height:1.6; margin-bottom:20px;">The
+                Soul of Bihar, Delivered.<br>Authentic Bihari flavours, made fresh daily in Barbil, Odisha.</p>
+            <div style="display:flex; gap:15px;">
+                <a href="https://www.instagram.com/littiwaleofficial/" target="_blank"
+                    style="width:36px; height:36px; border-radius:8px; border:1px solid rgba(244,180,0,0.3); display:flex; align-items:center; justify-content:center; color:var(--primary-color, #f4b400); transition:all 0.3s ease;"><i
+                        class="fab fa-instagram"></i></a>
+                <a href="https://www.facebook.com/share/18fQs5NEQU/" target="_blank"
+                    style="width:36px; height:36px; border-radius:8px; border:1px solid rgba(244,180,0,0.3); display:flex; align-items:center; justify-content:center; color:var(--primary-color, #f4b400); transition:all 0.3s ease;"><i
+                        class="fab fa-facebook-f"></i></a>
+                <a href="https://wa.me/916370680744" target="_blank"
+                    style="width:36px; height:36px; border-radius:8px; border:1px solid rgba(244,180,0,0.3); display:flex; align-items:center; justify-content:center; color:var(--primary-color, #f4b400); transition:all 0.3s ease;"><i
+                        class="fab fa-whatsapp"></i></a>
             </div>
         </div>
 
-        <div class="container" style="border-top:1px solid rgba(255,255,255,0.05); padding-top:20px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:15px;">
-            <p style="color:var(--text-secondary, #a1a1aa); font-size:0.8rem; margin:0;">© 2026 Littiwale Barbil. All rights reserved.</p>
-            <div style="display:flex; gap:20px; font-size:0.8rem;">
-                <a href="#" style="color:var(--text-secondary, #a1a1aa); transition:color 0.3s ease; text-decoration:none;">Privacy Policy</a>
-                <a href="#" style="color:var(--text-secondary, #a1a1aa); transition:color 0.3s ease; text-decoration:none;">Terms of Service</a>
-                <a href="https://brandnestagency.vercel.app" target="_blank" rel="noopener noreferrer" style="color:var(--text-primary, #fff); font-weight:600; transition:color 0.3s ease; text-decoration:none;">Developed by Brandnest - India's First AI Powered Digital agency</a>
+        <div class="footer-links" style="flex:1; min-width:150px;">
+            <h4
+                style="color:var(--primary-color, #f4b400); font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:20px;">
+                Explore</h4>
+            <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px;">
+                <li><a href="/#why-us"
+                        style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Why
+                        Littiwale</a></li>
+                <li><a href="/#how-it-works"
+                        style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">How
+                        It Works</a></li>
+                <li><a href="/#membership-section"
+                        style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Membership
+                        Plans</a></li>
+                <li><a href="/menu"
+                        style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Full
+                        Menu</a></li>
+                <li><a href="/#catering-section"
+                        style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Catering
+                        Services</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-links" style="flex:1; min-width:150px;">
+            <h4
+                style="color:var(--primary-color, #f4b400); font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:20px;">
+                Company</h4>
+            <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px;">
+                <li><a href="/#about"
+                        style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">About
+                        Littiwale</a></li>
+                <li><a href="/#reach"
+                        style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">Reach
+                        Us</a></li>
+                <li><a href="/#faq"
+                        style="color:var(--text-secondary, #a1a1aa); font-size:0.9rem; transition:color 0.3s ease; text-decoration:none;">FAQ</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="footer-contact" style="flex:2; min-width:300px; display:flex; flex-wrap:wrap; gap:30px;">
+            <div style="flex:1; min-width:140px;">
+                <h4
+                    style="color:var(--primary-color, #f4b400); font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:15px;">
+                    Cloud Kitchen</h4>
+                <p
+                    style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; margin-bottom:12px; line-height:1.5;">
+                    Ward No. 7, Punjabi Para<br>Barbil, Odisha 758035</p>
+                <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;">
+                    <a href="tel:+916370680744"
+                        style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; display:flex; align-items:center; gap:8px; text-decoration:none;"><i
+                            class="fas fa-phone-alt" style="color:#E1306C;"></i> +91 63706 80744</a>
+                    <span
+                        style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; display:flex; align-items:center; gap:8px;"><i
+                            class="far fa-clock" style="color:var(--text-secondary, #a1a1aa);"></i> 9 AM – 11 PM,
+                        Daily</span>
+                    <a href="https://g.page/r/CYlrxD6jO24cEAE/review" target="_blank"
+                        style="color:var(--primary-color, #f4b400); font-size:0.85rem; display:flex; align-items:center; gap:8px; text-decoration:none; font-weight:700;"><i
+                            class="fas fa-star" style="color:#facc15;"></i> Review Cloud Kitchen</a>
+                </div>
+            </div>
+            <div style="flex:1; min-width:140px;">
+                <h4
+                    style="color:#4ade80; font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:15px;">
+                    Physical Outlet</h4>
+                <p
+                    style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; margin-bottom:12px; line-height:1.5;">
+                    Near Barbil Court, Back Side of Rabisons Mall<br>Barbil, Odisha</p>
+                <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;">
+                    <a href="tel:+916370680744"
+                        style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; display:flex; align-items:center; gap:8px; text-decoration:none;"><i
+                            class="fas fa-phone-alt" style="color:#4ade80;"></i> +91 63706 80744</a>
+                    <span
+                        style="color:var(--text-secondary, #a1a1aa); font-size:0.85rem; display:flex; align-items:center; gap:8px;"><i
+                            class="far fa-clock" style="color:var(--text-secondary, #a1a1aa);"></i> 8 AM – 10 PM (Sun
+                        Closed)</span>
+                    <a href="https://g.page/r/CWt0NauZrydZEAE/review" target="_blank"
+                        style="color:#4ade80; font-size:0.85rem; display:flex; align-items:center; gap:8px; text-decoration:none; font-weight:700;"><i
+                            class="fas fa-star" style="color:#facc15;"></i> Review Physical Outlet</a>
+                </div>
+            </div>
+            <div style="width:100%;">
+                <a href="/menu" class="btn btn-primary"
+                    style="display:inline-block; padding:10px 24px; font-size:0.9rem; border-radius:30px; border:none; color:#000; font-weight:800; text-decoration:none; cursor:pointer;">ORDER
+                    NOW <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
-    </footer>
-
-    <!-- FLOAT BUTTONS -->
-    <div class="fab-container">
-        <button onclick="openPartnerModal()" class="fab-btn" style="background:#ffbc00; color:#000; border:none; outline:none;" title="Ordering Partner">
-            <i class="fas fa-motorcycle"></i>
-        </button>
-
-        <a href="menu/index.html" class="fab-btn cart-fab" style="background:#333;color:white;" title="View Menu / Cart">
-            <i class="fas fa-shopping-cart"></i>
-            <span id="fab-cart-badge">0</span>
-        </a>
-
-        <a href="tel:+916370680744" class="fab-btn" style="background:#007bff;color:white;" title="Call Us">
-            <i class="fas fa-phone"></i>
-        </a>
-
-        <a href="https://wa.me/916370680744" target="_blank" class="fab-btn" style="background:#25d366;color:white;" title="WhatsApp Us">
-            <i class="fab fa-whatsapp"></i>
-        </a>
     </div>
 
-    <!-- PARTNER MODAL -->
-    <div id="partner-popup" class="payment-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
-        <div class="payment-modal-content" style="max-width:400px; width:90%; background:#18181b; border:1px solid rgba(255,255,255,0.15); border-radius:16px; padding:24px; text-align:center; position:relative; color:#fff;">
-            <button id="close-partner-popup" class="close-btn" style="position:absolute; right:16px; top:12px; font-size:24px; background:none; border:none; color:#fff; cursor:pointer;" onclick="closePartnerModal()">&times;</button>
-            <div style="font-size:3rem; margin-bottom:10px; line-height:1;">🛵</div>
-            <h3 style="color:#f97316; margin-bottom:15px; font-size:1.2rem; font-weight:800;">Choose Your Preferred Ordering Option</h3>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-                <a href="index.html#menu" class="btn btn-primary" style="background:#f97316; color:#fff; font-size:1rem; padding:12px; font-weight:bold; border-radius:8px; text-decoration:none; display:block;">
-                    Order Directly from Website
-                </a>
-                <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" class="btn" style="background:#e23744; color:#fff; font-size:1rem; padding:12px; border-radius:8px; font-weight:bold; text-decoration:none; display:block;">
-                    Zomato
-                </a>
-            </div>
+    <div class="container"
+        style="border-top:1px solid rgba(255,255,255,0.05); padding-top:20px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:15px;">
+        <p style="color:var(--text-secondary, #a1a1aa); font-size:0.8rem; margin:0;">© 2026 Littiwale Barbil. All rights
+            reserved.</p>
+        <div style="display:flex; gap:20px; font-size:0.8rem;">
+            <a href="#"
+                style="color:var(--text-secondary, #a1a1aa); transition:color 0.3s ease; text-decoration:none;">Privacy
+                Policy</a>
+            <a href="#"
+                style="color:var(--text-secondary, #a1a1aa); transition:color 0.3s ease; text-decoration:none;">Terms of
+                Service</a>
+            <a href="https://brandnestagency.vercel.app" target="_blank" rel="noopener noreferrer"
+                style="color:var(--text-primary, #fff); font-weight:600; transition:color 0.3s ease; text-decoration:none;">Developed
+                by Brandnest - India's First AI Powered Digital agency</a>
         </div>
     </div>
+</footer>
 
-    <div id="cart-toast"></div>
-    <script src="js/main.js?v=20261029-order-choice"></script>
-    <script src="js/restaurant-timing.js?v=20261029-order-choice"></script>
-    <script src="js/receipt-printer.js"></script>
+<!-- FLOAT BUTTONS -->
+<div class="fab-container">
+    <button onclick="openPartnerModal()" class="fab-btn"
+        style="background:#ffbc00; color:#000; border:none; outline:none;" title="Ordering Partner">
+        <i class="fas fa-motorcycle"></i>
+    </button>
+
+    <a href="menu/index.html" class="fab-btn cart-fab" style="background:#333;color:white;" title="View Menu / Cart">
+        <i class="fas fa-shopping-cart"></i>
+        <span id="fab-cart-badge">0</span>
+    </a>
+
+    <a href="tel:+916370680744" class="fab-btn" style="background:#007bff;color:white;" title="Call Us">
+        <i class="fas fa-phone"></i>
+    </a>
+
+    <a href="https://wa.me/916370680744" target="_blank" class="fab-btn" style="background:#25d366;color:white;"
+        title="WhatsApp Us">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+</div>
+
+<!-- PARTNER MODAL -->
+<div id="partner-popup" class="payment-modal"
+    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
+    <div class="payment-modal-content"
+        style="max-width:400px; width:90%; background:#18181b; border:1px solid rgba(255,255,255,0.15); border-radius:16px; padding:24px; text-align:center; position:relative; color:#fff;">
+        <button id="close-partner-popup" class="close-btn"
+            style="position:absolute; right:16px; top:12px; font-size:24px; background:none; border:none; color:#fff; cursor:pointer;"
+            onclick="closePartnerModal()">&times;</button>
+        <div style="font-size:3rem; margin-bottom:10px; line-height:1;">🛵</div>
+        <h3 style="color:#f97316; margin-bottom:15px; font-size:1.2rem; font-weight:800;">Choose Your Preferred Ordering
+            Option</h3>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <a href="index.html#menu" class="btn btn-primary"
+                style="background:#f97316; color:#fff; font-size:1rem; padding:12px; font-weight:bold; border-radius:8px; text-decoration:none; display:block;">
+                Order Directly from Website
+            </a>
+            <a href="https://zomato.onelink.me/xqzv/pehoc5j0" target="_blank" class="btn"
+                style="background:#e23744; color:#fff; font-size:1rem; padding:12px; border-radius:8px; font-weight:bold; text-decoration:none; display:block;">
+                Zomato
+            </a>
+        </div>
+    </div>
+</div>
+
+<div id="cart-toast"></div>
+<script src="js/main.js?v=20261119-universal-variants"></script>
+<script src="js/restaurant-timing.js?v=20261119-universal-variants"></script>
+<script src="js/receipt-printer.js"></script>
 </body>
 
 </html>

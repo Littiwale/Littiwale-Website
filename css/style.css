@@ -661,33 +661,7 @@ img {
     }
 
     .menu-card .menu-img-container .mob-variant-controls {
-        position: absolute;
-        bottom: 6px;
-        left: 4px;
-        right: 4px;
-        z-index: 10;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .mob-variant-select {
-        width: 100%;
-        min-width: 0;
-        height: 28px;
-        border-radius: 7px;
-        padding: 2px 4px;
-        background: #18181b;
-        color: #fff;
-        border: 1px solid #22c55e;
-        font-size: 0.7rem;
-    }
-
-    .mob-variant-controls .mob-add-btn {
-        position: static !important;
-        transform: none !important;
-        width: 100% !important;
-        height: 26px !important;
+        display: none !important;
     }
 
     .mob-add-btn {
@@ -768,73 +742,214 @@ img {
 
     .btn-desktop-text { display: none !important; }
     .btn-mobile-text  { display: inline !important; }
+}
 
-    /* ---- Half/Full Variant Bottom Sheet (mobile only) ---- */
+/* ==========================================================================
+   Universal Variant & Options Modal / Bottom Sheet System
+   (Desktop Centered Modal + Mobile Swipeable Bottom Sheet)
+   ========================================================================== */
+#hf-sheet-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 999998;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+#hf-sheet-overlay.open {
+    display: block;
+    opacity: 1;
+}
+
+#hf-variant-sheet {
+    position: fixed;
+    z-index: 999999;
+    background: #141418;
+    border: 1.5px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.9);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Desktop default: Centered modal */
+@media (min-width: 769px) {
     #hf-variant-sheet {
-        position: fixed !important;
-        bottom: 0 !important; left: 0 !important; right: 0 !important;
-        background: #18181b !important;
-        border-top: 1.5px solid rgba(255,255,255,0.12) !important;
-        border-radius: 22px 22px 0 0 !important;
-        padding: 20px 20px 32px !important;
-        z-index: 999999 !important;
-        box-shadow: 0 -16px 40px rgba(0,0,0,0.8) !important;
-        transform: translateY(100%) !important;
-        transition: transform 0.3s cubic-bezier(.175,.885,.32,1.1) !important;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -46%) scale(0.96);
+        width: 92%;
+        max-width: 480px;
+        max-height: 82vh;
+        border-radius: 22px;
+        padding: 24px;
+        opacity: 0;
+        pointer-events: none;
     }
     #hf-variant-sheet.open {
-        transform: translateY(0) !important;
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+        pointer-events: auto;
     }
-    #hf-sheet-overlay {
-        display: none;
-        position: fixed; inset: 0;
-        background: rgba(0,0,0,0.6);
-        z-index: 999998;
+}
+
+/* Mobile: Bottom-sheet style */
+@media (max-width: 768px) {
+    #hf-variant-sheet {
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        border-radius: 24px 24px 0 0;
+        padding: 16px 18px max(24px, env(safe-area-inset-bottom));
+        max-height: 82vh;
+        transform: translateY(100%);
     }
-    #hf-sheet-overlay.open { display: block; }
-    .hf-sheet-handle {
-        width: 40px; height: 4px;
-        background: rgba(255,255,255,0.2);
-        border-radius: 4px;
-        margin: 0 auto 16px;
+    #hf-variant-sheet.open {
+        transform: translateY(0);
     }
-    .hf-sheet-title {
-        font-size: 1rem; font-weight: 800; color: #fff;
-        margin-bottom: 4px; text-align: center;
-    }
-    .hf-sheet-subtitle {
-        font-size: 0.78rem; color: #64748b;
-        text-align: center; margin-bottom: 16px;
-    }
-    .hf-sheet-options {
-        display: flex; gap: 10px; margin-bottom: 4px;
-    }
-    .hf-sheet-opt {
-        flex: 1; border: 1.5px solid rgba(255,255,255,0.12);
-        border-radius: 14px; padding: 14px 10px;
-        background: rgba(255,255,255,0.04);
-        cursor: pointer; text-align: center;
-        transition: all 0.18s;
-    }
-    .hf-sheet-opt:active { transform: scale(0.97); }
-    .hf-sheet-opt-label {
-        font-size: 0.72rem; font-weight: 700; color: #94a3b8;
-        text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
-    }
-    .hf-sheet-opt-price {
-        font-size: 1.3rem; font-weight: 900; color: #f59e0b; margin-bottom: 8px;
-    }
-    .hf-sheet-opt-qty {
-        display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .hf-sheet-opt-qty .sq-btn {
-        width: 28px; height: 28px; border-radius: 8px; border: none;
-        font-size: 1rem; font-weight: 900; cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-    }
-    .sq-minus { background: rgba(255,255,255,0.1); color: #ef4444; }
-    .sq-plus  { background: #22c55e; color: #000; }
-    .sq-val   { font-size: 1rem; font-weight: 800; color: #fff; min-width: 20px; text-align: center; }
+}
+
+.hf-sheet-header {
+    position: relative;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 14px;
+}
+.hf-sheet-handle {
+    width: 40px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    margin: 0 auto 10px;
+}
+.hf-sheet-close-btn {
+    position: absolute;
+    right: 0;
+    top: -2px;
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: #cbd5e1;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+.hf-sheet-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+.hf-sheet-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 4px;
+    padding-right: 36px;
+    line-height: 1.3;
+}
+.hf-sheet-subtitle {
+    font-size: 0.8rem;
+    color: #f59e0b;
+    font-weight: 600;
+}
+.hf-sheet-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    max-height: calc(80vh - 120px);
+    padding-right: 4px;
+}
+.hf-sheet-opt-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 14px;
+    padding: 12px 14px;
+    transition: border-color 0.2s, background 0.2s;
+}
+.hf-sheet-opt-row:hover {
+    border-color: rgba(249, 115, 22, 0.45);
+    background: rgba(249, 115, 22, 0.06);
+}
+.hf-sheet-opt-row.out-of-stock {
+    opacity: 0.5;
+    pointer-events: none;
+}
+.hf-opt-info {
+    flex: 1;
+    min-width: 0;
+}
+.hf-opt-label {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 2px;
+}
+.hf-opt-desc {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-bottom: 4px;
+    line-height: 1.35;
+}
+.hf-opt-price {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #f59e0b;
+}
+.hf-opt-qty-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1.5px solid #22c55e;
+    border-radius: 10px;
+    padding: 2px 4px;
+}
+.hf-opt-qty-pill .sq-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 900;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.hf-opt-qty-pill .sq-minus {
+    background: transparent;
+    color: #22c55e;
+}
+.hf-opt-qty-pill .sq-plus {
+    background: #22c55e;
+    color: #000;
+}
+.hf-opt-qty-pill .sq-val {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #ffffff;
+    min-width: 22px;
+    text-align: center;
+}
+.hf-opt-oos {
+    color: #ef4444;
+    font-size: 0.8rem;
+    font-weight: 700;
 }
 
 /* FSSAI Veg / Non-Veg Standard Dot Icons */
